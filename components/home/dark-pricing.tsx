@@ -103,7 +103,7 @@ export function DarkPricing() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          planId,
+          plan: planId,
           billingPeriod,
         }),
       });
@@ -115,9 +115,11 @@ export function DarkPricing() {
         window.location.href = data.url;
       } else {
         console.error('Failed to create checkout session:', data.error);
+        alert('Erreur lors de la création de la session de paiement. Veuillez réessayer.');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      alert('Erreur lors de la création de la session de paiement. Veuillez réessayer.');
     }
   };
 
