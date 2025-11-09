@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe B - Clarity (Recommandé)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      overflow-x: hidden;
+    }
+    
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    
+    nav.scrolled {
+      padding: 0.75rem 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1E6F5C;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    
+    .nav-links a {
+      text-decoration: none;
+      color: #666;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s;
+    }
+    
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #1E6F5C;
+      transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    
+    .nav-links a:hover {
+      color: #1E6F5C;
+    }
+    
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+    
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Animated Background */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08), transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(147, 51, 234, 0.05), transparent 50%);
+      z-index: 0;
+      animation: bgFlow 20s ease-in-out infinite;
+    }
+    
+    @keyframes bgFlow {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+    
+    /* Floating Particles */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent);
+      filter: blur(2px);
+      animation: float 8s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+      50% { transform: translateY(-50px) translateX(20px); opacity: 0.6; }
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, rgba(243, 244, 246, 0.8), rgba(219, 234, 254, 0.8));
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 2rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+      50% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.1); }
+    }
+    
+    h1 {
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    
+    .gradient-text {
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientFlow 5s ease infinite;
+    }
+    
+    @keyframes gradientFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #6B7280;
+      max-width: 700px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+      animation: fadeInUp 0.8s 0.2s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    
+    .cta-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 4rem;
+      animation: fadeInUp 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    
+    .btn {
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+    
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-ghost {
+      background: transparent;
+      color: #374151;
+      border: 1px solid #E5E7EB;
+    }
+    
+    .btn-ghost:hover {
+      background: rgba(59, 130, 246, 0.05);
+      border-color: rgba(59, 130, 246, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    /* Mockup */
+    .mockup-container {
+      perspective: 1500px;
+      animation: fadeInUp 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    
+    .mockup-window {
+      background: white;
+      border-radius: 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.1),
+        0 0 60px rgba(59, 130, 246, 0.2);
+      overflow: hidden;
+      transform: rotateX(5deg);
+      transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      animation: glowPulse 3s ease-in-out infinite;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .mockup-window:hover {
+      transform: rotateX(0deg) scale(1.02);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.15),
+        0 0 80px rgba(59, 130, 246, 0.3);
+    }
+    
+    @keyframes glowPulse {
+      0%, 100% {
+        box-shadow: 
+          0 20px 60px rgba(0, 0, 0, 0.1),
+          0 0 40px rgba(59, 130, 246, 0.2);
+      }
+      50% {
+        box-shadow: 
+          0 25px 70px rgba(0, 0, 0, 0.12),
+          0 0 60px rgba(59, 130, 246, 0.3);
+      }
+    }
+    
+    .mockup-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+      border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes dotPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 currentColor;
+      }
+      50% {
+        box-shadow: 0 0 0 4px transparent;
+      }
+    }
+    
+    .dot-red {
+      background: #ef4444;
+      color: rgba(239, 68, 68, 0.4);
+    }
+    
+    .dot-yellow {
+      background: #eab308;
+      color: rgba(234, 179, 8, 0.4);
+      animation-delay: 0.5s;
+    }
+    
+    .dot-green {
+      background: #22c55e;
+      color: rgba(34, 197, 94, 0.4);
+      animation-delay: 1s;
+    }
+    
+    .url-bar {
+      flex: 1;
+      background: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      color: #6B7280;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .mockup-content {
+      background: linear-gradient(135deg, #f9fafb, #e0f2fe);
+      padding: 3rem;
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .mockup-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1), transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(147, 51, 234, 0.1), transparent 50%);
+      animation: bgFlow 8s ease-in-out infinite;
+    }
+    
+    .mockup-text {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+    
+    .mockup-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounceY 4s ease-in-out infinite;
+    }
+    
+    @keyframes bounceY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .floating-element {
+      position: absolute;
+      background: white;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      animation: floatAround 3s ease-in-out infinite;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    @keyframes floatAround {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(-10px, -10px) rotate(2deg); }
+    }
+    
+    .floating-1 {
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+    
+    .floating-2 {
+      bottom: 15%;
+      right: 10%;
+      animation-delay: 1s;
+    }
+    
+    /* Features Section */
+    .features {
+      padding: 6rem 2rem;
+      background: #f9fafb;
+    }
+    
+    .section-header {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 4rem;
+    }
+    
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    
+    .section-description {
+      font-size: 1.125rem;
+      color: #6B7280;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .feature-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+    }
+    
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      transition: transform 0.3s;
+    }
+    
+    .feature-card:hover .feature-icon {
+      transform: rotate(10deg) scale(1.1);
+    }
+    
+    .feature-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-description {
+      color: #6B7280;
+      line-height: 1.6;
+    }
+    
+    /* Pricing Section */
+    .pricing {
+      padding: 6rem 2rem;
+      background: white;
+    }
+    
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .pricing-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 2px solid #E5E7EB;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+    }
+    
+    .pricing-card.popular {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px #3b82f6;
+      animation: popularGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes popularGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+      }
+    }
+    
+    .pricing-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .plan-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .plan-price {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .plan-price span {
+      font-size: 1rem;
+      color: #6B7280;
+      font-weight: 400;
+    }
+    
+    .plan-features {
+      list-style: none;
+      margin: 2rem 0;
+    }
+    
+    .plan-features li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .plan-features li::before {
+      content: '✓';
+      color: #22c55e;
+      font-weight: 700;
+    }
+    
+    /* Footer */
+    footer {
+      background: #1a1a1a;
+      color: white;
+      padding: 3rem 2rem 1rem;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .footer-section h3 {
+      margin-bottom: 1rem;
+      color: #1E6F5C;
+    }
+    
+    .footer-section a {
+      display: block;
+      color: #9CA3AF;
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s;
+      position: relative;
+      padding-left: 0;
+    }
+    
+    .footer-section a:hover {
+      color: white;
+      padding-left: 8px;
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9CA3AF;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav {
+        padding: 1rem;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .hero {
+        padding: 6rem 1rem 2rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .cta-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .mockup-content {
+        padding: 2rem 1rem;
+        min-height: 300px;
+      }
+      
+      .floating-element {
+        display: none;
+      }
+      
+      .features, .pricing {
+        padding: 3rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="navbar">
+    <div class="logo">
+      ✉️ IA mailcenter
+    </div>
+    <ul class="nav-links">
+      <li><a href="#features">Fonctionnalités</a></li>
+      <li><a href="#pricing">Tarifs</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <!-- Particles Background -->
+    <div class="particle" style="top: 10%; left: 10%; width: 100px; height: 100px;"></div>
+    <div class="particle" style="top: 60%; left: 70%; width: 150px; height: 150px; animation-delay: 2s;"></div>
+    <div class="particle" style="top: 30%; left: 80%; width: 80px; height: 80px; animation-delay: 4s;"></div>
+    <div class="particle" style="top: 70%; left: 20%; width: 120px; height: 120px; animation-delay: 1s;"></div>
+    
+    <div class="hero-content">
+      <div class="badge">
+        ✨ Nouveau : IA générative
+      </div>
+      
+      <h1>
+        Votre centre de gestion<br>
+        <span class="gradient-text">intelligent des emails.</span>
+      </h1>
+      
+      <p class="subtitle">
+        IA mailcenter centralise tous vos emails Gmail et Outlook. Générez avec l'IA, organisez par statut, répondez automatiquement et gérez toutes vos communications depuis une interface unique.
+      </p>
+      
+      <div class="cta-group">
+        <a href="#" class="btn btn-primary">
+          Essayer gratuitement →
+        </a>
+        <a href="#" class="btn btn-ghost">
+          ▶ Voir la démo
+        </a>
+      </div>
+      
+      <!-- Mockup -->
+      <div class="mockup-container">
+        <div class="mockup-window">
+          <div class="mockup-header">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <div class="url-bar">iamailcenter.com/mail-center</div>
+          </div>
+          <div class="mockup-content">
+            <div class="mockup-text">
+              <div class="mockup-icon">✉️</div>
+              <p style="color: #6B7280; font-size: 0.875rem;">Interface Mail Center</p>
+            </div>
+            
+            <!-- Floating UI Elements -->
+            <div class="floating-element floating-1">
+              <div style="height: 8px; width: 60px; background: #3b82f6; border-radius: 4px; margin-bottom: 4px;"></div>
+              <div style="height: 6px; width: 40px; background: #d1d5db; border-radius: 3px;"></div>
+            </div>
+            <div class="floating-element floating-2">
+              <span style="font-size: 1.5rem;">✨</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="section-header">
+      <h2 class="section-title">Un centre de contrôle complet.</h2>
+      <p class="section-description">
+        Le Mail Center centralise tout : génération IA, gestion multi-comptes, organisation par statuts, réponses automatiques et analytics avancés.
+      </p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⏱️</div>
+        <h3 class="feature-title">Mail Center Unifié</h3>
+        <p class="feature-description">
+          Centralisez tous vos emails Gmail et Outlook dans une interface unique. Gérez tout depuis un seul endroit.
+        </p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3 class="feature-title">Génération IA</h3>
+        <p class="feature-description">
+          Créez des emails parfaits en 3 secondes avec GPT-5. Templates intelligents et ton adaptatif.
+        </p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3 class="feature-title">Organisation par Statuts</h3>
+        <p class="feature-description">
+          Classez vos emails : En attente, Répondus, À traiter, Archivés. Visualisez votre workflow.
+        </p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🪄</div>
+        <h3 class="feature-title">Réponses Automatiques</h3>
+        <p class="feature-description">
+          Configurez des réponses auto avec variables et conditions. L'IA répond pour vous 24/7.
+        </p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3 class="feature-title">Multi-comptes</h3>
+        <p class="feature-description">
+          Gérez plusieurs comptes Gmail et Outlook simultanément. Synchronisation temps réel.
+        </p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">✨</div>
+        <h3 class="feature-title">Filtres & Analytics</h3>
+        <p class="feature-description">
+          Recherche avancée, filtres intelligents, statistiques détaillées, export PDF et rapports.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing">
+    <div class="section-header">
+      <h2 class="section-title">Tarifs simples et transparents</h2>
+      <p class="section-description">
+        Choisissez le plan qui correspond à vos besoins
+      </p>
+    </div>
+    
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="pricing-card">
+        <h3 style="font-weight: 600; margin-bottom: 1rem;">Free</h3>
+        <div class="plan-price">
+          0€ <span>/mois</span>
+        </div>
+        <ul class="plan-features">
+          <li>10 générations/mois</li>
+          <li>Templates de base</li>
+          <li>Export PDF avec watermark</li>
+          <li>Support email</li>
+        </ul>
+        <a href="#" class="btn btn-ghost" style="width: 100%; justify-content: center;">
+          Commencer
+        </a>
+      </div>
+      
+      <!-- STARTER -->
+      <div class="pricing-card">
+        <h3 style="font-weight: 600; margin-bottom: 1rem;">Starter</h3>
+        <div class="plan-price">
+          9,99€ <span>/mois</span>
+        </div>
+        <ul class="plan-features">
+          <li>100 générations/mois</li>
+          <li>Templates personnalisés</li>
+          <li>Export PDF sans watermark</li>
+          <li>Multi-comptes (3 max)</li>
+          <li>Support prioritaire</li>
+        </ul>
+        <a href="#" class="btn btn-primary" style="width: 100%; justify-content: center;">
+          Essayer 30 jours
+        </a>
+      </div>
+      
+      <!-- PRO -->
+      <div class="pricing-card popular">
+        <span class="plan-badge">Populaire</span>
+        <h3 style="font-weight: 600; margin-bottom: 1rem;">Pro</h3>
+        <div class="plan-price">
+          18,99€ <span>/mois</span>
+        </div>
+        <ul class="plan-features">
+          <li>1000 générations/mois</li>
+          <li>Templates illimités</li>
+          <li>Export PDF premium</li>
+          <li>Multi-comptes illimités</li>
+          <li>Réponses automatiques</li>
+          <li>Analytics avancés</li>
+          <li>Support 24/7</li>
+        </ul>
+        <a href="#" class="btn btn-primary" style="width: 100%; justify-content: center;">
+          Essayer 30 jours
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>IA mailcenter</h3>
+        <p style="color: #9CA3AF; font-size: 0.875rem;">
+          Votre centre de gestion intelligent pour tous vos emails.
+        </p>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Produit</h3>
+        <a href="#">Fonctionnalités</a>
+        <a href="#">Tarifs</a>
+        <a href="#">Mail Center</a>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Support</h3>
+        <a href="#">Contact</a>
+        <a href="#">Mentions légales</a>
+        <a href="#">Confidentialité</a>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>© 2025 IA mailcenter. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+    
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
