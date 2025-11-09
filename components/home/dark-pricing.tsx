@@ -19,8 +19,7 @@ const plans = [
     borderGradient: 'from-blue-500/50 to-cyan-500/50',
     features: [
       '3 comptes email',
-      '2,500 emails/mois',
-      '2,500 réponses automatiques',
+      '2 000 réponses IA/mois',
       'IA de base',
       'Base de connaissances',
       '2 membres d\'équipe',
@@ -41,8 +40,7 @@ const plans = [
     borderGradient: 'from-purple-500/50 to-pink-500/50',
     features: [
       '10 comptes email',
-      '7,500 emails/mois',
-      '7,500 réponses automatiques',
+      '7 500 réponses IA/mois',
       'IA avancée + personnalisation',
       'Base de connaissances complète',
       'Analytics détaillées',
@@ -67,8 +65,7 @@ const plans = [
     borderGradient: 'from-amber-500/50 to-orange-500/50',
     features: [
       'Comptes email illimités',
-      '25,000 emails/mois',
-      '25,000 réponses automatiques',
+      '25 000 réponses IA/mois',
       'IA premium + personnalisation avancée',
       'Base de connaissances illimitée',
       'Analytics avancées',

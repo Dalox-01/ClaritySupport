@@ -38,9 +38,9 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
         
         setQuotaData({
           emailsUsed: summary.usage.emailsThisMonth || 0,
-          emailsLimit: summary.limits.emailsPerMonth.max || 100,
+          emailsLimit: summary.limits.emailsPerMonth.max || 10,
           autoRepliesUsed: summary.usage.autoRepliesThisMonth || 0,
-          autoRepliesLimit: summary.limits.autoRepliesPerMonth.max || 40,
+          autoRepliesLimit: summary.limits.autoRepliesPerMonth.max || 10,
           plan: summary.subscription.plan.toLowerCase(),
           percentage: summary.limits.autoRepliesPerMonth.percentage || 0,
         });
