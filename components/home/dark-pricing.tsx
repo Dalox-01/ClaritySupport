@@ -3,9 +3,12 @@
 import { motion } from 'framer-motion';
 import { Check, Zap, Crown, Rocket } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 const plans = [
   {
+    id: 'starter',
     name: 'STARTER',
     price: 49,
     period: 'mois',
@@ -27,6 +30,7 @@ const plans = [
     highlighted: false,
   },
   {
+    id: 'pro',
     name: 'PRO',
     price: 139,
     period: 'mois',
@@ -52,6 +56,7 @@ const plans = [
     badge: 'PLUS POPULAIRE',
   },
   {
+    id: 'enterprise',
     name: 'ENTERPRISE',
     price: 229,
     period: 'mois',
@@ -80,6 +85,41 @@ const plans = [
 
 export function DarkPricing() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const handlePlanClick = async (planId: string) => {
+    // If user is not authenticated, redirect to sign in
+    if (!session) {
+      router.push('/auth/signin');
+      return;
+    }
+
+    try {
+      // Create Stripe checkout session
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId,
+          billingPeriod,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        console.error('Failed to create checkout session:', data.error);
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+    }
+  };
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] py-32">
@@ -331,6 +371,7 @@ export function DarkPricing() {
 
                   {/* CTA */}
                   <motion.button
+                    onClick={() => handlePlanClick(plan.id)}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={`group/btn relative w-full overflow-hidden rounded-full py-4 font-bold transition-all ${
