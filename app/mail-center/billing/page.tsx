@@ -3,19 +3,20 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { PLANS, type PlanType } from '@/lib/pricing-plans';
+import { motion } from 'framer-motion';
+import { PRICING_PLANS, type PlanType } from '@/lib/pricing-plans';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { 
-  CreditCard, 
   Loader2, 
-  Download, 
   Settings, 
   AlertCircle,
-  CheckCircle,
-  Calendar,
+  CheckCircle2,
   TrendingUp,
-  Shield
+  Shield,
+  Check,
+  Crown,
+  ArrowLeft
 } from 'lucide-react';
 import { UsageWidget } from '@/components/usage-widget';
 
@@ -40,7 +41,9 @@ export default function BillingPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -70,6 +73,9 @@ export default function BillingPage() {
 
       const data = await response.json();
       setSubscription(data.subscription);
+      if (data.subscription) {
+        setBillingPeriod(data.subscription.billing_period);
+      }
 
     } catch (err) {
       console.error('Erreur:', err);
@@ -103,258 +109,316 @@ export default function BillingPage() {
     }
   };
 
+  const handleUpgrade = async (planId: PlanType) => {
+    if (planId === 'free') return;
+
+    try {
+      setIsUpgrading(planId);
+      setError(null);
+
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan: planId,
+          billingPeriod,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erreur lors de la création de la session');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+
+    } catch (err) {
+      console.error('Erreur:', err);
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      setIsUpgrading(null);
+    }
+  };
+
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     );
   }
 
-  const currentPlan = subscription ? PLANS[subscription.plan] : PLANS.free;
+  const currentPlanId = subscription?.plan || 'free';
+  const currentPlan = PRICING_PLANS[currentPlanId];
   const periodEnd = subscription ? new Date(subscription.current_period_end) : null;
 
+  const plans: PlanType[] = ['free', 'starter', 'pro', 'enterprise'];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-20 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <Button
+            variant="ghost"
+            onClick={() => router.push('/mail-center')}
+            className="mb-6 text-slate-400 hover:text-white"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour au Mail Center
+          </Button>
+
+          <h1 className="mb-2 text-4xl font-bold text-white">
             Gestion de l'abonnement
           </h1>
           <p className="text-slate-400">
-            Gérez votre abonnement et consultez votre utilisation
+            Gérez votre abonnement et passez à un plan supérieur
           </p>
         </div>
 
         {/* Erreur */}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
+          <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
+              <AlertCircle className="mt-0.5 h-5 w-5 text-red-500" />
               <p className="text-red-400">{error}</p>
             </div>
           </div>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Colonne principale */}
-          <div className="md:col-span-2 space-y-6">
-            {/* Abonnement actuel */}
-            <Card className="bg-slate-900/50 border-slate-800 p-8">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">
-                    {currentPlan.name}
-                  </h2>
-                  <p className="text-slate-400">
-                    {subscription ? 'Votre plan actuel' : 'Plan gratuit'}
-                  </p>
-                </div>
-                {subscription && (
-                  <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    subscription.status === 'active'
-                      ? 'bg-green-500/10 text-green-400'
-                      : 'bg-yellow-500/10 text-yellow-400'
-                  }`}>
-                    {subscription.status === 'active' ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 inline mr-1" />
-                        Actif
-                      </>
-                    ) : (
-                      subscription.status
-                    )}
-                  </div>
-                )}
+        {/* Abonnement actuel */}
+        {subscription && (
+          <Card className="mb-8 border-slate-800 bg-slate-900/50 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="mb-1 text-sm text-slate-400">Plan actuel</div>
+                <div className="text-2xl font-bold text-white">{currentPlan.name}</div>
               </div>
 
-              {subscription && (
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <Calendar className="w-5 h-5 text-slate-500" />
-                    <div>
-                      <div className="text-sm text-slate-500">Période de facturation</div>
-                      <div className="font-medium">
-                        {subscription.billing_period === 'monthly' ? 'Mensuelle' : 'Annuelle'}
-                      </div>
+              {periodEnd && (
+                <div className="text-right">
+                  <div className="mb-1 text-sm text-slate-400">
+                    {subscription.cancel_at_period_end ? 'Se termine le' : 'Renouvellement le'}
+                  </div>
+                  <div className="font-medium text-white">
+                    {periodEnd.toLocaleDateString('fr-FR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <Button
+                onClick={openCustomerPortal}
+                disabled={isOpeningPortal}
+                variant="outline"
+                className="border-slate-700 hover:bg-slate-800"
+              >
+                {isOpeningPortal ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Chargement...
+                  </>
+                ) : (
+                  <>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Gérer
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {subscription.cancel_at_period_end && (
+              <div className="mt-4 rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-3">
+                <p className="text-sm text-yellow-400">
+                  ⚠️ Votre abonnement sera annulé à la fin de la période en cours
+                </p>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Toggle période */}
+        <div className="mb-8 flex justify-center">
+          <div className="inline-flex rounded-full bg-slate-900/50 p-1">
+            <button
+              onClick={() => setBillingPeriod('monthly')}
+              className={`rounded-full px-6 py-2 text-sm font-medium transition-all ${
+                billingPeriod === 'monthly'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setBillingPeriod('yearly')}
+              className={`rounded-full px-6 py-2 text-sm font-medium transition-all ${
+                billingPeriod === 'yearly'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Annuel
+              <span className="ml-2 rounded-full bg-green-500/20 px-2 py-0.5 text-xs text-green-400">
+                -16%
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Plans grid */}
+        <div className="mb-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {plans.map((planId, index) => {
+            const plan = PRICING_PLANS[planId];
+            const isCurrentPlan = currentPlanId === planId;
+            const price = billingPeriod === 'monthly' ? plan.prices.monthly : plan.prices.yearly;
+            const isPopular = plan.highlighted;
+
+            return (
+              <motion.div
+                key={planId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative"
+              >
+                {isPopular && (
+                  <div className="absolute -top-4 left-0 right-0 flex justify-center">
+                    <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-1 text-xs font-medium text-white">
+                      <Crown className="h-3 w-3" />
+                      Recommandé
                     </div>
                   </div>
+                )}
 
-                  {periodEnd && (
-                    <div className="flex items-center gap-3 text-slate-300">
-                      <TrendingUp className="w-5 h-5 text-slate-500" />
-                      <div>
-                        <div className="text-sm text-slate-500">
-                          {subscription.cancel_at_period_end ? 'Se termine le' : 'Prochain renouvellement'}
-                        </div>
-                        <div className="font-medium">
-                          {periodEnd.toLocaleDateString('fr-FR', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </div>
+                <Card
+                  className={`relative h-full overflow-hidden border p-6 transition-all ${
+                    isPopular
+                      ? 'border-blue-500/50 bg-gradient-to-b from-blue-500/10 to-purple-500/10'
+                      : 'border-slate-800 bg-slate-900/50'
+                  } ${isCurrentPlan ? 'ring-2 ring-green-500/50' : ''}`}
+                >
+                  {isCurrentPlan && (
+                    <div className="absolute right-4 top-4">
+                      <div className="flex items-center gap-1 rounded-full bg-green-500/20 px-2 py-1 text-xs font-medium text-green-400">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Actif
                       </div>
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <CreditCard className="w-5 h-5 text-slate-500" />
-                    <div>
-                      <div className="text-sm text-slate-500">Prix</div>
-                      <div className="font-medium text-2xl text-white">
-                        {subscription.billing_period === 'monthly' 
-                          ? currentPlan.prices.monthly 
-                          : currentPlan.prices.yearly
-                        }€
-                        <span className="text-base text-slate-400 ml-2">
-                          / {subscription.billing_period === 'monthly' ? 'mois' : 'an'}
-                        </span>
-                      </div>
-                    </div>
+                  {/* Header */}
+                  <div className="mb-6">
+                    <h3 className="mb-1 text-2xl font-bold text-white">{plan.name}</h3>
+                    <p className="text-sm text-slate-400">{plan.tagline}</p>
                   </div>
-                </div>
-              )}
 
-              {subscription?.cancel_at_period_end && (
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
-                  <p className="text-yellow-400 text-sm">
-                    ⚠️ Votre abonnement sera annulé à la fin de la période en cours
-                  </p>
-                </div>
-              )}
+                  {/* Prix */}
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-white">{price}€</span>
+                      {planId !== 'free' && (
+                        <span className="text-slate-400">
+                          /{billingPeriod === 'monthly' ? 'mois' : 'an'}
+                        </span>
+                      )}
+                    </div>
+                    {billingPeriod === 'yearly' && planId !== 'free' && (
+                      <p className="mt-1 text-xs text-green-400">
+                        {Math.round(price / 12)}€/mois facturé annuellement
+                      </p>
+                    )}
+                  </div>
 
-              {/* Boutons d'action */}
-              <div className="flex gap-3">
-                {subscription ? (
+                  {/* Features */}
+                  <ul className="mb-6 space-y-3">
+                    {plan.featureList.slice(0, 7).map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-400" />
+                        <span className="text-slate-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
                   <Button
-                    onClick={openCustomerPortal}
-                    disabled={isOpeningPortal}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleUpgrade(planId)}
+                    disabled={isCurrentPlan || isUpgrading === planId || planId === 'free'}
+                    className={`w-full ${
+                      isPopular
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                        : isCurrentPlan
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-slate-800 hover:bg-slate-700'
+                    }`}
                   >
-                    {isOpeningPortal ? (
+                    {isUpgrading === planId ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Ouverture...
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Chargement...
                       </>
+                    ) : isCurrentPlan ? (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Plan actuel
+                      </>
+                    ) : planId === 'free' ? (
+                      'Plan gratuit'
                     ) : (
                       <>
-                        <Settings className="w-4 h-4 mr-2" />
-                        Gérer l'abonnement
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        {plan.cta}
                       </>
                     )}
                   </Button>
-                ) : (
-                  <Button
-                    onClick={() => router.push('/#pricing')}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    Passer à un plan payant
-                  </Button>
-                )}
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Usage & Security */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <UsageWidget compact={false} />
+
+          <Card className="border-slate-800 bg-slate-900/50 p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="rounded-lg bg-green-500/10 p-2">
+                <Shield className="h-5 w-5 text-green-500" />
               </div>
-
-              {subscription && (
-                <p className="text-xs text-slate-500 mt-4 text-center">
-                  Le portail Stripe vous permet de mettre à jour votre moyen de paiement,
-                  consulter vos factures, changer de plan ou annuler votre abonnement.
-                </p>
-              )}
-            </Card>
-
-            {/* Caractéristiques du plan */}
-            <Card className="bg-slate-900/50 border-slate-800 p-8">
-              <h3 className="text-xl font-bold text-white mb-6">
-                Caractéristiques de votre plan
-              </h3>
-              
-              <div className="grid sm:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-slate-400 text-sm mb-2">Emails par mois</div>
-                  <div className="text-3xl font-bold text-white">
-                    {currentPlan.limits.emailsPerMonth.toLocaleString()}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-slate-400 text-sm mb-2">Réponses automatiques</div>
-                  <div className="text-3xl font-bold text-white">
-                    {currentPlan.limits.autoRepliesPerMonth.toLocaleString()}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-slate-400 text-sm mb-2">Comptes email</div>
-                  <div className="text-3xl font-bold text-white">
-                    {currentPlan.limits.emailAccounts === -1 
-                      ? 'Illimité' 
-                      : currentPlan.limits.emailAccounts
-                    }
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-slate-400 text-sm mb-2">Templates</div>
-                  <div className="text-3xl font-bold text-white">
-                    {currentPlan.limits.templates === -1 
-                      ? 'Illimité' 
-                      : currentPlan.limits.templates
-                    }
-                  </div>
-                </div>
+              <h3 className="text-lg font-bold text-white">Sécurité & Support</h3>
+            </div>
+            
+            <div className="space-y-3 text-sm text-slate-400">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-500" />
+                <span>Paiements sécurisés par Stripe</span>
               </div>
-            </Card>
-          </div>
-
-          {/* Colonne latérale */}
-          <div className="space-y-6">
-            {/* Widget d'utilisation */}
-            <UsageWidget compact={false} />
-
-            {/* Sécurité */}
-            <Card className="bg-slate-900/50 border-slate-800 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <Shield className="w-5 h-5 text-green-500" />
-                </div>
-                <h3 className="text-lg font-bold text-white">Sécurité</h3>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-500" />
+                <span>Données chiffrées end-to-end</span>
               </div>
-              
-              <div className="space-y-3 text-sm text-slate-400">
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                  <span>Paiements sécurisés par Stripe</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                  <span>Données chiffrées end-to-end</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                  <span>Conformité RGPD</span>
-                </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-500" />
+                <span>Conformité RGPD</span>
               </div>
-            </Card>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-500" />
+                <span>Annulation possible à tout moment</span>
+              </div>
+            </div>
 
-            {/* Besoin d'aide */}
-            <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-500/20 p-6">
-              <h3 className="text-lg font-bold text-white mb-2">
-                Besoin d'aide ?
-              </h3>
-              <p className="text-sm text-slate-300 mb-4">
-                Notre équipe est là pour vous aider avec votre abonnement.
-              </p>
-              <Button 
-                variant="outline" 
-                className="w-full border-blue-500/30 hover:bg-blue-500/10"
-                onClick={() => router.push('/contact')}
-              >
-                Contacter le support
-              </Button>
-            </Card>
-          </div>
+            <Button 
+              variant="outline" 
+              className="mt-6 w-full border-slate-700 hover:bg-slate-800"
+              onClick={() => router.push('/contact')}
+            >
+              Contacter le support
+            </Button>
+          </Card>
         </div>
       </div>
     </div>
