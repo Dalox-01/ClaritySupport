@@ -1,7 +1,7 @@
 -- ============================================================
 -- CONFIGURATION COMPLÈTE SUPABASE POUR MAIL CENTER
--- Project: osziwqkclpovgnstopvr
--- URL: https://osziwqkclpovgnstopvr.supabase.co
+-- Project: ueatvsnijatgtvxvcveq
+-- URL: https://ueatvsnijatgtvxvcveq.supabase.co
 -- ============================================================
 
 -- ============================================================
