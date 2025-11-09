@@ -395,6 +395,13 @@ export default function MailCenterPage() {
     try {
       const syncRes = await fetch('/api/mail-center/auto-sync', { method: 'POST' });
       
+      // Si 401 (non authentifié), rediriger vers login
+      if (syncRes.status === 401) {
+        console.warn('⚠️ Session expirée, redirection vers login');
+        router.push('/auth/signin');
+        return;
+      }
+      
       if (!syncRes.ok) {
         throw new Error('Erreur synchronisation');
       }
