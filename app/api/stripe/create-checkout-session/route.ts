@@ -58,8 +58,8 @@ export async function POST(req: NextRequest) {
 
     // URLs de redirection
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const successUrl = `${baseUrl}/mail-center?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${baseUrl}/mail-center?checkout=canceled`;
+    const successUrl = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${baseUrl}/checkout?canceled=true`;
 
     // Créer la session Checkout
     const checkoutSession = await createCheckoutSession({
