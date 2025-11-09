@@ -12,9 +12,11 @@ interface QuotaDisplayProps {
 }
 
 interface QuotaData {
-  used: number;
-  limit: number;
-  plan: 'starter' | 'pro' | 'enterprise';
+  emailsUsed: number;
+  emailsLimit: number;
+  autoRepliesUsed: number;
+  autoRepliesLimit: number;
+  plan: 'free' | 'starter' | 'pro' | 'enterprise';
   percentage: number;
 }
 
@@ -29,20 +31,22 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
 
   const fetchQuota = async () => {
     try {
-      const response = await fetch('/api/usage');
+      const response = await fetch('/api/subscription/usage');
       if (response.ok) {
         const result = await response.json();
-        const data = result.data || result;
+        const summary = result.data;
         
         setQuotaData({
-          used: data.used || 0,
-          limit: data.limit || 500,
-          plan: (data.plan || 'starter').toLowerCase(),
-          percentage: data.percentage || 0
+          emailsUsed: summary.usage.emailsThisMonth || 0,
+          emailsLimit: summary.limits.emailsPerMonth.max || 100,
+          autoRepliesUsed: summary.usage.autoRepliesThisMonth || 0,
+          autoRepliesLimit: summary.limits.autoRepliesPerMonth.max || 40,
+          plan: summary.subscription.plan.toLowerCase(),
+          percentage: summary.limits.autoRepliesPerMonth.percentage || 0,
         });
         
         // Afficher le prompt d'upgrade si quota atteint
-        if (data.percentage >= 100) {
+        if (summary.limits.autoRepliesPerMonth.percentage >= 100) {
           setShowUpgradePrompt(true);
         }
       }
@@ -53,6 +57,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
 
   const getPlanLabel = (plan: string) => {
     switch (plan) {
+      case 'free': return 'Gratuit';
       case 'starter': return 'Starter';
       case 'pro': return 'Pro';
       case 'enterprise': return 'Enterprise';
@@ -93,14 +98,14 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
           <div className="flex flex-col">
             <div className="flex items-baseline gap-2">
               <span className={cn("text-sm font-bold", getQuotaColor(quotaData.percentage))}>
-                {quotaData.used.toLocaleString()}
+                {quotaData.autoRepliesUsed.toLocaleString()}
               </span>
               <span className={cn("text-xs", isLightMode ? "text-gray-500" : "text-gray-400")}>
-                / {quotaData.limit.toLocaleString()}
+                / {quotaData.autoRepliesLimit.toLocaleString()}
               </span>
             </div>
             <span className={cn("text-xs", isLightMode ? "text-gray-500" : "text-gray-400")}>
-              {getPlanLabel(quotaData.plan)}
+              {getPlanLabel(quotaData.plan)} - Réponses IA
             </span>
           </div>
         </div>
@@ -161,10 +166,39 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
                   "text-sm",
                   isLightMode ? "text-gray-600" : "text-gray-400"
                 )}>
-                  Vous avez utilisé {quotaData.used} / {quotaData.limit} générations.
+                  Vous avez utilisé {quotaData.autoRepliesUsed} / {quotaData.autoRepliesLimit} réponses automatiques.
                   Passez au plan supérieur pour continuer à utiliser l'IA.
                 </p>
               </div>
+
+              {quotaData.plan === 'free' && (
+                <div className={cn(
+                  "p-4 rounded-xl border-2",
+                  isLightMode
+                    ? "bg-blue-50 border-blue-200"
+                    : "bg-blue-500/10 border-blue-500/30"
+                )}>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                      Plan Starter
+                    </span>
+                  </div>
+                  <div className="text-left space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className={isLightMode ? "text-gray-700" : "text-gray-300"}>
+                        <strong>2,500</strong> réponses IA / mois
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className={isLightMode ? "text-gray-700" : "text-gray-300"}>
+                        5 comptes email
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {quotaData.plan === 'starter' && (
                 <div className={cn(
@@ -182,13 +216,13 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
                     <div className="flex items-center gap-2 text-sm">
                       <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className={isLightMode ? "text-gray-700" : "text-gray-300"}>
-                        <strong>5000</strong> générations IA / mois
+                        <strong>7,500</strong> réponses IA / mois
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span className={isLightMode ? "text-gray-700" : "text-gray-300"}>
-                        Réponses prioritaires
+                        15 comptes email + Analytics avancées
                       </span>
                     </div>
                   </div>
@@ -210,7 +244,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
                   }}
                   className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
                 >
-                  Passer au plan {quotaData.plan === 'starter' ? 'Pro' : 'Enterprise'}
+                  Passer au plan {quotaData.plan === 'free' ? 'Starter' : quotaData.plan === 'starter' ? 'Pro' : 'Enterprise'}
                 </Button>
               </div>
             </div>

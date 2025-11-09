@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { PRICING_PLANS, type PlanType } from './pricing-plans';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -130,15 +131,20 @@ export async function getUserQuota(userId: string): Promise<{
 
   console.log(`📊 [DB] User found - Plan: ${user.plan}, Usage: ${user.usage_count}`);
 
-  // ADMIN: illimité, PRO: 5000, STARTER: 500, FREE: 10
-  const limit = user.plan === 'ADMIN' ? 999999 : user.plan === 'PRO' ? 5000 : user.plan === 'STARTER' ? 500 : 10;
+  // Convertir le plan DB (uppercase) en PlanType (lowercase)
+  const planType = user.plan.toLowerCase() as PlanType;
+  
+  // Récupérer les limites depuis pricing-plans.ts
+  const planConfig = PRICING_PLANS[planType] || PRICING_PLANS.free;
+  const limit = planConfig.limits.emailsPerMonth;
+  
   const used = user.usage_count || 0;
   const remaining = Math.max(0, limit - used);
 
-  console.log(`📊 [DB] Quota calculated - Limit: ${limit}, Used: ${used}, Remaining: ${remaining}`);
+  console.log(`📊 [DB] Quota calculated - Plan: ${planType}, Limit: ${limit}, Used: ${used}, Remaining: ${remaining}`);
 
   return {
-    plan: user.plan,
+    plan: planType,
     limit,
     used,
     remaining,
