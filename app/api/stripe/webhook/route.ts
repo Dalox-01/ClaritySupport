@@ -93,6 +93,9 @@ export async function POST(req: NextRequest) {
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`✅ Checkout complété: ${session.id}`);
+  console.log(`📋 Métadonnées session:`, JSON.stringify(session.metadata));
+  console.log(`📋 Customer:`, session.customer);
+  console.log(`📋 Subscription:`, session.subscription);
 
   const userId = session.metadata?.userId;
   const planType = session.metadata?.planType;
@@ -100,34 +103,45 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   if (!userId || !planType) {
     console.error('⚠️ Métadonnées manquantes dans la session');
+    console.error('⚠️ userId:', userId, 'planType:', planType);
+    console.error('⚠️ Toutes les métadonnées:', session.metadata);
     return;
   }
 
+  console.log(`🔍 Récupération de l'abonnement Stripe...`);
   const subscriptionData = await stripe.subscriptions.retrieve(session.subscription as string) as any;
+  console.log(`✅ Abonnement Stripe récupéré:`, subscriptionData.id);
+
+  const subscriptionPayload = {
+    user_id: userId,
+    plan: planType,
+    status: 'active',
+    stripe_customer_id: session.customer as string,
+    stripe_subscription_id: subscriptionData.id,
+    stripe_price_id: subscriptionData.items.data[0].price.id,
+    current_period_start: new Date(subscriptionData.current_period_start * 1000).toISOString(),
+    current_period_end: new Date(subscriptionData.current_period_end * 1000).toISOString(),
+    billing_period: billingPeriod || 'monthly',
+    cancel_at_period_end: false,
+    updated_at: new Date().toISOString(),
+  };
+
+  console.log(`💾 Tentative d'insertion dans Supabase:`, JSON.stringify(subscriptionPayload));
 
   // Créer ou mettre à jour l'abonnement dans la base de données
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
-    .upsert({
-      user_id: userId,
-      plan: planType,
-      status: 'active',
-      stripe_customer_id: session.customer as string,
-      stripe_subscription_id: subscriptionData.id,
-      stripe_price_id: subscriptionData.items.data[0].price.id,
-      current_period_start: new Date(subscriptionData.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscriptionData.current_period_end * 1000).toISOString(),
-      billing_period: billingPeriod || 'monthly',
-      cancel_at_period_end: false,
-      updated_at: new Date().toISOString(),
-    }, {
+    .upsert(subscriptionPayload, {
       onConflict: 'user_id',
-    });
+    })
+    .select();
 
   if (error) {
     console.error('❌ Erreur sauvegarde abonnement:', error);
+    console.error('❌ Détails erreur:', JSON.stringify(error));
   } else {
     console.log(`✅ Abonnement ${planType} créé pour user ${userId}`);
+    console.log(`✅ Données insérées:`, JSON.stringify(data));
   }
 }
 
