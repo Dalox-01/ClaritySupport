@@ -61,6 +61,12 @@ export async function POST(req: NextRequest) {
     const successUrl = `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${baseUrl}/checkout?canceled=true`;
 
+    // Log des paramètres AVANT création
+    console.log(`🔍 Création checkout avec métadonnées:`);
+    console.log(`   - userId: ${session.user.id}`);
+    console.log(`   - planType: ${plan}`);
+    console.log(`   - billingPeriod: ${billingPeriod}`);
+
     // Créer la session Checkout
     const checkoutSession = await createCheckoutSession({
       customerId,
@@ -73,6 +79,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`✅ Session Checkout créée pour user ${session.user.id}: ${checkoutSession.id}`);
+    console.log(`📋 Métadonnées dans la session créée:`, JSON.stringify(checkoutSession.metadata));
 
     return NextResponse.json({
       sessionId: checkoutSession.id,
