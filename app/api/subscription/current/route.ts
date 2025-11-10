@@ -31,6 +31,47 @@ export async function GET(req: NextRequest) {
       .eq('user_id', session.user.id)
       .single();
 
+    // Si on a un abonnement avec un stripe_subscription_id, toujours vérifier Stripe pour avoir les données à jour
+    if (subscription?.stripe_subscription_id) {
+      try {
+        const stripeSub = await stripe.subscriptions.retrieve(subscription.stripe_subscription_id);
+        
+        console.log(`📋 Abonnement Stripe récupéré (depuis DB) pour ${session.user.id}:`, {
+          id: stripeSub.id,
+          status: stripeSub.status,
+          cancel_at_period_end: stripeSub.cancel_at_period_end,
+          current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
+        });
+
+        // Mapper le price_id au plan
+        const priceToPlans: Record<string, string> = {
+          [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '']: 'STARTER',
+          [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '']: 'PRO',
+          [process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || '']: 'ENTERPRISE',
+        };
+        
+        const plan = stripeSub.items.data[0]?.price.id 
+          ? priceToPlans[stripeSub.items.data[0].price.id] || subscription.plan 
+          : subscription.plan;
+
+        return NextResponse.json({ 
+          subscription: {
+            ...subscription,
+            plan: plan || subscription.plan,
+            status: stripeSub.status,
+            current_period_start: new Date((stripeSub as any).current_period_start * 1000).toISOString(),
+            current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
+            cancel_at_period_end: stripeSub.cancel_at_period_end || false,
+            canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
+          }
+        });
+      } catch (stripeError) {
+        console.error('Erreur récupération abonnement Stripe depuis DB:', stripeError);
+        // En cas d'erreur Stripe, retourner les données de la DB
+        return NextResponse.json({ subscription });
+      }
+    }
+
     if (error) {
       if (error.code === 'PGRST116') {
         // Pas d'abonnement dans subscriptions, récupérer le plan depuis users
