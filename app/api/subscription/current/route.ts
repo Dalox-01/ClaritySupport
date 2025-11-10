@@ -24,12 +24,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // Récupérer l'abonnement depuis la base de données
-    const { data: subscription, error } = await supabase
+    // Récupérer l'abonnement depuis la base de données (le plus récent et actif en priorité)
+    const { data: subscriptions, error } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', session.user.id)
-      .single();
+      .order('created_at', { ascending: false });
+
+    const subscription = subscriptions?.[0]; // Prendre le plus récent
 
     // Si on a un abonnement avec un stripe_subscription_id, toujours vérifier Stripe pour avoir les données à jour
     if (subscription?.stripe_subscription_id) {
