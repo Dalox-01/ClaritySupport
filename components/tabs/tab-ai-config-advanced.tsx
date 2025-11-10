@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// Import all required Lucide icons including AlertTriangle and Wrench
 import { 
   Settings, Zap, Database, TestTube, BarChart3, Shield, 
   Activity, Cpu, Layers, Code, Brain, FileText, Target,
