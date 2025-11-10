@@ -1,6 +1,6 @@
 'use client';
 
-// Page de paramètres utilisateur avec gestion d'abonnement
+// Page de paramètres utilisateur - Gestion du profil et de l'abonnement
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
