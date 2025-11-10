@@ -31,7 +31,7 @@ interface AdvancedAIConfig {
   models: {
     primary: ModelConfig;
     fallback: ModelConfig[];
-    loadBalancing: 'round-robin' | 'least-latency' | 'cost-optimized' | 'quality-first';
+    loadBalancing: 'least-latency' | 'cost-optimized';
   };
   
   // Prompts & Context
@@ -83,7 +83,7 @@ interface AdvancedAIConfig {
 }
 
 interface ModelConfig {
-  provider: 'openai' | 'anthropic' | 'mistral' | 'cohere' | 'local' | 'azure';
+  provider: 'openai';
   model: string;
   apiKey?: string;
   endpoint?: string;
@@ -296,7 +296,7 @@ export function TabAIConfigAdvanced() {
         },
       },
       fallback: [],
-      loadBalancing: 'quality-first',
+      loadBalancing: 'least-latency',
     },
     prompts: {
       system: {
@@ -550,70 +550,26 @@ function ModelConfigSection({ config, setConfig }: any) {
       <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Cpu className="w-5 h-5 text-blue-500" />
-          Configuration du Modèle Principal
+          Configuration du Modèle OpenAI
         </h3>
         
-        {/* Provider Selection */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <Label>Provider</Label>
-            <Select 
-              value={config.models.primary.provider}
-              onValueChange={(value) => setConfig({
+        {/* API Key */}
+        <div className="mb-6">
+          <Label>Clé API OpenAI</Label>
+          <div className="flex gap-2 mt-2">
+            <Input
+              type="password"
+              placeholder="sk-..."
+              value={config.models.primary.apiKey || ''}
+              onChange={(e) => setConfig({
                 ...config,
-                models: { ...config.models, primary: { ...config.models.primary, provider: value }}
+                models: { ...config.models, primary: { ...config.models.primary, apiKey: e.target.value }}
               })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="openai">OpenAI</SelectItem>
-                <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
-                <SelectItem value="mistral">Mistral AI</SelectItem>
-                <SelectItem value="cohere">Cohere</SelectItem>
-                <SelectItem value="azure">Azure OpenAI</SelectItem>
-                <SelectItem value="local">Local (Ollama)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Modèle</Label>
-            <Select 
-              value={config.models.primary.model}
-              onValueChange={(value) => setConfig({
-                ...config,
-                models: { ...config.models, primary: { ...config.models.primary, model: value }}
-              })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {config.models.primary.provider === 'openai' && (
-                  <>
-                    <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                    <SelectItem value="gpt-4">GPT-4</SelectItem>
-                    <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                  </>
-                )}
-                {config.models.primary.provider === 'anthropic' && (
-                  <>
-                    <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
-                    <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                    <SelectItem value="claude-3-haiku">Claude 3 Haiku</SelectItem>
-                  </>
-                )}
-                {config.models.primary.provider === 'mistral' && (
-                  <>
-                    <SelectItem value="mistral-large">Mistral Large</SelectItem>
-                    <SelectItem value="mistral-medium">Mistral Medium</SelectItem>
-                    <SelectItem value="mixtral-8x7b">Mixtral 8x7B</SelectItem>
-                  </>
-                )}
-              </SelectContent>
-            </Select>
+              className="flex-1"
+            />
+            <Button variant="outline" size="icon">
+              <Eye className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
@@ -862,16 +818,16 @@ function ModelConfigSection({ config, setConfig }: any) {
         </div>
       </Card>
 
-      {/* Load Balancing & Fallback */}
+      {/* Load Balancing & Fallback - Simplifié pour OpenAI */}
       <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-purple-200 dark:border-purple-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Layers className="w-5 h-5 text-purple-500" />
-          Load Balancing & Fallback
+          Stratégie de Répartition
         </h3>
         
         <div className="space-y-4">
           <div>
-            <Label>Stratégie de Load Balancing</Label>
+            <Label>Mode de Répartition des Requêtes</Label>
             <Select 
               value={config.models.loadBalancing}
               onValueChange={(value) => setConfig({
@@ -883,37 +839,13 @@ function ModelConfigSection({ config, setConfig }: any) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="round-robin">Round Robin (Équilibré)</SelectItem>
-                <SelectItem value="least-latency">Least Latency (Plus rapide)</SelectItem>
-                <SelectItem value="cost-optimized">Cost Optimized (Moins cher)</SelectItem>
-                <SelectItem value="quality-first">Quality First (Meilleure qualité)</SelectItem>
+                <SelectItem value="least-latency">Latence Minimale (Plus rapide)</SelectItem>
+                <SelectItem value="cost-optimized">Optimisé Coût (Moins cher)</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div>
-            <Label className="mb-2 block">Modèles de Fallback</Label>
-            <div className="space-y-2">
-              {config.models.fallback.length === 0 ? (
-                <div className="text-sm text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center">
-                  Aucun modèle de fallback configuré
-                </div>
-              ) : (
-                config.models.fallback.map((fallback: ModelConfig, index: number) => (
-                  <div key={index} className="flex items-center gap-2 p-3 border rounded-lg">
-                    <Badge variant="outline">{index + 1}</Badge>
-                    <span className="flex-1 text-sm">{fallback.provider} - {fallback.model}</span>
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))
-              )}
-              <Button variant="outline" className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter un Fallback
-              </Button>
-            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              Détermine comment les requêtes sont distribuées pour optimiser les performances
+            </p>
           </div>
         </div>
       </Card>
