@@ -425,12 +425,12 @@ export function TabAIConfigAdvanced() {
 
   const sections = [
     { id: 'models', name: 'Modèles & Performance', icon: Cpu, color: 'blue' },
-    { id: 'prompts', name: 'Prompts & Context', icon: FileText, color: 'purple' },
-    { id: 'rag', name: 'RAG & Knowledge Base', icon: Database, color: 'green' },
-    { id: 'fewshots', name: 'Few-Shots & Training', icon: Brain, color: 'orange' },
-    { id: 'testing', name: 'Testing & Analytics', icon: TestTube, color: 'pink' },
+    { id: 'prompts', name: 'Prompts & Contexte', icon: FileText, color: 'purple' },
+    { id: 'rag', name: 'Base de Connaissances', icon: Database, color: 'blue' },
+    { id: 'fewshots', name: 'Exemples & Entraînement', icon: Brain, color: 'orange' },
+    { id: 'testing', name: 'Tests & Analyse', icon: TestTube, color: 'pink' },
     { id: 'security', name: 'Sécurité & RGPD', icon: Shield, color: 'red' },
-    { id: 'monitoring', name: 'Monitoring & Logs', icon: Activity, color: 'cyan' },
+    { id: 'monitoring', name: 'Surveillance & Logs', icon: Activity, color: 'cyan' },
   ];
 
   const runTest = async () => {
@@ -538,14 +538,6 @@ export function TabAIConfigAdvanced() {
             <RotateCcw className="w-4 h-4 mr-2" />
             Réinitialiser
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Exporter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Upload className="w-4 h-4 mr-2" />
-            Importer
-          </Button>
           <Button size="sm" className="ml-auto bg-gradient-to-r from-purple-600 to-blue-600">
             <Save className="w-4 h-4 mr-2" />
             Sauvegarder
@@ -616,7 +608,7 @@ function ModelConfigSection({ config, setConfig }: any) {
             <div className="flex items-center justify-between mb-2">
               <Label className="flex items-center gap-2">
                 <Hash className="w-4 h-4" />
-                Max Tokens
+                Tokens Maximum
                 <Badge variant="outline" className="text-xs">
                   {config.models.primary.maxTokens}
                 </Badge>
@@ -671,7 +663,7 @@ function ModelConfigSection({ config, setConfig }: any) {
           {/* Frequency & Presence Penalty */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs">Frequency Penalty</Label>
+              <Label className="text-xs">Pénalité de Fréquence</Label>
               <Slider
                 value={[config.models.primary.frequencyPenalty]}
                 onValueChange={([value]) => setConfig({
@@ -688,7 +680,7 @@ function ModelConfigSection({ config, setConfig }: any) {
               </Badge>
             </div>
             <div>
-              <Label className="text-xs">Presence Penalty</Label>
+              <Label className="text-xs">Pénalité de Présence</Label>
               <Slider
                 value={[config.models.primary.presencePenalty]}
                 onValueChange={([value]) => setConfig({
@@ -736,10 +728,10 @@ function ModelConfigSection({ config, setConfig }: any) {
           </div>
 
           {/* Caching */}
-          <Card className="p-4 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+          <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
             <div className="flex items-center justify-between mb-3">
               <Label className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-green-600" />
+                <Database className="w-4 h-4 text-blue-600" />
                 Cache Intelligent
               </Label>
               <Switch
@@ -1034,7 +1026,7 @@ function PromptsConfigSection({ config, setConfig }: any) {
 
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <CheckCircle2 className="w-4 h-4 text-blue-500" />
                 <Label className="text-sm">Format Bullet Points</Label>
               </div>
               <Switch
@@ -1050,9 +1042,9 @@ function PromptsConfigSection({ config, setConfig }: any) {
       </Card>
 
       {/* Variables Personnalisées */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-green-200 dark:border-green-900">
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Code className="w-5 h-5 text-green-500" />
+          <Code className="w-5 h-5 text-blue-500" />
           Variables Personnalisées
         </h3>
         
@@ -1363,12 +1355,12 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
               </div>
             </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+            <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-1">
-                <Hash className="w-4 h-4 text-green-600 dark:text-green-400" />
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">Tokens</span>
+                <Hash className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Tokens</span>
               </div>
-              <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                 {testResult.tokens}
               </div>
             </Card>
