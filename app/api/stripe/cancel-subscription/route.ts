@@ -65,7 +65,9 @@ export async function POST(req: NextRequest) {
         }
       );
 
-      console.log(`✅ Abonnement ${stripeSubscription.id} annulé à la fin de la période`);
+      console.log(`✅ Abonnement ${stripeSubscription.id} marqué pour annulation à la fin de la période`);
+      console.log(`📅 L'utilisateur restera sur le plan actuel jusqu'au ${new Date(updatedSubscription.cancel_at! * 1000).toLocaleDateString()}`);
+      console.log(`🔄 Le webhook Stripe mettra automatiquement users.plan = 'FREE' à cette date`);
 
       return NextResponse.json({
         success: true,
@@ -82,7 +84,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    // Mettre à jour dans la base de données
+    // Mettre à jour dans la table subscriptions
     const { error: updateError } = await supabase
       .from('subscriptions')
       .update({
@@ -95,7 +97,9 @@ export async function POST(req: NextRequest) {
       console.error('Erreur mise à jour abonnement:', updateError);
     }
 
-    console.log(`✅ Abonnement ${subscription.stripe_subscription_id} annulé à la fin de la période`);
+    console.log(`✅ Abonnement ${subscription.stripe_subscription_id} marqué pour annulation à la fin de la période`);
+    console.log(`📅 L'utilisateur restera sur le plan actuel jusqu'au ${new Date(stripeSubscription.cancel_at! * 1000).toLocaleDateString()}`);
+    console.log(`🔄 Le webhook Stripe mettra automatiquement users.plan = 'FREE' à cette date`);
 
     return NextResponse.json({
       success: true,
