@@ -79,7 +79,7 @@ export function TabProduct({ onChange }: { onChange?: () => void }) {
   ]);
 
   const [selectedProduct, setSelectedProduct] = useState(0);
-  const [showRegexTester, setShowRegexTester] = useState(false);
+  // const [showRegexTester, setShowRegexTester] = useState(false);
   const [testEmailSubject, setTestEmailSubject] = useState('');
   const [testEmailBody, setTestEmailBody] = useState('');
 
@@ -426,7 +426,7 @@ export function TabProduct({ onChange }: { onChange?: () => void }) {
                 <TestTube className="w-5 h-5 text-blue-500" />
                 Testeur de règles
               </h4>
-              <Button
+              {/* <Button
                 onClick={() => setShowRegexTester(!showRegexTester)}
                 variant="outline"
                 size="sm"
@@ -434,7 +434,7 @@ export function TabProduct({ onChange }: { onChange?: () => void }) {
               >
                 <Code className="w-4 h-4 mr-2" />
                 Regex Tester
-              </Button>
+              </Button> */}
             </div>
 
             <div className="space-y-4">
@@ -489,7 +489,7 @@ export function TabProduct({ onChange }: { onChange?: () => void }) {
             </div>
           </Card>
 
-          {showRegexTester && <RegexTester />}
+          {/* {showRegexTester && <RegexTester />} */}
         </div>
       </div>
     </div>
