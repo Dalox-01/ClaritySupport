@@ -7,7 +7,7 @@ import { supabase } from '@/lib/db';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
+  apiVersion: '2024-11-20.acacia' as any,
 });
 
 export const dynamic = 'force-dynamic';
@@ -52,11 +52,21 @@ export async function GET(req: NextRequest) {
 
     // Récupérer TOUS les abonnements Stripe du customer
     try {
+      console.log(`🔍 Récupération abonnements Stripe pour customer: ${userData.stripe_customer_id}`);
+      
       const stripeSubscriptions = await stripe.subscriptions.list({
         customer: userData.stripe_customer_id,
         status: 'all',
         limit: 100,
       });
+
+      console.log(`📦 ${stripeSubscriptions.data.length} abonnements trouvés:`, 
+        stripeSubscriptions.data.map(s => ({
+          id: s.id,
+          status: s.status,
+          cancel_at_period_end: s.cancel_at_period_end,
+        }))
+      );
 
       if (stripeSubscriptions.data.length === 0) {
         return NextResponse.json({ 
@@ -83,9 +93,16 @@ export async function GET(req: NextRequest) {
       const activeCanceling = stripeSubscriptions.data.find(
         s => s.status === 'active' && s.cancel_at_period_end
       );
-      const activeRecent = stripeSubscriptions.data
-        .filter(s => s.status === 'active')
-        .sort((a, b) => (b as any).current_period_end - (a as any).current_period_end)[0];
+      
+      const activeSubscriptions = stripeSubscriptions.data.filter(s => s.status === 'active');
+      const activeRecent = activeSubscriptions.length > 0
+        ? activeSubscriptions.sort((a, b) => {
+            const aEnd = (a as any).current_period_end || 0;
+            const bEnd = (b as any).current_period_end || 0;
+            return bEnd - aEnd;
+          })[0]
+        : undefined;
+      
       const mostRecent = stripeSubscriptions.data[0];
 
       const stripeSub = activeCanceling || activeRecent || mostRecent;
