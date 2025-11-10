@@ -199,71 +199,19 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
             </div>
 
             {/* Screenshot content */}
-            <div className="relative aspect-[16/9] bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] p-12">
-              {/* Subtle background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5" />
+            <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27]">
+              {/* Real MailCenter Screenshot */}
+              <motion.img
+                src="/screenshots/mailcenter-interface.png"
+                alt="Interface ClaritySupport Mail Center"
+                className="h-full w-full object-cover object-top"
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.2, delay: 1.2 }}
+              />
 
-              {/* Center content */}
-              <div className="relative z-10 flex h-full flex-col items-center justify-center">
-                <motion.div
-                  className="mb-6 text-9xl"
-                  animate={{
-                    scale: [1, 1.05, 1],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  ✉️
-                </motion.div>
-                <p className="text-base font-medium text-blue-400/80">
-                  Interface Mail Center
-                </p>
-              </div>
-
-              {/* Floating UI elements - minimal and elegant */}
-              <motion.div
-                className="absolute left-[8%] top-[12%] rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 p-4 backdrop-blur-md"
-                animate={{
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                <div className="h-2.5 w-24 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400" />
-                <div className="mt-2.5 h-2 w-16 rounded-full bg-blue-500/30" />
-              </motion.div>
-
-              <motion.div
-                className="absolute right-[8%] bottom-[15%] rounded-xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 p-4 backdrop-blur-md"
-                animate={{
-                  y: [0, -12, 0],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                  delay: 0.5,
-                }}
-              >
-                <Sparkles className="h-7 w-7 text-cyan-400/80" />
-              </motion.div>
-
-              <motion.div
-                className="absolute left-1/2 top-[8%] -translate-x-1/2 rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-purple-500/5 p-3 backdrop-blur-md"
-                animate={{
-                  y: [0, -8, 0],
-                }}
-                transition={{
-                  duration: 5.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                  delay: 1,
-                }}
-              >
-                <Zap className="h-6 w-6 text-blue-400/80" />
-              </motion.div>
+              {/* Subtle overlay gradient for depth */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0E27]/20 via-transparent to-transparent" />
             </div>
           </motion.div>
 
