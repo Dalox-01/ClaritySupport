@@ -50,13 +50,21 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
     .single();
 
   if (error || !data) {
-    // Par défaut, retourner un plan gratuit
+    // Si pas d'abonnement dans subscriptions, récupérer le plan depuis users
+    const { data: userData } = await supabase
+      .from('users')
+      .select('plan')
+      .eq('id', userId)
+      .single();
+
+    const userPlan = (userData?.plan || 'FREE').toLowerCase() as PlanType;
+
     return {
       user_id: userId,
-      plan: 'free',
+      plan: userPlan,
       status: 'active',
       current_period_start: new Date().toISOString(),
-      current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
