@@ -117,6 +117,15 @@ interface PromptConfig {
     removeHtml: boolean;
     maxLength: number;
   };
+  style?: {
+    humanization: 'robotic' | 'professional' | 'balanced' | 'friendly' | 'very-human';
+    responseLength: 'very-short' | 'short' | 'medium' | 'detailed' | 'comprehensive';
+    formality: 'very-formal' | 'formal' | 'neutral' | 'casual' | 'very-casual';
+    emotionalTone: 'neutral' | 'empathetic' | 'enthusiastic' | 'reassuring' | 'apologetic';
+    technicalLevel: 'simple' | 'intermediate' | 'adaptive' | 'advanced' | 'expert';
+    useEmojis: boolean;
+    useBulletPoints: boolean;
+  };
 }
 
 interface ContextConfig {
@@ -300,7 +309,7 @@ export function TabAIConfigAdvanced() {
     },
     prompts: {
       system: {
-        template: 'Tu es un assistant support client expert...',
+        template: 'Tu es un assistant support client expert et professionnel.\nTa mission est d\'analyser les emails entrants et de générer des réponses appropriées.\n\nContexte:\n- Tu as accès à une base de connaissances produits\n- Tu dois classifier chaque email par catégorie\n- Tu dois évaluer le niveau d\'urgence (0-10)\n- Tu génères des réponses personnalisées et empathiques\n\nConsignes:\n1. Analyse le contexte et l\'intention du client\n2. Utilise les informations de la base de connaissances\n3. Réponds de manière claire, concise et professionnelle\n4. Adapte ton ton selon la situation\n5. Si incertitude > 40%, marque comme "nécessite révision humaine"',
         variables: {},
         version: '1.0.0',
         preprocessing: {
@@ -308,6 +317,15 @@ export function TabAIConfigAdvanced() {
           normalizeNewlines: true,
           removeHtml: false,
           maxLength: 4000,
+        },
+        style: {
+          humanization: 'balanced',
+          responseLength: 'medium',
+          formality: 'neutral',
+          emotionalTone: 'empathetic',
+          technicalLevel: 'adaptive',
+          useEmojis: false,
+          useBulletPoints: true,
         },
       },
       context: {
@@ -553,24 +571,12 @@ function ModelConfigSection({ config, setConfig }: any) {
           Configuration du Modèle OpenAI
         </h3>
         
-        {/* API Key */}
-        <div className="mb-6">
-          <Label>Clé API OpenAI</Label>
-          <div className="flex gap-2 mt-2">
-            <Input
-              type="password"
-              placeholder="sk-..."
-              value={config.models.primary.apiKey || ''}
-              onChange={(e) => setConfig({
-                ...config,
-                models: { ...config.models, primary: { ...config.models.primary, apiKey: e.target.value }}
-              })}
-              className="flex-1"
-            />
-            <Button variant="outline" size="icon">
-              <Eye className="w-4 h-4" />
-            </Button>
-          </div>
+        {/* Note sur la clé API */}
+        <div className="mb-6 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+          <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+            <Info className="w-4 h-4" />
+            La clé API OpenAI est configurée de manière sécurisée côté serveur
+          </p>
         </div>
 
         {/* Advanced Parameters */}
@@ -855,6 +861,8 @@ function ModelConfigSection({ config, setConfig }: any) {
 
 // Les autres sections seront créées dans les prochains fichiers
 function PromptsConfigSection({ config, setConfig }: any) {
+  const [customVariables, setCustomVariables] = useState<{ key: string; value: string }[]>([]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -862,9 +870,341 @@ function PromptsConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Section Prompts - En développement</h3>
-        <p className="text-sm text-slate-600">Configuration avancée des prompts et du contexte...</p>
+      {/* Éditeur de Prompt Système */}
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-purple-200 dark:border-purple-900">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <FileText className="w-5 h-5 text-purple-500" />
+          Prompt Système Principal
+        </h3>
+        
+        <div className="space-y-4">
+          <div>
+            <Label>Instructions pour l'IA</Label>
+            <Textarea
+              value={config.prompts.system.template}
+              onChange={(e) => setConfig({
+                ...config,
+                prompts: { ...config.prompts, system: { ...config.prompts.system, template: e.target.value }}
+              })}
+              placeholder="Tu es un assistant support client expert..."
+              className="min-h-[200px] font-mono text-sm mt-2"
+            />
+            <p className="text-xs text-slate-500 mt-2">
+              Ce prompt définit le comportement global de l'IA pour toutes les réponses
+            </p>
+          </div>
+
+          {/* Paramètres de Style */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Niveau d'Humanisation
+              </Label>
+              <Select 
+                value={config.prompts.style?.humanization || 'balanced'}
+                onValueChange={(value) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, humanization: value }}
+                })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="robotic">Robotique (Très formel)</SelectItem>
+                  <SelectItem value="professional">Professionnel</SelectItem>
+                  <SelectItem value="balanced">Équilibré</SelectItem>
+                  <SelectItem value="friendly">Amical</SelectItem>
+                  <SelectItem value="very-human">Très Humain (Conversationnel)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Temps de Réponse
+              </Label>
+              <Select 
+                value={config.prompts.style?.responseLength || 'medium'}
+                onValueChange={(value) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, responseLength: value }}
+                })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very-short">Très Court (1-2 phrases)</SelectItem>
+                  <SelectItem value="short">Court (3-5 phrases)</SelectItem>
+                  <SelectItem value="medium">Moyen (1-2 paragraphes)</SelectItem>
+                  <SelectItem value="detailed">Détaillé (3-4 paragraphes)</SelectItem>
+                  <SelectItem value="comprehensive">Complet (5+ paragraphes)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Formalité et Ton */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>Formalité</Label>
+              <Select 
+                value={config.prompts.style?.formality || 'neutral'}
+                onValueChange={(value) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, formality: value }}
+                })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="very-formal">Très Formel (Vous)</SelectItem>
+                  <SelectItem value="formal">Formel</SelectItem>
+                  <SelectItem value="neutral">Neutre</SelectItem>
+                  <SelectItem value="casual">Décontracté</SelectItem>
+                  <SelectItem value="very-casual">Très Décontracté (Tu)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Ton Émotionnel</Label>
+              <Select 
+                value={config.prompts.style?.emotionalTone || 'empathetic'}
+                onValueChange={(value) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, emotionalTone: value }}
+                })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="neutral">Neutre</SelectItem>
+                  <SelectItem value="empathetic">Empathique</SelectItem>
+                  <SelectItem value="enthusiastic">Enthousiaste</SelectItem>
+                  <SelectItem value="reassuring">Rassurant</SelectItem>
+                  <SelectItem value="apologetic">Désolé</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Niveau Technique</Label>
+              <Select 
+                value={config.prompts.style?.technicalLevel || 'adaptive'}
+                onValueChange={(value) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, technicalLevel: value }}
+                })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="simple">Simple (Grand public)</SelectItem>
+                  <SelectItem value="intermediate">Intermédiaire</SelectItem>
+                  <SelectItem value="adaptive">Adaptatif</SelectItem>
+                  <SelectItem value="advanced">Avancé</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Options supplémentaires */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-500" />
+                <Label className="text-sm">Utiliser des Emojis</Label>
+              </div>
+              <Switch
+                checked={config.prompts.style?.useEmojis || false}
+                onCheckedChange={(checked) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, useEmojis: checked }}
+                })}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <Label className="text-sm">Format Bullet Points</Label>
+              </div>
+              <Switch
+                checked={config.prompts.style?.useBulletPoints || false}
+                onCheckedChange={(checked) => setConfig({
+                  ...config,
+                  prompts: { ...config.prompts, style: { ...config.prompts.style, useBulletPoints: checked }}
+                })}
+              />
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Variables Personnalisées */}
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-green-200 dark:border-green-900">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Code className="w-5 h-5 text-green-500" />
+          Variables Personnalisées
+        </h3>
+        
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Définissez des variables réutilisables dans vos prompts avec la syntaxe <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">{'{{nom_variable}}'}</code>
+          </p>
+
+          {/* Variables prédéfinies */}
+          <div className="grid grid-cols-2 gap-2">
+            <Badge variant="outline" className="justify-start">
+              <Code className="w-3 h-3 mr-2" />
+              {'{{client_nom}}'} - Nom du client
+            </Badge>
+            <Badge variant="outline" className="justify-start">
+              <Code className="w-3 h-3 mr-2" />
+              {'{{order_id}}'} - Numéro de commande
+            </Badge>
+            <Badge variant="outline" className="justify-start">
+              <Code className="w-3 h-3 mr-2" />
+              {'{{product_name}}'} - Nom du produit
+            </Badge>
+            <Badge variant="outline" className="justify-start">
+              <Code className="w-3 h-3 mr-2" />
+              {'{{confidence_score}}'} - Score de confiance
+            </Badge>
+          </div>
+
+          {/* Custom variables */}
+          <div className="space-y-2">
+            <Label>Variables Supplémentaires</Label>
+            {customVariables.map((variable, index) => (
+              <div key={index} className="flex gap-2">
+                <Input
+                  placeholder="nom_variable"
+                  value={variable.key}
+                  onChange={(e) => {
+                    const newVars = [...customVariables];
+                    newVars[index].key = e.target.value;
+                    setCustomVariables(newVars);
+                  }}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Valeur par défaut"
+                  value={variable.value}
+                  onChange={(e) => {
+                    const newVars = [...customVariables];
+                    newVars[index].value = e.target.value;
+                    setCustomVariables(newVars);
+                  }}
+                  className="flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setCustomVariables(customVariables.filter((_, i) => i !== index));
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              onClick={() => setCustomVariables([...customVariables, { key: '', value: '' }])}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Ajouter une Variable
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Contexte et Préprocessing */}
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-orange-200 dark:border-orange-900">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Layers className="w-5 h-5 text-orange-500" />
+          Gestion du Contexte
+        </h3>
+        
+        <div className="space-y-4">
+          <div>
+            <Label className="flex items-center gap-2">
+              <Hash className="w-4 h-4" />
+              Limite de Tokens pour le Contexte
+              <Badge variant="outline">{config.prompts.context.maxTokens}</Badge>
+            </Label>
+            <Slider
+              value={[config.prompts.context.maxTokens]}
+              onValueChange={([value]) => setConfig({
+                ...config,
+                prompts: { ...config.prompts, context: { ...config.prompts.context, maxTokens: value }}
+              })}
+              min={500}
+              max={8000}
+              step={100}
+              className="w-full mt-2"
+            />
+          </div>
+
+          <div>
+            <Label>Ordre de Priorité du Contexte</Label>
+            <p className="text-xs text-slate-500 mb-2">
+              Glissez-déposez pour réordonner
+            </p>
+            <div className="space-y-2">
+              {config.prompts.context.priorityOrder.map((item: string, index: number) => (
+                <div key={item} className="flex items-center gap-2 p-3 border rounded-lg bg-white dark:bg-slate-800">
+                  <Badge variant="outline">{index + 1}</Badge>
+                  <span className="flex-1 text-sm capitalize">{item.replace('-', ' ')}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>Stratégie de Troncature</Label>
+            <Select 
+              value={config.prompts.context.truncationStrategy}
+              onValueChange={(value) => setConfig({
+                ...config,
+                prompts: { ...config.prompts, context: { ...config.prompts.context, truncationStrategy: value }}
+              })}
+            >
+              <SelectTrigger className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oldest-first">Supprimer les plus anciens</SelectItem>
+                <SelectItem value="least-relevant">Supprimer les moins pertinents</SelectItem>
+                <SelectItem value="smart-truncate">Troncature Intelligente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-blue-500" />
+              <Label className="text-sm">Inclure les Métadonnées</Label>
+            </div>
+            <Switch
+              checked={config.prompts.context.includeMetadata}
+              onCheckedChange={(checked) => setConfig({
+                ...config,
+                prompts: { ...config.prompts, context: { ...config.prompts.context, includeMetadata: checked }}
+              })}
+            />
+          </div>
+        </div>
       </Card>
     </motion.div>
   );
@@ -903,6 +1243,16 @@ function FewShotsConfigSection({ config, setConfig }: any) {
 }
 
 function TestingConfigSection({ config, setConfig, testInput, setTestInput, testResult, isTestting, runTest }: any) {
+  const [testProblem, setTestProblem] = useState('');
+  const [testCategory, setTestCategory] = useState('general');
+  const [showDebug, setShowDebug] = useState(false);
+
+  const handleRunTest = async () => {
+    if (!testProblem.trim()) return;
+    
+    await runTest();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -910,9 +1260,317 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Section Testing - En développement</h3>
-        <p className="text-sm text-slate-600">Playground de test et analytics...</p>
+      {/* Playground de Test */}
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-pink-200 dark:border-pink-900">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <TestTube className="w-5 h-5 text-pink-500" />
+          Playground de Test IA
+        </h3>
+        
+        <div className="space-y-4">
+          {/* Input du problème */}
+          <div>
+            <Label className="flex items-center gap-2 mb-2">
+              <MessageSquare className="w-4 h-4" />
+              Problème Client à Tester
+            </Label>
+            <Textarea
+              value={testProblem}
+              onChange={(e) => setTestProblem(e.target.value)}
+              placeholder="Ex: Bonjour, j'ai reçu mon laptop mais il ne démarre pas. L'écran reste noir même après avoir chargé la batterie pendant 2 heures. C'est urgent car j'en ai besoin pour travailler demain. Que puis-je faire ?"
+              className="min-h-[120px]"
+            />
+            <p className="text-xs text-slate-500 mt-2">
+              Entrez un message client pour tester la réponse de l'IA avec votre configuration actuelle
+            </p>
+          </div>
+
+          {/* Catégorie suggérée */}
+          <div>
+            <Label>Catégorie Attendue (Optionnel)</Label>
+            <Select value={testCategory} onValueChange={setTestCategory}>
+              <SelectTrigger className="mt-2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">Général (Auto-détection)</SelectItem>
+                <SelectItem value="remboursement">Remboursement</SelectItem>
+                <SelectItem value="sav">SAV / Technique</SelectItem>
+                <SelectItem value="commande">Commande</SelectItem>
+                <SelectItem value="livraison">Livraison</SelectItem>
+                <SelectItem value="info-produit">Info Produit</SelectItem>
+                <SelectItem value="reclamation">Réclamation</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Boutons d'action */}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleRunTest}
+              disabled={isTestting || !testProblem.trim()}
+              className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600"
+            >
+              {isTestting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Génération en cours...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Générer la Réponse
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowDebug(!showDebug)}
+            >
+              <Microscope className="w-4 h-4 mr-2" />
+              {showDebug ? 'Masquer' : 'Debug'}
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Résultats du Test */}
+      {testResult && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          {/* Métriques Rapides */}
+          <div className="grid grid-cols-4 gap-4">
+            <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-2 mb-1">
+                <Gauge className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Confiance</span>
+              </div>
+              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                {(testResult.confidence * 100).toFixed(0)}%
+              </div>
+            </Card>
+
+            <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Latence</span>
+              </div>
+              <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                {testResult.latency.toFixed(0)}ms
+              </div>
+            </Card>
+
+            <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-2 mb-1">
+                <Hash className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium">Tokens</span>
+              </div>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-300">
+                {testResult.tokens}
+              </div>
+            </Card>
+
+            <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
+              <div className="flex items-center gap-2 mb-1">
+                <DollarSign className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">Coût</span>
+              </div>
+              <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                ${testResult.cost}
+              </div>
+            </Card>
+          </div>
+
+          {/* Réponse Générée */}
+          <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Send className="w-5 h-5 text-blue-500" />
+                Réponse Générée par l'IA
+              </h4>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copier
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Exporter
+                </Button>
+              </div>
+            </div>
+            
+            <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border">
+              <div className="whitespace-pre-wrap">{testResult.response}</div>
+            </div>
+
+            {/* Sources RAG */}
+            {testResult.ragSources && testResult.ragSources.length > 0 && (
+              <div className="mt-4">
+                <Label className="flex items-center gap-2 mb-2">
+                  <Database className="w-4 h-4" />
+                  Sources Utilisées (RAG)
+                </Label>
+                <div className="flex gap-2 flex-wrap">
+                  {testResult.ragSources.map((source: string, index: number) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      <FileText className="w-3 h-3 mr-1" />
+                      {source}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Mode Debug */}
+          {showDebug && (
+            <Card className="p-6 bg-slate-50 dark:bg-slate-900/50 border-slate-300 dark:border-slate-700">
+              <h4 className="font-semibold flex items-center gap-2 mb-4">
+                <Microscope className="w-5 h-5 text-slate-600" />
+                Informations de Debug
+              </h4>
+              
+              <div className="space-y-4">
+                {/* Configuration Utilisée */}
+                <div>
+                  <Label className="text-xs text-slate-500 mb-2 block">Configuration du Modèle</Label>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                      <span className="text-slate-500">Modèle:</span>
+                      <div className="font-mono font-bold">{config.models.primary.model}</div>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                      <span className="text-slate-500">Temperature:</span>
+                      <div className="font-mono font-bold">{config.models.primary.temperature}</div>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                      <span className="text-slate-500">Max Tokens:</span>
+                      <div className="font-mono font-bold">{config.models.primary.maxTokens}</div>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                      <span className="text-slate-500">Top P:</span>
+                      <div className="font-mono font-bold">{config.models.primary.topP}</div>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                      <span className="text-slate-500">Freq Penalty:</span>
+                      <div className="font-mono font-bold">{config.models.primary.frequencyPenalty}</div>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                      <span className="text-slate-500">Pres Penalty:</span>
+                      <div className="font-mono font-bold">{config.models.primary.presencePenalty}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Prompt Système Utilisé */}
+                <div>
+                  <Label className="text-xs text-slate-500 mb-2 block">Prompt Système Envoyé</Label>
+                  <pre className="p-3 bg-white dark:bg-slate-800 rounded border text-xs font-mono overflow-x-auto">
+                    {config.prompts.system.template}
+                  </pre>
+                </div>
+
+                {/* Détails de Style */}
+                {config.prompts.style && (
+                  <div>
+                    <Label className="text-xs text-slate-500 mb-2 block">Paramètres de Style Appliqués</Label>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                        <span className="text-slate-500">Humanisation:</span>
+                        <div className="font-mono capitalize">{config.prompts.style.humanization || 'balanced'}</div>
+                      </div>
+                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                        <span className="text-slate-500">Formalité:</span>
+                        <div className="font-mono capitalize">{config.prompts.style.formality || 'neutral'}</div>
+                      </div>
+                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                        <span className="text-slate-500">Longueur:</span>
+                        <div className="font-mono capitalize">{config.prompts.style.responseLength || 'medium'}</div>
+                      </div>
+                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
+                        <span className="text-slate-500">Ton:</span>
+                        <div className="font-mono capitalize">{config.prompts.style.emotionalTone || 'empathetic'}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tokens Breakdown */}
+                <div>
+                  <Label className="text-xs text-slate-500 mb-2 block">Répartition des Tokens</Label>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between p-2 bg-white dark:bg-slate-800 rounded">
+                      <span>Prompt (Input):</span>
+                      <span className="font-mono font-bold">{Math.floor(testResult.tokens * 0.4)} tokens</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-white dark:bg-slate-800 rounded">
+                      <span>Réponse (Output):</span>
+                      <span className="font-mono font-bold">{Math.floor(testResult.tokens * 0.6)} tokens</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-blue-50 dark:bg-blue-950/30 rounded font-bold">
+                      <span>Total:</span>
+                      <span className="font-mono">{testResult.tokens} tokens</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+        </motion.div>
+      )}
+
+      {/* Exemples rapides */}
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-slate-200 dark:border-slate-800">
+        <h4 className="font-semibold flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-yellow-500" />
+          Exemples Rapides
+        </h4>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTestProblem("Bonjour, je n'ai toujours pas reçu ma commande passée il y a 2 semaines. C'est inadmissible ! Je veux un remboursement immédiat.")}
+            className="justify-start text-left h-auto p-3"
+          >
+            <AlertTriangle className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="text-xs">Réclamation livraison retardée</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTestProblem("Mon laptop ne démarre plus depuis ce matin. L'écran reste noir. Acheté il y a 3 mois. Que faire ?")}
+            className="justify-start text-left h-auto p-3"
+          >
+            <Wrench className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="text-xs">Problème technique SAV</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTestProblem("Bonjour, j'aimerais commander 5 licences logiciel pour mon entreprise. Quels sont les tarifs ?")}
+            className="justify-start text-left h-auto p-3"
+          >
+            <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="text-xs">Demande devis entreprise</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTestProblem("Quelle est la différence entre le modèle Pro X1 et Pro X2 ? Lequel me conseillez-vous pour du montage vidéo ?")}
+            className="justify-start text-left h-auto p-3"
+          >
+            <Info className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="text-xs">Comparaison produits</span>
+          </Button>
+        </div>
       </Card>
     </motion.div>
   );

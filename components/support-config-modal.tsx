@@ -220,8 +220,8 @@ export function SupportConfigModal({
             )}
           </div>
 
-          {/* Content Area */}
-          <div className="overflow-y-auto max-h-[calc(90vh-200px)]">
+          {/* Content Area - Full height for integrated scrolling */}
+          <div className="h-[calc(90vh-200px)]">
             <AnimatePresence mode="wait">
               {activeTab === 'ai-config' && (
                 <motion.div
