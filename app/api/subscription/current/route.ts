@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/db';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-10-29.clover',
+});
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +46,51 @@ export async function GET(req: NextRequest) {
             error: 'Utilisateur non trouvé',
             subscription: null 
           }, { status: 404 });
+        }
+
+        // Si l'utilisateur a un stripe_customer_id, récupérer l'abonnement depuis Stripe
+        if (userData.stripe_customer_id) {
+          try {
+            const stripeSubscriptions = await stripe.subscriptions.list({
+              customer: userData.stripe_customer_id,
+              status: 'all',
+              limit: 1,
+            });
+
+            if (stripeSubscriptions.data.length > 0) {
+              const stripeSub = stripeSubscriptions.data[0];
+              
+              // Mapper le price_id au plan
+              const priceToPlans: Record<string, string> = {
+                [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '']: 'STARTER',
+                [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '']: 'PRO',
+                [process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || '']: 'ENTERPRISE',
+              };
+              
+              const plan = stripeSub.items.data[0]?.price.id 
+                ? priceToPlans[stripeSub.items.data[0].price.id] || userData.plan 
+                : userData.plan;
+
+              return NextResponse.json({ 
+                subscription: {
+                  id: stripeSub.id,
+                  user_id: session.user.id,
+                  plan: plan || 'FREE',
+                  status: stripeSub.status,
+                  stripe_customer_id: userData.stripe_customer_id,
+                  stripe_subscription_id: stripeSub.id,
+                  stripe_price_id: stripeSub.items.data[0]?.price.id || null,
+                  current_period_start: new Date((stripeSub as any).current_period_start * 1000).toISOString(),
+                  current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
+                  billing_period: stripeSub.items.data[0]?.price.recurring?.interval || 'month',
+                  cancel_at_period_end: stripeSub.cancel_at_period_end || false,
+                  canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
+                }
+              });
+            }
+          } catch (stripeError) {
+            console.error('Erreur récupération abonnement Stripe:', stripeError);
+          }
         }
 
         // Retourner un abonnement basé sur users.plan

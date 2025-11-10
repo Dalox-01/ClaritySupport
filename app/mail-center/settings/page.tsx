@@ -408,15 +408,26 @@ export default function SettingsPage() {
                     <Label className="text-slate-400">Statut</Label>
                     <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
                       <span className={`text-sm font-semibold ${
-                        subscription?.status === 'active' || userData.plan !== 'FREE' ? 'text-green-400' : 'text-yellow-400'
+                        subscription?.cancel_at_period_end 
+                          ? 'text-yellow-400' 
+                          : (subscription?.status === 'active' || userData.plan !== 'FREE') 
+                            ? 'text-green-400' 
+                            : 'text-yellow-400'
                       }`}>
-                        {subscription?.status === 'active' || userData.plan !== 'FREE' ? '✓ Actif' : subscription?.status || 'Actif'}
+                        {subscription?.cancel_at_period_end 
+                          ? '⏳ Fin de période' 
+                          : (subscription?.status === 'active' || userData.plan !== 'FREE') 
+                            ? '✓ Actif' 
+                            : subscription?.status || 'Actif'
+                        }
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-slate-400">Renouvellement</Label>
+                    <Label className="text-slate-400">
+                      {subscription?.cancel_at_period_end ? 'Actif jusqu\'au' : 'Renouvellement'}
+                    </Label>
                     <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
                       <span className="text-sm text-slate-300">
                         {subscription?.current_period_end 
@@ -443,9 +454,17 @@ export default function SettingsPage() {
 
                 {subscription?.cancel_at_period_end && (
                   <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
-                    <p className="text-sm text-yellow-400">
-                      ⚠️ Votre abonnement sera annulé le {new Date(subscription.current_period_end).toLocaleDateString('fr-FR')}
-                    </p>
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-yellow-400 mb-1">
+                          Abonnement en cours de résiliation
+                        </p>
+                        <p className="text-sm text-yellow-300">
+                          Votre abonnement restera actif jusqu'au <strong>{new Date(subscription.current_period_end).toLocaleDateString('fr-FR')}</strong>, puis sera automatiquement annulé. Vous serez alors basculé sur le plan GRATUIT.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
