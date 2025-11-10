@@ -11,7 +11,8 @@ import {
   Sparkles, Workflow, Filter, Search, ToggleLeft, ToggleRight,
   Microscope, LineChart, PieChart, Thermometer, Wifi, WifiOff,
   MessageSquare, Send, Pause, FastForward, Rewind, Copy,
-  Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash
+  Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash,
+  AlertTriangle, Wrench
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
