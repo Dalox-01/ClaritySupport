@@ -24,135 +24,48 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // Récupérer l'abonnement depuis la base de données (actif en priorité, puis le plus récent)
-    const { data: subscriptions, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('status', { ascending: true }) // 'active' vient avant 'canceled'
-      .order('created_at', { ascending: false });
+    // Récupérer le stripe_customer_id de l'utilisateur
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('stripe_customer_id, plan')
+      .eq('id', session.user.id)
+      .single();
 
-    // Prendre le premier abonnement actif, sinon le plus récent
-    const subscription = subscriptions?.find(s => s.status === 'active') || subscriptions?.[0];
-
-    // Si on a un abonnement avec un stripe_subscription_id, toujours vérifier Stripe pour avoir les données à jour
-    if (subscription?.stripe_subscription_id) {
-      try {
-        const stripeSub = await stripe.subscriptions.retrieve(subscription.stripe_subscription_id);
-        
-        console.log(`📋 Abonnement Stripe récupéré (depuis DB) pour ${session.user.id}:`, {
-          id: stripeSub.id,
-          status: stripeSub.status,
-          cancel_at_period_end: stripeSub.cancel_at_period_end,
-          current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
-        });
-
-        // Mapper le price_id au plan
-        const priceToPlans: Record<string, string> = {
-          [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '']: 'STARTER',
-          [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '']: 'PRO',
-          [process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || '']: 'ENTERPRISE',
-        };
-        
-        const plan = stripeSub.items.data[0]?.price.id 
-          ? priceToPlans[stripeSub.items.data[0].price.id] || subscription.plan 
-          : subscription.plan;
-
-        return NextResponse.json({ 
-          subscription: {
-            ...subscription,
-            plan: plan || subscription.plan,
-            status: stripeSub.status,
-            current_period_start: new Date((stripeSub as any).current_period_start * 1000).toISOString(),
-            current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
-            cancel_at_period_end: stripeSub.cancel_at_period_end || false,
-            canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
-          }
-        });
-      } catch (stripeError) {
-        console.error('Erreur récupération abonnement Stripe depuis DB:', stripeError);
-        // En cas d'erreur Stripe, retourner les données de la DB
-        return NextResponse.json({ subscription });
-      }
+    if (userError || !userData?.stripe_customer_id) {
+      console.error('Erreur récupération utilisateur ou pas de stripe_customer_id:', userError);
+      return NextResponse.json({ 
+        subscription: {
+          id: 'user-plan',
+          user_id: session.user.id,
+          plan: userData?.plan || 'FREE',
+          status: 'active',
+          stripe_customer_id: null,
+          stripe_subscription_id: null,
+          stripe_price_id: null,
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          billing_period: 'monthly',
+          cancel_at_period_end: false,
+        }
+      });
     }
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // Pas d'abonnement dans subscriptions, récupérer le plan depuis users
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('plan, stripe_customer_id')
-          .eq('id', session.user.id)
-          .single();
+    // Récupérer TOUS les abonnements Stripe du customer
+    try {
+      const stripeSubscriptions = await stripe.subscriptions.list({
+        customer: userData.stripe_customer_id,
+        status: 'all',
+        limit: 100,
+      });
 
-        if (userError || !userData) {
-          console.error('Erreur récupération utilisateur:', userError);
-          return NextResponse.json({ 
-            error: 'Utilisateur non trouvé',
-            subscription: null 
-          }, { status: 404 });
-        }
-
-        // Si l'utilisateur a un stripe_customer_id, récupérer l'abonnement depuis Stripe
-        if (userData.stripe_customer_id) {
-          try {
-            const stripeSubscriptions = await stripe.subscriptions.list({
-              customer: userData.stripe_customer_id,
-              status: 'all',
-              limit: 1,
-            });
-
-            if (stripeSubscriptions.data.length > 0) {
-              const stripeSub = stripeSubscriptions.data[0];
-              
-              // Mapper le price_id au plan
-              const priceToPlans: Record<string, string> = {
-                [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '']: 'STARTER',
-                [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '']: 'PRO',
-                [process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || '']: 'ENTERPRISE',
-              };
-              
-              const plan = stripeSub.items.data[0]?.price.id 
-                ? priceToPlans[stripeSub.items.data[0].price.id] || userData.plan 
-                : userData.plan;
-
-              console.log(`📋 Abonnement Stripe récupéré pour ${session.user.id}:`, {
-                id: stripeSub.id,
-                status: stripeSub.status,
-                cancel_at_period_end: stripeSub.cancel_at_period_end,
-                current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
-              });
-
-              return NextResponse.json({ 
-                subscription: {
-                  id: stripeSub.id,
-                  user_id: session.user.id,
-                  plan: plan || 'FREE',
-                  status: stripeSub.status,
-                  stripe_customer_id: userData.stripe_customer_id,
-                  stripe_subscription_id: stripeSub.id,
-                  stripe_price_id: stripeSub.items.data[0]?.price.id || null,
-                  current_period_start: new Date((stripeSub as any).current_period_start * 1000).toISOString(),
-                  current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
-                  billing_period: stripeSub.items.data[0]?.price.recurring?.interval || 'month',
-                  cancel_at_period_end: stripeSub.cancel_at_period_end || false,
-                  canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
-                }
-              });
-            }
-          } catch (stripeError) {
-            console.error('Erreur récupération abonnement Stripe:', stripeError);
-          }
-        }
-
-        // Retourner un abonnement basé sur users.plan
+      if (stripeSubscriptions.data.length === 0) {
         return NextResponse.json({ 
           subscription: {
             id: 'user-plan',
             user_id: session.user.id,
             plan: userData.plan || 'FREE',
             status: 'active',
-            stripe_customer_id: userData.stripe_customer_id || null,
+            stripe_customer_id: userData.stripe_customer_id,
             stripe_subscription_id: null,
             stripe_price_id: null,
             current_period_start: new Date().toISOString(),
@@ -162,14 +75,69 @@ export async function GET(req: NextRequest) {
           }
         });
       }
+
+      // Prioriser les abonnements dans cet ordre:
+      // 1. Abonnement actif avec cancel_at_period_end=true (en cours de résiliation)
+      // 2. Abonnement actif le plus récent
+      // 3. Dernier abonnement créé
+      const activeCanceling = stripeSubscriptions.data.find(
+        s => s.status === 'active' && s.cancel_at_period_end
+      );
+      const activeRecent = stripeSubscriptions.data
+        .filter(s => s.status === 'active')
+        .sort((a, b) => (b as any).current_period_end - (a as any).current_period_end)[0];
+      const mostRecent = stripeSubscriptions.data[0];
+
+      const stripeSub = activeCanceling || activeRecent || mostRecent;
+
+      console.log(`📋 Abonnement Stripe sélectionné pour ${session.user.id}:`, {
+        id: stripeSub.id,
+        status: stripeSub.status,
+        cancel_at_period_end: stripeSub.cancel_at_period_end,
+        current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
+        reason: activeCanceling ? 'canceling' : activeRecent ? 'active-recent' : 'most-recent',
+      });
+
+      // Mapper le price_id au plan
+      const priceToPlans: Record<string, string> = {
+        [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '']: 'STARTER',
+        [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '']: 'PRO',
+        [process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || '']: 'ENTERPRISE',
+      };
       
-      console.error('Erreur récupération abonnement:', error);
+      const plan = stripeSub.items.data[0]?.price.id 
+        ? priceToPlans[stripeSub.items.data[0].price.id] || userData.plan 
+        : userData.plan;
+
+      // Récupérer l'ID de la DB si existe
+      const { data: dbSub } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('stripe_subscription_id', stripeSub.id)
+        .single();
+
+      return NextResponse.json({ 
+        subscription: {
+          id: dbSub?.id || stripeSub.id,
+          user_id: session.user.id,
+          plan: plan || 'FREE',
+          status: stripeSub.status,
+          stripe_customer_id: userData.stripe_customer_id,
+          stripe_subscription_id: stripeSub.id,
+          stripe_price_id: stripeSub.items.data[0]?.price.id || null,
+          current_period_start: new Date((stripeSub as any).current_period_start * 1000).toISOString(),
+          current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
+          billing_period: stripeSub.items.data[0]?.price.recurring?.interval || 'month',
+          cancel_at_period_end: stripeSub.cancel_at_period_end || false,
+          canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
+        }
+      });
+    } catch (stripeError) {
+      console.error('Erreur récupération abonnements Stripe:', stripeError);
       return NextResponse.json({ 
         error: 'Erreur lors de la récupération de l\'abonnement' 
       }, { status: 500 });
     }
-
-    return NextResponse.json({ subscription });
 
   } catch (error) {
     console.error('Erreur API subscription/current:', error);
