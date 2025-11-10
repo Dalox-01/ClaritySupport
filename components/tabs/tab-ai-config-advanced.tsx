@@ -418,9 +418,6 @@ export function TabAIConfigAdvanced() {
     },
   });
 
-  const [testInput, setTestInput] = useState('');
-  const [testResult, setTestResult] = useState<any>(null);
-  const [isTestting, setIsTesting] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState<Record<string, boolean>>({});
 
   const sections = [
@@ -433,22 +430,6 @@ export function TabAIConfigAdvanced() {
     { id: 'monitoring', name: 'Surveillance & Logs', icon: Activity, color: 'cyan' },
   ];
 
-  const runTest = async () => {
-    setIsTesting(true);
-    // Simuler un test
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setTestResult({
-      model: config.models.primary.model,
-      latency: Math.random() * 2000 + 500,
-      tokens: Math.floor(Math.random() * 500 + 100),
-      cost: (Math.random() * 0.05).toFixed(4),
-      response: 'Réponse générée simulée...',
-      confidence: Math.random(),
-      ragSources: ['doc1.pdf', 'doc2.pdf'],
-    });
-    setIsTesting(false);
-  };
-
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-950 dark:via-blue-950/20 dark:to-purple-950/20">
       {/* Header avec navigation */}
@@ -458,7 +439,13 @@ export function TabAIConfigAdvanced() {
           <h2 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Configuration IA Avancée
           </h2>
-          <Badge variant="outline" className="ml-auto">
+          <a href="/docs/ai-config" target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm" className="ml-auto">
+              <FileText className="w-4 h-4 mr-2" />
+              Fiches Techniques
+            </Button>
+          </a>
+          <Badge variant="outline">
             <Wifi className="w-3 h-3 mr-1" />
             Connecté
           </Badge>
@@ -514,11 +501,6 @@ export function TabAIConfigAdvanced() {
                 key="testing" 
                 config={config} 
                 setConfig={setConfig}
-                testInput={testInput}
-                setTestInput={setTestInput}
-                testResult={testResult}
-                isTestting={isTestting}
-                runTest={runTest}
               />
             )}
             {activeSection === 'security' && (
@@ -1234,15 +1216,50 @@ function FewShotsConfigSection({ config, setConfig }: any) {
   );
 }
 
-function TestingConfigSection({ config, setConfig, testInput, setTestInput, testResult, isTestting, runTest }: any) {
+function TestingConfigSection({ config, setConfig }: any) {
   const [testProblem, setTestProblem] = useState('');
-  const [testCategory, setTestCategory] = useState('general');
+  const [testResult, setTestResult] = useState<any>(null);
+  const [isTestting, setIsTesting] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
 
   const handleRunTest = async () => {
     if (!testProblem.trim()) return;
     
-    await runTest();
+    setIsTesting(true);
+    try {
+      // Appel réel au backend pour générer une réponse
+      const response = await fetch('/api/ai/generate-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: testProblem,
+          config: config.models.primary, // Utilise la config actuelle
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setTestResult({
+          response: data.reply,
+          category: data.category || 'Général',
+          confidence: data.confidence || 0,
+          latency: data.processingTime || 0,
+          tokens: data.tokensUsed || 0,
+          cost: data.cost || 0,
+        });
+      } else {
+        setTestResult({
+          error: data.error || 'Erreur lors de la génération',
+        });
+      }
+    } catch (error: any) {
+      setTestResult({
+        error: error.message || 'Erreur de connexion au serveur',
+      });
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   return (
@@ -1260,43 +1277,22 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
         </h3>
         
         <div className="space-y-4">
-          {/* Input du problème */}
           <div>
             <Label className="flex items-center gap-2 mb-2">
               <MessageSquare className="w-4 h-4" />
-              Problème Client à Tester
+              Message Client à Tester
             </Label>
             <Textarea
               value={testProblem}
               onChange={(e) => setTestProblem(e.target.value)}
-              placeholder="Ex: Bonjour, j'ai reçu mon laptop mais il ne démarre pas. L'écran reste noir même après avoir chargé la batterie pendant 2 heures. C'est urgent car j'en ai besoin pour travailler demain. Que puis-je faire ?"
+              placeholder="Ex: Bonjour, j'ai reçu mon laptop mais il ne démarre pas. L'écran reste noir même après avoir chargé la batterie. Que puis-je faire ?"
               className="min-h-[120px]"
             />
             <p className="text-xs text-slate-500 mt-2">
-              Entrez un message client pour tester la réponse de l'IA avec votre configuration actuelle
+              Testez la réponse de l'IA avec votre configuration actuelle
             </p>
           </div>
 
-          {/* Catégorie suggérée */}
-          <div>
-            <Label>Catégorie Attendue (Optionnel)</Label>
-            <Select value={testCategory} onValueChange={setTestCategory}>
-              <SelectTrigger className="mt-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">Général (Auto-détection)</SelectItem>
-                <SelectItem value="remboursement">Remboursement</SelectItem>
-                <SelectItem value="sav">SAV / Technique</SelectItem>
-                <SelectItem value="commande">Commande</SelectItem>
-                <SelectItem value="livraison">Livraison</SelectItem>
-                <SelectItem value="info-produit">Info Produit</SelectItem>
-                <SelectItem value="reclamation">Réclamation</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Boutons d'action */}
           <div className="flex gap-2">
             <Button
               onClick={handleRunTest}
@@ -1311,7 +1307,7 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
               ) : (
                 <>
                   <Play className="w-4 h-4 mr-2" />
-                  Générer la Réponse
+                  Tester la Configuration
                 </>
               )}
             </Button>
@@ -1333,195 +1329,106 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
-          {/* Métriques Rapides */}
-          <div className="grid grid-cols-4 gap-4">
-            <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
-              <div className="flex items-center gap-2 mb-1">
-                <Gauge className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Confiance</span>
-              </div>
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                {(testResult.confidence * 100).toFixed(0)}%
-              </div>
+          {testResult.error ? (
+            <Card className="p-6 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20">
+              <p className="text-red-700 dark:text-red-300">
+                ❌ <strong>Erreur :</strong> {testResult.error}
+              </p>
             </Card>
+          ) : (
+            <>
+              {/* Métriques */}
+              {testResult.latency > 0 && (
+                <div className="grid grid-cols-4 gap-4">
+                  <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Gauge className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Confiance</span>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                      {(testResult.confidence * 100).toFixed(0)}%
+                    </div>
+                  </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Latence</span>
-              </div>
-              <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                {testResult.latency.toFixed(0)}ms
-              </div>
-            </Card>
+                  <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Latence</span>
+                    </div>
+                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                      {testResult.latency}ms
+                    </div>
+                  </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
-              <div className="flex items-center gap-2 mb-1">
-                <Hash className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Tokens</span>
-              </div>
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                {testResult.tokens}
-              </div>
-            </Card>
+                  <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Hash className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Tokens</span>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                      {testResult.tokens}
+                    </div>
+                  </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
-              <div className="flex items-center gap-2 mb-1">
-                <DollarSign className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">Coût</span>
-              </div>
-              <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
-                ${testResult.cost}
-              </div>
-            </Card>
-          </div>
-
-          {/* Réponse Générée */}
-          <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold flex items-center gap-2">
-                <Send className="w-5 h-5 text-blue-500" />
-                Réponse Générée par l'IA
-              </h4>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copier
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Exporter
-                </Button>
-              </div>
-            </div>
-            
-            <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border">
-              <div className="whitespace-pre-wrap">{testResult.response}</div>
-            </div>
-
-            {/* Sources RAG */}
-            {testResult.ragSources && testResult.ragSources.length > 0 && (
-              <div className="mt-4">
-                <Label className="flex items-center gap-2 mb-2">
-                  <Database className="w-4 h-4" />
-                  Sources Utilisées (RAG)
-                </Label>
-                <div className="flex gap-2 flex-wrap">
-                  {testResult.ragSources.map((source: string, index: number) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      <FileText className="w-3 h-3 mr-1" />
-                      {source}
-                    </Badge>
-                  ))}
+                  <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
+                    <div className="flex items-center gap-2 mb-1">
+                      <DollarSign className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                      <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">Coût</span>
+                    </div>
+                    <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                      ${testResult.cost.toFixed(4)}
+                    </div>
+                  </Card>
                 </div>
-              </div>
-            )}
-          </Card>
+              )}
 
-          {/* Mode Debug */}
-          {showDebug && (
-            <Card className="p-6 bg-slate-50 dark:bg-slate-900/50 border-slate-300 dark:border-slate-700">
-              <h4 className="font-semibold flex items-center gap-2 mb-4">
-                <Microscope className="w-5 h-5 text-slate-600" />
-                Informations de Debug
-              </h4>
-              
-              <div className="space-y-4">
-                {/* Configuration Utilisée */}
-                <div>
-                  <Label className="text-xs text-slate-500 mb-2 block">Configuration du Modèle</Label>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                      <span className="text-slate-500">Modèle:</span>
-                      <div className="font-mono font-bold">{config.models.primary.model}</div>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                      <span className="text-slate-500">Temperature:</span>
-                      <div className="font-mono font-bold">{config.models.primary.temperature}</div>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                      <span className="text-slate-500">Max Tokens:</span>
-                      <div className="font-mono font-bold">{config.models.primary.maxTokens}</div>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                      <span className="text-slate-500">Top P:</span>
-                      <div className="font-mono font-bold">{config.models.primary.topP}</div>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                      <span className="text-slate-500">Freq Penalty:</span>
-                      <div className="font-mono font-bold">{config.models.primary.frequencyPenalty}</div>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                      <span className="text-slate-500">Pres Penalty:</span>
-                      <div className="font-mono font-bold">{config.models.primary.presencePenalty}</div>
-                    </div>
-                  </div>
+              {/* Réponse Générée */}
+              <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-pink-500" />
+                  Réponse Générée
+                </h4>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border">
+                  <p className="text-sm whitespace-pre-wrap">
+                    {testResult.response}
+                  </p>
                 </div>
+                
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigator.clipboard.writeText(testResult.response)}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copier
+                  </Button>
+                </div>
+              </Card>
 
-                {/* Prompt Système Utilisé */}
-                <div>
-                  <Label className="text-xs text-slate-500 mb-2 block">Prompt Système Envoyé</Label>
-                  <pre className="p-3 bg-white dark:bg-slate-800 rounded border text-xs font-mono overflow-x-auto">
-                    {config.prompts.system.template}
+              {/* Debug Info */}
+              {showDebug && (
+                <Card className="p-6 bg-slate-50 dark:bg-slate-900/50 border-slate-300 dark:border-slate-700">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Microscope className="w-5 h-5" />
+                    Informations de Debug
+                  </h4>
+                  <pre className="text-xs bg-slate-100 dark:bg-slate-800 p-4 rounded-lg overflow-auto">
+                    {JSON.stringify({ 
+                      config: config.models.primary,
+                      result: testResult 
+                    }, null, 2)}
                   </pre>
-                </div>
-
-                {/* Détails de Style */}
-                {config.prompts.style && (
-                  <div>
-                    <Label className="text-xs text-slate-500 mb-2 block">Paramètres de Style Appliqués</Label>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                        <span className="text-slate-500">Humanisation:</span>
-                        <div className="font-mono capitalize">{config.prompts.style.humanization || 'balanced'}</div>
-                      </div>
-                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                        <span className="text-slate-500">Formalité:</span>
-                        <div className="font-mono capitalize">{config.prompts.style.formality || 'neutral'}</div>
-                      </div>
-                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                        <span className="text-slate-500">Longueur:</span>
-                        <div className="font-mono capitalize">{config.prompts.style.responseLength || 'medium'}</div>
-                      </div>
-                      <div className="p-2 bg-white dark:bg-slate-800 rounded border">
-                        <span className="text-slate-500">Ton:</span>
-                        <div className="font-mono capitalize">{config.prompts.style.emotionalTone || 'empathetic'}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Tokens Breakdown */}
-                <div>
-                  <Label className="text-xs text-slate-500 mb-2 block">Répartition des Tokens</Label>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between p-2 bg-white dark:bg-slate-800 rounded">
-                      <span>Prompt (Input):</span>
-                      <span className="font-mono font-bold">{Math.floor(testResult.tokens * 0.4)} tokens</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-white dark:bg-slate-800 rounded">
-                      <span>Réponse (Output):</span>
-                      <span className="font-mono font-bold">{Math.floor(testResult.tokens * 0.6)} tokens</span>
-                    </div>
-                    <div className="flex justify-between p-2 bg-blue-50 dark:bg-blue-950/30 rounded font-bold">
-                      <span>Total:</span>
-                      <span className="font-mono">{testResult.tokens} tokens</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
+                </Card>
+              )}
+            </>
           )}
         </motion.div>
       )}
 
       {/* Exemples rapides */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-slate-200 dark:border-slate-800">
-        <h4 className="font-semibold flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-yellow-500" />
-          Exemples Rapides
-        </h4>
-        
+      <Card className="p-4">
+        <Label className="text-sm font-medium mb-3 block">Exemples Rapides</Label>
         <div className="grid grid-cols-2 gap-2">
           <Button
             variant="outline"
@@ -1567,7 +1474,6 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
     </motion.div>
   );
 }
-
 function SecurityConfigSection({ config, setConfig }: any) {
   return (
     <motion.div

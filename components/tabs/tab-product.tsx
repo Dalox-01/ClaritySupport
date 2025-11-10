@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RegexTester } from '@/components/regex-tester';
 
 interface ProductRule {
   id: string;
