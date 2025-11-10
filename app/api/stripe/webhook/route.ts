@@ -112,6 +112,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const subscriptionData = await stripe.subscriptions.retrieve(session.subscription as string) as any;
   console.log(`✅ Abonnement Stripe récupéré:`, subscriptionData.id);
 
+  // Convertir les timestamps Unix en ISO strings de manière sécurisée
+  const currentPeriodStart = subscriptionData.current_period_start 
+    ? new Date(subscriptionData.current_period_start * 1000).toISOString()
+    : new Date().toISOString();
+  const currentPeriodEnd = subscriptionData.current_period_end
+    ? new Date(subscriptionData.current_period_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // +30 jours par défaut
+
   const subscriptionPayload = {
     user_id: userId,
     plan: planType,
@@ -119,8 +127,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripe_customer_id: session.customer as string,
     stripe_subscription_id: subscriptionData.id,
     stripe_price_id: subscriptionData.items.data[0].price.id,
-    current_period_start: new Date(subscriptionData.current_period_start * 1000).toISOString(),
-    current_period_end: new Date(subscriptionData.current_period_end * 1000).toISOString(),
+    current_period_start: currentPeriodStart,
+    current_period_end: currentPeriodEnd,
     billing_period: billingPeriod || 'monthly',
     cancel_at_period_end: false,
     updated_at: new Date().toISOString(),
@@ -179,6 +187,14 @@ async function handleSubscriptionUpdated(subscription: any) {
     ? subscription.customer
     : subscription.customer?.id;
 
+  // Convertir les timestamps Unix en ISO strings de manière sécurisée
+  const currentPeriodStart = subscription.current_period_start 
+    ? new Date(subscription.current_period_start * 1000).toISOString()
+    : new Date().toISOString();
+  const currentPeriodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   // Mettre à jour l'abonnement
   const { error } = await supabase
     .from('subscriptions')
@@ -186,8 +202,8 @@ async function handleSubscriptionUpdated(subscription: any) {
       plan: planInfo.planType,
       status: normalizedStatus,
       stripe_price_id: priceId,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_start: currentPeriodStart,
+      current_period_end: currentPeriodEnd,
       billing_period: planInfo.billingPeriod,
       cancel_at_period_end: subscription.cancel_at_period_end,
       stripe_customer_id: stripeCustomerId || null,
