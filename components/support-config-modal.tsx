@@ -8,8 +8,6 @@ import {
   FileDown, 
   FileUp, 
   History, 
-  Package,
-  BookOpen,
   Bot,
   AlertCircle,
   CheckCircle2,
@@ -17,15 +15,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { TabProduct } from '@/components/tabs/tab-product';
-import { TabDocumentation } from '@/components/tabs/tab-documentation';
-import { TabAIConfig } from '@/components/tabs/tab-ai-config';
+import { TabAIConfigAdvanced } from '@/components/tabs/tab-ai-config-advanced';
 import { toast } from 'sonner';
 
 interface SupportConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'product' | 'documentation' | 'ai-config';
+  initialTab?: 'ai-config';
   zIndex?: number;
   onFocus?: () => void;
 }
@@ -33,7 +29,7 @@ interface SupportConfigModalProps {
 export function SupportConfigModal({ 
   isOpen, 
   onClose, 
-  initialTab = 'product',
+  initialTab = 'ai-config',
   zIndex = 100,
   onFocus 
 }: SupportConfigModalProps) {
@@ -122,8 +118,6 @@ export function SupportConfigModal({
   };
 
   const tabs = [
-    { id: 'product', label: 'Produit', icon: Package },
-    { id: 'documentation', label: 'Documentation', icon: BookOpen },
     { id: 'ai-config', label: 'Configuration IA', icon: Bot },
   ];
 
@@ -155,10 +149,10 @@ export function SupportConfigModal({
             <div className="flex items-center justify-between p-6">
               <div>
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
-                  Configuration Support
+                  Configuration IA Avancée
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Gérez vos produits, documentation et automatisation IA
+                  Contrôle total de l'intelligence artificielle de votre support
                 </p>
               </div>
 
@@ -204,59 +198,40 @@ export function SupportConfigModal({
               </div>
             </div>
 
-            {/* Tabs Navigation */}
-            <div className="flex gap-1 px-6 pb-4">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all',
-                    activeTab === tab.id
-                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-500/10'
-                  )}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+            {/* Tabs Navigation - Hidden when only one tab */}
+            {tabs.length > 1 && (
+              <div className="flex gap-1 px-6 pb-4">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all',
+                      activeTab === tab.id
+                        ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-500/10'
+                    )}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Content Area */}
-          <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-6">
+          <div className="overflow-y-auto max-h-[calc(90vh-200px)]">
             <AnimatePresence mode="wait">
-              {activeTab === 'product' && (
-                <motion.div
-                  key="product"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                >
-                  <TabProduct onChange={() => setHasChanges(true)} />
-                </motion.div>
-              )}
-
-              {activeTab === 'documentation' && (
-                <motion.div
-                  key="documentation"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                >
-                  <TabDocumentation onChange={() => setHasChanges(true)} />
-                </motion.div>
-              )}
-
               {activeTab === 'ai-config' && (
                 <motion.div
                   key="ai-config"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
+                  className="h-full"
                 >
-                  <TabAIConfig onChange={() => setHasChanges(true)} />
+                  <TabAIConfigAdvanced />
                 </motion.div>
               )}
             </AnimatePresence>

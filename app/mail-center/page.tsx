@@ -189,7 +189,7 @@ export default function MailCenterPage() {
   
   // State pour la modal de configuration support unifiée
   const [isSupportConfigOpen, setIsSupportConfigOpen] = useState(false);
-  const [supportConfigInitialTab, setSupportConfigInitialTab] = useState<'product' | 'documentation' | 'ai-config'>('product');
+  const [supportConfigInitialTab, setSupportConfigInitialTab] = useState<'ai-config'>('ai-config');
   
   // State pour afficher tous les filtres
   const [showAllFilters, setShowAllFilters] = useState(false);
@@ -1207,34 +1207,6 @@ export default function MailCenterPage() {
                   Configuration Support
                 </h3>
                 <div className="flex gap-1.5 flex-col">
-                  {/* Base de connaissances */}
-                  <motion.button
-                    whileHover={{ scale: 1.02, x: 2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setSupportConfigInitialTab('product');
-                      setIsSupportConfigOpen(true);
-                      bringToFront('supportConfig');
-                    }}
-                    className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg border transition-all group text-left",
-                      isLightMode
-                        ? "border-blue-300/40 hover:border-blue-400/60 bg-blue-500/10 hover:bg-blue-500/20"
-                        : "border-blue-500/20 hover:border-blue-400/40 bg-blue-500/10 hover:bg-blue-500/20"
-                    )}
-                    title="Base de connaissances produits"
-                  >
-                    <Database className={cn("w-4 h-4", isLightMode ? "text-blue-600" : "text-blue-400")} />
-                    <div className="flex-1 min-w-0">
-                      <div className={cn("text-xs font-medium", isLightMode ? "text-blue-700" : "text-blue-300")}>
-                        Produits & Documentation
-                      </div>
-                      <div className={cn("text-[10px]", isLightMode ? "text-blue-600/70" : "text-blue-400/70")}>
-                        Gérer le catalogue
-                      </div>
-                    </div>
-                  </motion.button>
-
                   {/* Configuration IA */}
                   <motion.button
                     whileHover={{ scale: 1.02, x: 2 }}
