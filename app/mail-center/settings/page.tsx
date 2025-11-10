@@ -393,7 +393,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* Abonnement */}
-          {subscription && subscription.stripe_subscription_id && (
+          {(subscription?.stripe_subscription_id || (userData.plan !== 'FREE' && userData.stripe_customer_id)) && (
             <Card className="border-slate-800 bg-slate-900/50 p-6">
               <div className="mb-6 flex items-center gap-3">
                 <div className="rounded-lg bg-green-500/10 p-2">
@@ -408,9 +408,9 @@ export default function SettingsPage() {
                     <Label className="text-slate-400">Statut</Label>
                     <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
                       <span className={`text-sm font-semibold ${
-                        subscription.status === 'active' ? 'text-green-400' : 'text-yellow-400'
+                        subscription?.status === 'active' || userData.plan !== 'FREE' ? 'text-green-400' : 'text-yellow-400'
                       }`}>
-                        {subscription.status === 'active' ? '✓ Actif' : subscription.status}
+                        {subscription?.status === 'active' || userData.plan !== 'FREE' ? '✓ Actif' : subscription?.status || 'Actif'}
                       </span>
                     </div>
                   </div>
@@ -419,24 +419,29 @@ export default function SettingsPage() {
                     <Label className="text-slate-400">Renouvellement</Label>
                     <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
                       <span className="text-sm text-slate-300">
-                        {new Date(subscription.current_period_end).toLocaleDateString('fr-FR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        {subscription?.current_period_end 
+                          ? new Date(subscription.current_period_end).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })
+                          : 'Non disponible'
+                        }
                       </span>
                     </div>
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <Label className="text-slate-400">ID Abonnement Stripe</Label>
-                    <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
-                      <code className="text-xs text-slate-300">{subscription.stripe_subscription_id}</code>
+                  {subscription?.stripe_subscription_id && (
+                    <div className="sm:col-span-2">
+                      <Label className="text-slate-400">ID Abonnement Stripe</Label>
+                      <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
+                        <code className="text-xs text-slate-300">{subscription.stripe_subscription_id}</code>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                {subscription.cancel_at_period_end && (
+                {subscription?.cancel_at_period_end && (
                   <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
                     <p className="text-sm text-yellow-400">
                       ⚠️ Votre abonnement sera annulé le {new Date(subscription.current_period_end).toLocaleDateString('fr-FR')}
@@ -454,7 +459,7 @@ export default function SettingsPage() {
                     Gérer le paiement
                   </Button>
 
-                  {!subscription.cancel_at_period_end && (
+                  {!subscription?.cancel_at_period_end && userData.plan !== 'FREE' && (
                     <Button
                       onClick={() => setShowCancelConfirm(true)}
                       variant="outline"

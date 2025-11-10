@@ -29,9 +29,49 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (subError || !subscription) {
-      return NextResponse.json({ 
-        error: 'Aucun abonnement actif trouvé' 
-      }, { status: 404 });
+      // Pas d'abonnement dans subscriptions, vérifier si l'utilisateur a un stripe_customer_id
+      const { data: userData } = await supabase
+        .from('users')
+        .select('stripe_customer_id')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!userData?.stripe_customer_id) {
+        return NextResponse.json({ 
+          error: 'Aucun abonnement actif trouvé' 
+        }, { status: 404 });
+      }
+
+      // Récupérer les abonnements Stripe du client
+      const stripeSubscriptions = await stripe.subscriptions.list({
+        customer: userData.stripe_customer_id,
+        status: 'active',
+        limit: 1,
+      });
+
+      if (stripeSubscriptions.data.length === 0) {
+        return NextResponse.json({ 
+          error: 'Aucun abonnement actif trouvé dans Stripe' 
+        }, { status: 404 });
+      }
+
+      const stripeSubscription = stripeSubscriptions.data[0];
+
+      // Annuler l'abonnement dans Stripe
+      const updatedSubscription = await stripe.subscriptions.update(
+        stripeSubscription.id,
+        {
+          cancel_at_period_end: true,
+        }
+      );
+
+      console.log(`✅ Abonnement ${stripeSubscription.id} annulé à la fin de la période`);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Abonnement résilié avec succès',
+        cancel_at: updatedSubscription.cancel_at,
+      });
     }
 
     // Annuler l'abonnement dans Stripe (à la fin de la période)
@@ -59,14 +99,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Abonnement annulé avec succès',
+      message: 'Abonnement résilié avec succès',
       cancel_at: stripeSubscription.cancel_at,
     });
 
   } catch (error) {
-    console.error('❌ Erreur annulation abonnement:', error);
+    console.error('❌ Erreur résiliation abonnement:', error);
     return NextResponse.json({ 
-      error: 'Erreur lors de l\'annulation de l\'abonnement',
+      error: 'Erreur lors de la résiliation de l\'abonnement',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
