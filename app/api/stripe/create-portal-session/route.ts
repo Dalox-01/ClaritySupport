@@ -24,9 +24,22 @@ export async function POST(req: NextRequest) {
       .eq('status', 'active')
       .single();
 
-    if (error || !subscription?.stripe_customer_id) {
+    let customerId = subscription?.stripe_customer_id;
+
+    // Si pas d'abonnement dans subscriptions, chercher dans users
+    if (error || !customerId) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('stripe_customer_id')
+        .eq('id', session.user.id)
+        .single();
+      
+      customerId = userData?.stripe_customer_id;
+    }
+
+    if (!customerId) {
       return NextResponse.json({ 
-        error: 'Aucun abonnement actif trouvé' 
+        error: 'Aucun client Stripe trouvé' 
       }, { status: 404 });
     }
 
@@ -36,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     // Créer la session de portail client
     const portalSession = await createPortalSession({
-      customerId: subscription.stripe_customer_id,
+      customerId: customerId,
       returnUrl,
     });
 
