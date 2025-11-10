@@ -71,6 +71,13 @@ export async function GET(req: NextRequest) {
                 ? priceToPlans[stripeSub.items.data[0].price.id] || userData.plan 
                 : userData.plan;
 
+              console.log(`📋 Abonnement Stripe récupéré pour ${session.user.id}:`, {
+                id: stripeSub.id,
+                status: stripeSub.status,
+                cancel_at_period_end: stripeSub.cancel_at_period_end,
+                current_period_end: new Date((stripeSub as any).current_period_end * 1000).toISOString(),
+              });
+
               return NextResponse.json({ 
                 subscription: {
                   id: stripeSub.id,

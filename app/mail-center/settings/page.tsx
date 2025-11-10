@@ -95,6 +95,8 @@ export default function SettingsPage() {
       const response = await fetch('/api/subscription/current');
       if (response.ok) {
         const data = await response.json();
+        console.log('🔍 Abonnement chargé:', data.subscription);
+        console.log('📅 cancel_at_period_end:', data.subscription?.cancel_at_period_end);
         setSubscription(data.subscription);
       }
     } catch (error) {
@@ -426,7 +428,7 @@ export default function SettingsPage() {
 
                   <div>
                     <Label className="text-slate-400">
-                      {subscription?.cancel_at_period_end ? 'Actif jusqu\'au' : 'Renouvellement'}
+                      {subscription?.cancel_at_period_end ? 'Prend fin le' : 'Renouvellement'}
                     </Label>
                     <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
                       <span className="text-sm text-slate-300">
