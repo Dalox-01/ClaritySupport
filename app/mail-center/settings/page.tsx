@@ -97,6 +97,11 @@ export default function SettingsPage() {
         const data = await response.json();
         console.log('🔍 Abonnement chargé:', data.subscription);
         console.log('📅 cancel_at_period_end:', data.subscription?.cancel_at_period_end);
+        console.log('🎨 État pour le rendu:', { 
+          cancel_at_period_end: data.subscription?.cancel_at_period_end,
+          status: data.subscription?.status,
+          current_period_end: data.subscription?.current_period_end
+        });
         setSubscription(data.subscription);
       }
     } catch (error) {
@@ -397,11 +402,6 @@ export default function SettingsPage() {
           {/* Abonnement */}
           {(subscription?.stripe_subscription_id || (userData.plan !== 'FREE' && userData.stripe_customer_id)) && (
             <Card className="border-slate-800 bg-slate-900/50 p-6">
-              {console.log('🎨 Rendu section abonnement:', { 
-                cancel_at_period_end: subscription?.cancel_at_period_end,
-                status: subscription?.status,
-                current_period_end: subscription?.current_period_end
-              })}
               <div className="mb-6 flex items-center gap-3">
                 <div className="rounded-lg bg-green-500/10 p-2">
                   <CreditCard className="h-5 w-5 text-green-500" />
