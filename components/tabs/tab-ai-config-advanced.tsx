@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// Import all required Lucide icons including AlertTriangle and Wrench
 import { 
   Settings, Zap, Database, TestTube, BarChart3, Shield, 
   Activity, Cpu, Layers, Code, Brain, FileText, Target,
@@ -12,8 +11,7 @@ import {
   Sparkles, Workflow, Filter, Search, ToggleLeft, ToggleRight,
   Microscope, LineChart, PieChart, Thermometer, Wifi, WifiOff,
   MessageSquare, Send, Pause, FastForward, Rewind, Copy,
-  Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash,
-  AlertTriangle, Wrench
+  Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -1539,7 +1537,7 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
             onClick={() => setTestProblem("Bonjour, je n'ai toujours pas reçu ma commande passée il y a 2 semaines. C'est inadmissible ! Je veux un remboursement immédiat.")}
             className="justify-start text-left h-auto p-3"
           >
-            <AlertTriangle className="w-4 h-4 mr-2 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-orange-500" />
             <span className="text-xs">Réclamation livraison retardée</span>
           </Button>
           
@@ -1549,7 +1547,7 @@ function TestingConfigSection({ config, setConfig, testInput, setTestInput, test
             onClick={() => setTestProblem("Mon laptop ne démarre plus depuis ce matin. L'écran reste noir. Acheté il y a 3 mois. Que faire ?")}
             className="justify-start text-left h-auto p-3"
           >
-            <Wrench className="w-4 h-4 mr-2 flex-shrink-0" />
+            <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
             <span className="text-xs">Problème technique SAV</span>
           </Button>
           
