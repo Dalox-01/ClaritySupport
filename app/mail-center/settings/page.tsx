@@ -20,7 +20,10 @@ import {
   X,
   Shield,
   Key,
-  Calendar
+  Calendar,
+  Eye,
+  EyeOff,
+  Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,6 +57,7 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showSensitiveData, setShowSensitiveData] = useState(false);
   
   const [name, setName] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
@@ -136,19 +140,29 @@ export default function SettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Abonnement annulé. Il restera actif jusqu\'à la fin de la période en cours.');
+        toast.success('Abonnement résilié. Il restera actif jusqu\'à la fin de la période en cours.');
         setShowCancelConfirm(false);
         loadSubscription();
       } else {
         const data = await response.json();
-        toast.error(data.error || 'Erreur lors de l\'annulation');
+        toast.error(data.error || 'Erreur lors de la résiliation');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      toast.error('Erreur lors de l\'annulation');
+      toast.error('Erreur lors de la résiliation');
     } finally {
       setIsCanceling(false);
     }
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copié dans le presse-papier`);
+  };
+
+  const maskSensitiveData = (data: string) => {
+    if (showSensitiveData) return data;
+    return data.replace(/./g, '•');
   };
 
   const openCustomerPortal = async () => {
@@ -285,19 +299,51 @@ export default function SettingsPage() {
 
           {/* Informations du compte */}
           <Card className="border-slate-800 bg-slate-900/50 p-6">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-lg bg-purple-500/10 p-2">
-                <Key className="h-5 w-5 text-purple-500" />
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-purple-500/10 p-2">
+                  <Key className="h-5 w-5 text-purple-500" />
+                </div>
+                <h2 className="text-xl font-bold text-white">Informations du compte</h2>
               </div>
-              <h2 className="text-xl font-bold text-white">Informations du compte</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSensitiveData(!showSensitiveData)}
+                className="border-slate-700 hover:bg-slate-800"
+              >
+                {showSensitiveData ? (
+                  <>
+                    <EyeOff className="mr-2 h-4 w-4" />
+                    Masquer
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Afficher
+                  </>
+                )}
+              </Button>
             </div>
 
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label className="text-slate-400">ID Utilisateur</Label>
-                  <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
-                    <code className="text-xs text-slate-300">{userData.id}</code>
+                  <div className="mt-1 flex items-center gap-2">
+                    <div className="flex-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
+                      <code className="text-xs text-slate-300 font-mono">
+                        {maskSensitiveData(userData.id)}
+                      </code>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(userData.id, 'ID utilisateur')}
+                      className="border-slate-700 hover:bg-slate-800"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
 
@@ -311,8 +357,20 @@ export default function SettingsPage() {
                 {userData.stripe_customer_id && (
                   <div>
                     <Label className="text-slate-400">ID Client Stripe</Label>
-                    <div className="mt-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
-                      <code className="text-xs text-slate-300">{userData.stripe_customer_id}</code>
+                    <div className="mt-1 flex items-center gap-2">
+                      <div className="flex-1 rounded-lg border border-slate-700 bg-slate-800/30 p-3">
+                        <code className="text-xs text-slate-300 font-mono">
+                          {maskSensitiveData(userData.stripe_customer_id)}
+                        </code>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(userData.stripe_customer_id!, 'ID client Stripe')}
+                        className="border-slate-700 hover:bg-slate-800"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -403,7 +461,7 @@ export default function SettingsPage() {
                       className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
                     >
                       <X className="mr-2 h-4 w-4" />
-                      Résilier
+                      Résilier l'abonnement
                     </Button>
                   )}
                 </div>
@@ -454,15 +512,26 @@ export default function SettingsPage() {
               <div className="rounded-lg bg-red-500/10 p-2">
                 <AlertTriangle className="h-6 w-6 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-white">Confirmer l'annulation</h3>
+              <h3 className="text-xl font-bold text-white">Résilier l'abonnement ?</h3>
             </div>
 
             <p className="mb-6 text-slate-400">
-              Êtes-vous sûr de vouloir annuler votre abonnement ? Vous conserverez l'accès jusqu'au{' '}
+              Êtes-vous sûr de vouloir résilier votre abonnement <span className="font-semibold text-white">{subscription?.plan}</span> ? 
+              Vous conserverez l'accès à toutes les fonctionnalités jusqu'au{' '}
               <span className="font-semibold text-white">
-                {subscription && new Date(subscription.current_period_end).toLocaleDateString('fr-FR')}
+                {subscription && new Date(subscription.current_period_end).toLocaleDateString('fr-FR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </span>.
             </p>
+
+            <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+              <p className="text-sm text-yellow-400">
+                ⚠️ Après cette date, votre compte passera automatiquement au plan GRATUIT avec des fonctionnalités limitées.
+              </p>
+            </div>
 
             <div className="flex gap-3">
               <Button
@@ -471,7 +540,7 @@ export default function SettingsPage() {
                 className="flex-1 border-slate-700"
                 disabled={isCanceling}
               >
-                Annuler
+                Non, garder mon abonnement
               </Button>
               <Button
                 onClick={handleCancelSubscription}
@@ -481,12 +550,12 @@ export default function SettingsPage() {
                 {isCanceling ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Annulation...
+                    Résiliation...
                   </>
                 ) : (
                   <>
                     <Check className="mr-2 h-4 w-4" />
-                    Confirmer
+                    Oui, résilier
                   </>
                 )}
               </Button>
