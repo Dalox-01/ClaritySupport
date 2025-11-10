@@ -2,14 +2,40 @@
 // GET /api/admin/sync-subscriptions
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { stripe } from '@/lib/stripe';
 import { supabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+// Liste des emails administrateurs autorisés
+const ADMIN_EMAILS = [
+  'voltedge.batterie@gmail.com',
+  'laszlojeanpierre424@gmail.com',
+  // Ajoutez d'autres emails admin ici
+];
+
 export async function GET(req: NextRequest) {
   try {
-    console.log('🔄 Synchronisation des abonnements Stripe...');
+    // Vérifier l'authentification
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ 
+        error: 'Non authentifié' 
+      }, { status: 401 });
+    }
+
+    // Vérifier les droits admin
+    if (!ADMIN_EMAILS.includes(session.user.email)) {
+      console.warn(`⚠️ Tentative d'accès admin non autorisée: ${session.user.email}`);
+      return NextResponse.json({ 
+        error: 'Accès non autorisé - Droits admin requis' 
+      }, { status: 403 });
+    }
+
+    console.log(`🔄 Synchronisation des abonnements Stripe par ${session.user.email}...`);
 
     // Récupérer tous les utilisateurs avec un stripe_customer_id
     const { data: users, error: usersError } = await supabase
