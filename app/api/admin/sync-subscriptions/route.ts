@@ -57,8 +57,12 @@ export async function GET(req: NextRequest) {
             stripe_customer_id: user.stripe_customer_id,
             stripe_subscription_id: sub.id,
             stripe_price_id: priceId,
-            current_period_start: new Date((sub as any).current_period_start * 1000).toISOString(),
-            current_period_end: new Date((sub as any).current_period_end * 1000).toISOString(),
+            current_period_start: (sub as any).current_period_start 
+              ? new Date((sub as any).current_period_start * 1000).toISOString() 
+              : new Date().toISOString(),
+            current_period_end: (sub as any).current_period_end 
+              ? new Date((sub as any).current_period_end * 1000).toISOString() 
+              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             billing_period: sub.items.data[0]?.price.recurring?.interval || 'month',
             cancel_at_period_end: sub.cancel_at_period_end || false,
           };
