@@ -148,7 +148,7 @@ export default function BillingPage() {
     );
   }
 
-  const currentPlanId = subscription?.plan || 'free';
+  const currentPlanId = (subscription?.plan || 'free').toLowerCase() as PlanType;
   const currentPlan = PRICING_PLANS[currentPlanId];
   const periodEnd = subscription ? new Date(subscription.current_period_end) : null;
 

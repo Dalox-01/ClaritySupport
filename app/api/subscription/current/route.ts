@@ -29,36 +29,36 @@ export async function GET(req: NextRequest) {
     if (error) {
       if (error.code === 'PGRST116') {
         // Pas d'abonnement dans subscriptions, récupérer le plan depuis users
-        const { data: userData } = await supabase
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .select('plan, stripe_customer_id')
           .eq('id', session.user.id)
           .single();
 
-        if (userData) {
-          // Retourner un abonnement basé sur users.plan
+        if (userError || !userData) {
+          console.error('Erreur récupération utilisateur:', userError);
           return NextResponse.json({ 
-            subscription: {
-              id: 'user-plan',
-              user_id: session.user.id,
-              plan: userData.plan || 'FREE',
-              status: 'active',
-              stripe_customer_id: userData.stripe_customer_id || null,
-              stripe_subscription_id: null,
-              stripe_price_id: null,
-              current_period_start: new Date().toISOString(),
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-              billing_period: 'monthly',
-              cancel_at_period_end: false,
-            }
-          });
+            error: 'Utilisateur non trouvé',
+            subscription: null 
+          }, { status: 404 });
         }
 
-        // Vraiment aucun abonnement trouvé
+        // Retourner un abonnement basé sur users.plan
         return NextResponse.json({ 
-          error: 'Aucun abonnement trouvé',
-          subscription: null 
-        }, { status: 404 });
+          subscription: {
+            id: 'user-plan',
+            user_id: session.user.id,
+            plan: userData.plan || 'FREE',
+            status: 'active',
+            stripe_customer_id: userData.stripe_customer_id || null,
+            stripe_subscription_id: null,
+            stripe_price_id: null,
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            billing_period: 'monthly',
+            cancel_at_period_end: false,
+          }
+        });
       }
       
       console.error('Erreur récupération abonnement:', error);
