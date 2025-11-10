@@ -143,6 +143,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.log(`✅ Abonnement ${planType} créé pour user ${userId}`);
     console.log(`✅ Données insérées:`, JSON.stringify(data));
   }
+
+  await syncUserPlan({
+    userId,
+    planType,
+    status: 'active',
+    stripeCustomerId: typeof session.customer === 'string' ? session.customer : session.customer?.id,
+  });
 }
 
 /**
@@ -167,17 +174,23 @@ async function handleSubscriptionUpdated(subscription: any) {
     return;
   }
 
+  const normalizedStatus = mapStripeStatus(subscription.status);
+  const stripeCustomerId = typeof subscription.customer === 'string'
+    ? subscription.customer
+    : subscription.customer?.id;
+
   // Mettre à jour l'abonnement
   const { error } = await supabase
     .from('subscriptions')
     .update({
       plan: planInfo.planType,
-      status: subscription.status === 'active' ? 'active' : subscription.status,
+      status: normalizedStatus,
       stripe_price_id: priceId,
       current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
       current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       billing_period: planInfo.billingPeriod,
       cancel_at_period_end: subscription.cancel_at_period_end,
+      stripe_customer_id: stripeCustomerId || null,
       updated_at: new Date().toISOString(),
     })
     .eq('stripe_subscription_id', subscription.id);
@@ -187,6 +200,13 @@ async function handleSubscriptionUpdated(subscription: any) {
   } else {
     console.log(`✅ Abonnement mis à jour: ${planInfo.planType} (${planInfo.billingPeriod})`);
   }
+
+  await syncUserPlan({
+    userId,
+    planType: planInfo.planType,
+    status: normalizedStatus,
+    stripeCustomerId,
+  });
 }
 
 /**
@@ -208,6 +228,16 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     console.error('❌ Erreur annulation abonnement:', error);
   } else {
     console.log(`✅ Abonnement marqué comme annulé`);
+  }
+
+  const userId = subscription.metadata?.userId;
+  if (userId) {
+    await syncUserPlan({
+      userId,
+      status: 'cancelled',
+    });
+  } else {
+    console.warn('⚠️ Impossible de synchroniser le plan utilisateur: userId absent des métadonnées Stripe');
   }
 }
 
@@ -245,5 +275,83 @@ async function handlePaymentFailed(invoice: any) {
     } else {
       console.log(`⚠️ Abonnement marqué comme past_due`);
     }
+  }
+}
+
+function mapPlanToUserPlan(planType?: string | null): string | null {
+  switch ((planType || '').toLowerCase()) {
+    case 'starter':
+      return 'STARTER';
+    case 'pro':
+      return 'PRO';
+    case 'enterprise':
+      return 'ENTERPRISE';
+    case 'free':
+      return 'FREE';
+    default:
+      return null;
+  }
+}
+
+function mapStripeStatus(status?: string | null): 'active' | 'past_due' | 'cancelled' | 'trial' | 'expired' {
+  switch ((status || '').toLowerCase()) {
+    case 'active':
+      return 'active';
+    case 'trialing':
+    case 'trial':
+      return 'trial';
+    case 'past_due':
+      return 'past_due';
+    case 'canceled':
+    case 'cancelled':
+    case 'incomplete':
+    case 'incomplete_expired':
+    case 'unpaid':
+      return 'cancelled';
+    case 'paused':
+      return 'past_due';
+    default:
+      return 'cancelled';
+  }
+}
+
+async function syncUserPlan(params: {
+  userId: string;
+  planType?: string | null;
+  status?: string | null;
+  stripeCustomerId?: string | null;
+}): Promise<void> {
+  const { userId, planType, status, stripeCustomerId } = params;
+  const normalizedStatus = mapStripeStatus(status);
+  const updates: Record<string, any> = {};
+
+  if (stripeCustomerId) {
+    updates.stripe_customer_id = stripeCustomerId;
+  }
+
+  if (normalizedStatus === 'active' || normalizedStatus === 'trial' || normalizedStatus === 'past_due') {
+    const mappedPlan = mapPlanToUserPlan(planType);
+    if (mappedPlan) {
+      updates.plan = mappedPlan;
+    } else {
+      console.warn(`⚠️ Plan ${planType} non reconnu pour utilisateur ${userId}`);
+    }
+  } else {
+    updates.plan = 'FREE';
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', userId);
+
+  if (error) {
+    console.error('❌ Erreur synchronisation plan utilisateur:', error, { userId, updates });
+  } else {
+    console.log(`✅ Plan utilisateur synchronisé pour ${userId}:`, updates);
   }
 }

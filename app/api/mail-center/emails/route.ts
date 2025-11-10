@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       .from('emails_cache')
       .select('*')
       .eq('user_id', userId)
-      .order('received_at', { ascending: false })
+      .order('received_date', { ascending: false })
       .limit(limit);
 
     if (error) {

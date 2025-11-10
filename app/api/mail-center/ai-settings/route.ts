@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await supabase
       .from('ai_settings')
       .select('*')
-      .eq('user_email', session.user.email)
+      .eq('user_id', session.user.id)
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = not found
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     const { data: existing } = await supabase
       .from('ai_settings')
       .select('id')
-      .eq('user_email', session.user.email)
+      .eq('user_id', session.user.id)
       .single();
 
     let result;
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
           auto_reply_urgent: auto_reply_urgent ?? false,
           updated_at: new Date().toISOString()
         })
-        .eq('user_email', session.user.email)
+        .eq('user_id', session.user.id)
         .select()
         .single();
     } else {
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       result = await supabase
         .from('ai_settings')
         .insert({
-          user_email: session.user.email,
+          user_id: session.user.id,
           enabled: enabled ?? false,
           auto_reply_urgent: auto_reply_urgent ?? false,
           created_at: new Date().toISOString(),
