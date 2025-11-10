@@ -28,7 +28,33 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       if (error.code === 'PGRST116') {
-        // Pas d'abonnement trouvé
+        // Pas d'abonnement dans subscriptions, récupérer le plan depuis users
+        const { data: userData } = await supabase
+          .from('users')
+          .select('plan, stripe_customer_id')
+          .eq('id', session.user.id)
+          .single();
+
+        if (userData) {
+          // Retourner un abonnement basé sur users.plan
+          return NextResponse.json({ 
+            subscription: {
+              id: 'user-plan',
+              user_id: session.user.id,
+              plan: userData.plan || 'FREE',
+              status: 'active',
+              stripe_customer_id: userData.stripe_customer_id || null,
+              stripe_subscription_id: null,
+              stripe_price_id: null,
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              billing_period: 'monthly',
+              cancel_at_period_end: false,
+            }
+          });
+        }
+
+        // Vraiment aucun abonnement trouvé
         return NextResponse.json({ 
           error: 'Aucun abonnement trouvé',
           subscription: null 

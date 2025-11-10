@@ -85,7 +85,15 @@ export function DarkPricing() {
   const router = useRouter();
   const { data: session } = useSession();
 
+  // Récupérer le plan actuel de l'utilisateur
+  const currentPlan = session?.user?.plan || 'FREE';
+
   const handlePlanClick = async (planId: string) => {
+    // Si l'utilisateur a déjà ce plan, ne rien faire
+    if (currentPlan.toUpperCase() === planId.toUpperCase()) {
+      return;
+    }
+
     // If user is not authenticated, redirect to sign in
     if (!session) {
       router.push('/auth/signin');
@@ -371,16 +379,23 @@ export function DarkPricing() {
                   {/* CTA */}
                   <motion.button
                     onClick={() => handlePlanClick(plan.id)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={currentPlan.toUpperCase() === plan.id.toUpperCase()}
+                    whileHover={currentPlan.toUpperCase() !== plan.id.toUpperCase() ? { scale: 1.02 } : {}}
+                    whileTap={currentPlan.toUpperCase() !== plan.id.toUpperCase() ? { scale: 0.98 } : {}}
                     className={`group/btn relative w-full overflow-hidden rounded-full py-4 font-bold transition-all ${
-                      plan.highlighted
+                      currentPlan.toUpperCase() === plan.id.toUpperCase()
+                        ? 'cursor-not-allowed border border-green-500/30 bg-green-500/10 text-green-400 opacity-70'
+                        : plan.highlighted
                         ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/70'
                         : 'border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:border-blue-500/50 hover:bg-blue-500/20'
                     }`}
                   >
-                    <span className="relative z-10">{plan.cta}</span>
-                    {plan.highlighted && (
+                    <span className="relative z-10">
+                      {currentPlan.toUpperCase() === plan.id.toUpperCase() 
+                        ? '✓ Plan actuel' 
+                        : plan.cta}
+                    </span>
+                    {plan.highlighted && currentPlan.toUpperCase() !== plan.id.toUpperCase() && (
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500"
                         initial={{ x: '-100%' }}
