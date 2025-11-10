@@ -1,6 +1,6 @@
 // Plan features and restrictions
 
-export type PlanType = 'FREE' | 'STARTER' | 'PRO' | 'ADMIN';
+export type PlanType = 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'ADMIN';
 
 export const PLAN_FEATURES = {
   FREE: {
@@ -14,7 +14,7 @@ export const PLAN_FEATURES = {
     chatbot: false,
   },
   STARTER: {
-    generations: 500,
+    generations: 2000,
     signatures: 3,
     variables: true,
     customTemplates: 10,
@@ -24,7 +24,17 @@ export const PLAN_FEATURES = {
     chatbot: false,
   },
   PRO: {
-    generations: 5000,
+    generations: 7500,
+    signatures: -1, // -1 = unlimited
+    variables: true,
+    customTemplates: -1, // -1 = unlimited
+    voiceDictation: true,
+    pdfWatermark: false,
+    historyDays: -1, // -1 = unlimited
+    chatbot: true,
+  },
+  ENTERPRISE: {
+    generations: 25000,
     signatures: -1, // -1 = unlimited
     variables: true,
     customTemplates: -1, // -1 = unlimited
@@ -86,6 +96,7 @@ export function getPlanName(plan: PlanType): string {
     FREE: 'Gratuit',
     STARTER: 'Starter',
     PRO: 'Pro',
+    ENTERPRISE: 'Enterprise',
     ADMIN: 'Admin',
   };
   return names[plan];
@@ -94,8 +105,9 @@ export function getPlanName(plan: PlanType): string {
 export function getPlanPrice(plan: PlanType): number {
   const prices = {
     FREE: 0,
-    STARTER: 7.99,
-    PRO: 18.99,
+    STARTER: 49,
+    PRO: 139,
+    ENTERPRISE: 229,
     ADMIN: 0,
   };
   return prices[plan];

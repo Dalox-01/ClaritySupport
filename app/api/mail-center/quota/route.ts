@@ -35,8 +35,9 @@ export async function GET(req: NextRequest) {
     // Déterminer les limites selon le plan (QUOTA GLOBAL)
     const limits: Record<string, number> = {
       'FREE': 10,
-      'STARTER': 500,
-      'PRO': 5000,
+      'STARTER': 2000,
+      'PRO': 7500,
+      'ENTERPRISE': 25000,
       'ADMIN': 999999
     };
 
@@ -86,8 +87,9 @@ export async function POST(req: NextRequest) {
     // Vérifier l'accès (FREE peut utiliser mais avec limite de 10)
     const limits: Record<string, number> = {
       'FREE': 10,
-      'STARTER': 500,
-      'PRO': 5000,
+      'STARTER': 2000,
+      'PRO': 7500,
+      'ENTERPRISE': 25000,
       'ADMIN': 999999
     };
 
