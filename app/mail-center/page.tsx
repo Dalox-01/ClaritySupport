@@ -954,6 +954,10 @@ export default function MailCenterPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className={cn(
               "hidden lg:block w-64 flex-shrink-0 space-y-4 sticky top-24 self-start h-[calc(100vh-7rem)] overflow-y-auto",
+              // Scrollbar personnalisée selon le thème
+              isLightMode 
+                ? "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-gray-200 [&::-webkit-scrollbar-thumb:hover]:bg-gray-50"
+                : "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-black [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:border [&::-webkit-scrollbar-thumb]:border-gray-800 [&::-webkit-scrollbar-thumb:hover]:bg-gray-900",
               mobileMenuOpen && cn(
                 "fixed inset-y-0 left-0 z-40 w-72 p-4 pt-24 overflow-y-auto shadow-2xl lg:relative lg:inset-auto lg:z-auto lg:w-64 lg:p-0 lg:pt-0 lg:shadow-none",
                 isLightMode ? "bg-blue-50" : "bg-[#0A0E27]"
