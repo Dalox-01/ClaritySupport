@@ -87,8 +87,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { SUPPORT_CATEGORIES, getCategoryColor, getCategoryConfig } from '@/lib/support-categories';
 import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/lib/product-knowledge';
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
-import { KnowledgeBaseModal } from '@/components/knowledge-base-modal';
-import { AIConfigModal } from '@/components/ai-config-modal';
+import { SupportConfigModal } from '@/components/support-config-modal';
 
 // Composant TiltCard amélioré avec effets 3D
 function TiltCard({ children, className, glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
@@ -185,13 +184,12 @@ export default function MailCenterPage() {
   const [windowZIndexes, setWindowZIndexes] = useState({
     emailDetail: 50,
     replyGenerator: 60,
-    knowledgeBase: 70,
-    aiConfig: 70,
+    supportConfig: 70,
   });
   
-  // State pour la base de connaissances et configuration IA
-  const [isKnowledgeBaseOpen, setIsKnowledgeBaseOpen] = useState(false);
-  const [isAIConfigOpen, setIsAIConfigOpen] = useState(false);
+  // State pour la modal de configuration support unifiée
+  const [isSupportConfigOpen, setIsSupportConfigOpen] = useState(false);
+  const [supportConfigInitialTab, setSupportConfigInitialTab] = useState<'product' | 'documentation' | 'ai-config'>('product');
   
   // State pour afficher tous les filtres
   const [showAllFilters, setShowAllFilters] = useState(false);
@@ -1214,8 +1212,9 @@ export default function MailCenterPage() {
                     whileHover={{ scale: 1.02, x: 2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      setIsKnowledgeBaseOpen(true);
-                      bringToFront('knowledgeBase');
+                      setSupportConfigInitialTab('product');
+                      setIsSupportConfigOpen(true);
+                      bringToFront('supportConfig');
                     }}
                     className={cn(
                       "flex items-center gap-2 p-2 rounded-lg border transition-all group text-left",
@@ -1241,8 +1240,9 @@ export default function MailCenterPage() {
                     whileHover={{ scale: 1.02, x: 2 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      setIsAIConfigOpen(true);
-                      bringToFront('aiConfig');
+                      setSupportConfigInitialTab('ai-config');
+                      setIsSupportConfigOpen(true);
+                      bringToFront('supportConfig');
                     }}
                     className={cn(
                       "flex items-center gap-2 p-2 rounded-lg border transition-all group text-left",
@@ -1676,19 +1676,13 @@ export default function MailCenterPage() {
         onFocus={() => bringToFront('replyGenerator')}
       />
       
-      {/* Fenêtres de configuration */}
-      <KnowledgeBaseModal
-        isOpen={isKnowledgeBaseOpen}
-        onClose={() => setIsKnowledgeBaseOpen(false)}
-        zIndex={windowZIndexes.knowledgeBase}
-        onFocus={() => bringToFront('knowledgeBase')}
-      />
-      
-      <AIConfigModal
-        isOpen={isAIConfigOpen}
-        onClose={() => setIsAIConfigOpen(false)}
-        zIndex={windowZIndexes.aiConfig}
-        onFocus={() => bringToFront('aiConfig')}
+      {/* Modal de configuration support unifiée */}
+      <SupportConfigModal
+        isOpen={isSupportConfigOpen}
+        onClose={() => setIsSupportConfigOpen(false)}
+        initialTab={supportConfigInitialTab}
+        zIndex={windowZIndexes.supportConfig}
+        onFocus={() => bringToFront('supportConfig')}
       />
       
       {/* Dialogue de réponse rapide */}

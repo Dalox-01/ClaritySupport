@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 // Liste des emails administrateurs autorisés
 const ADMIN_EMAILS = [
-  'voltedge.batterie@gmail.com',
+  '',
   'laszlojeanpierre424@gmail.com',
   // Ajoutez d'autres emails admin ici
 ];
