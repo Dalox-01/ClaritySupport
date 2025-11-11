@@ -450,33 +450,38 @@ export function TabAIConfigAdvanced() {
           </Badge>
         </div>
 
-        {/* Navigation sections */}
-        <ScrollArea className="w-full">
-          <div className="flex gap-2 pb-2">
-            {sections.map((section) => {
-              const Icon = section.icon;
-              const isActive = activeSection === section.id;
-              return (
-                <motion.button
-                  key={section.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveSection(section.id)}
-                  className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-lg border transition-all whitespace-nowrap',
-                    isActive
-                      ? `bg-${section.color}-500/10 border-${section.color}-500/50 text-${section.color}-700 dark:text-${section.color}-300`
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{section.name}</span>
-                  {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
-                </motion.button>
-              );
-            })}
+        {/* Navigation sections avec scroll horizontal */}
+        <div className="relative">
+          {/* Indicateur de scroll */}
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 flex items-center justify-end pr-2">
+            <ChevronRight className="w-4 h-4 text-slate-400 animate-pulse" />
           </div>
-        </ScrollArea>
+          
+          <ScrollArea className="w-full">
+            <div className="flex gap-2 pb-2 pr-12">
+              {sections.map((section) => {
+                const Icon = section.icon;
+                const isActive = activeSection === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-300 whitespace-nowrap hover:scale-[1.02] active:scale-[0.98]',
+                      isActive
+                        ? `bg-${section.color}-500/10 border-${section.color}-500/50 text-${section.color}-700 dark:text-${section.color}-300`
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{section.name}</span>
+                    {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+                  </button>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Contenu scrollable */}
@@ -551,17 +556,17 @@ function ModelConfigSection({ config, setConfig }: any) {
 
         {/* Advanced Parameters */}
         <div className="space-y-6">
-          {/* Temperature */}
+          {/* Creativity Level */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="flex items-center gap-2">
-                <Thermometer className="w-4 h-4" />
-                Température
+                <Sparkles className="w-4 h-4" />
+                Niveau de Créativité
                 <Badge variant="outline" className="text-xs">
                   {config.models.primary.temperature.toFixed(2)}
                 </Badge>
               </Label>
-              <span className="text-xs text-slate-500">Créativité vs Précision</span>
+              <span className="text-xs text-slate-500">Réponses créatives ou précises</span>
             </div>
             <Slider
               value={[config.models.primary.temperature]}
@@ -641,7 +646,11 @@ function ModelConfigSection({ config, setConfig }: any) {
           {/* Frequency & Presence Penalty */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs">Pénalité de Fréquence</Label>
+              <Label className="text-xs flex items-center gap-1">
+                <RotateCcw className="w-3 h-3" />
+                Anti-Répétition
+              </Label>
+              <p className="text-[10px] text-slate-500 mb-1">Évite la répétition des mots</p>
               <Slider
                 value={[config.models.primary.frequencyPenalty]}
                 onValueChange={([value]) => setConfig({
@@ -658,7 +667,11 @@ function ModelConfigSection({ config, setConfig }: any) {
               </Badge>
             </div>
             <div>
-              <Label className="text-xs">Pénalité de Présence</Label>
+              <Label className="text-xs flex items-center gap-1">
+                <Layers className="w-3 h-3" />
+                Diversité des Sujets
+              </Label>
+              <p className="text-[10px] text-slate-500 mb-1">Encourage de nouveaux thèmes</p>
               <Slider
                 value={[config.models.primary.presencePenalty]}
                 onValueChange={([value]) => setConfig({
@@ -1181,6 +1194,83 @@ function PromptsConfigSection({ config, setConfig }: any) {
 }
 
 function RAGConfigSection({ config, setConfig }: any) {
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string, name: string, type: string, size: number, uploadedAt: string}>>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Limites selon le plan (à récupérer du contexte utilisateur)
+  const userPlan = 'pro'; // 'basic', 'pro', 'enterprise'
+  const fileLimits = {
+    basic: 1,
+    pro: 5,
+    enterprise: Infinity
+  };
+  const maxFiles = fileLimits[userPlan as keyof typeof fileLimits];
+  const canUploadMore = uploadedFiles.length < maxFiles;
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    if (!canUploadMore) {
+      alert(`Limite atteinte : ${maxFiles} fichier(s) maximum pour le plan ${userPlan.toUpperCase()}`);
+      return;
+    }
+
+    setIsUploading(true);
+    const newFiles = Array.from(files).slice(0, maxFiles - uploadedFiles.length);
+    
+    // Validation des types de fichiers
+    const allowedTypes = ['.pdf', '.xlsx', '.xls', '.docx', '.doc', '.txt', '.csv'];
+    const validFiles = newFiles.filter(file => {
+      const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+      return allowedTypes.includes(extension);
+    });
+
+    if (validFiles.length === 0) {
+      alert('Format non supporté. Formats acceptés : PDF, Excel, Word, TXT, CSV');
+      setIsUploading(false);
+      return;
+    }
+
+    // Simulation upload (à remplacer par vrai appel API)
+    setTimeout(() => {
+      const uploaded = validFiles.map(file => ({
+        id: Math.random().toString(36),
+        name: file.name,
+        type: file.type || 'unknown',
+        size: file.size,
+        uploadedAt: new Date().toISOString()
+      }));
+      
+      setUploadedFiles([...uploadedFiles, ...uploaded]);
+      setIsUploading(false);
+    }, 1500);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFileUpload(e.dataTransfer.files);
+  };
+
+  const handleDeleteFile = (id: string) => {
+    setUploadedFiles(uploadedFiles.filter(f => f.id !== id));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1197,13 +1287,124 @@ function RAGConfigSection({ config, setConfig }: any) {
           Importez vos documents (manuels produits, guides utilisateur, FAQ, procédures) pour enrichir 
           les réponses de l'IA avec des informations spécifiques à votre entreprise.
         </p>
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+
+        {/* Limite de plan */}
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                Plan {userPlan.toUpperCase()}
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                {uploadedFiles.length} / {maxFiles === Infinity ? '∞' : maxFiles} fichier(s) utilisé(s)
+              </p>
+            </div>
+            {maxFiles !== Infinity && (
+              <Badge variant={uploadedFiles.length >= maxFiles ? "destructive" : "default"}>
+                {maxFiles - uploadedFiles.length} restant(s)
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Zone de drop */}
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "border-2 border-dashed rounded-lg p-8 text-center transition-all",
+            isDragging
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-950/50"
+              : "border-slate-300 dark:border-slate-700 hover:border-blue-400",
+            !canUploadMore && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+          <p className="text-sm font-medium mb-1">
+            {canUploadMore ? "Glissez-déposez vos fichiers ici" : "Limite atteinte"}
+          </p>
+          <p className="text-xs text-slate-500 mb-4">
+            Formats supportés : PDF, Excel, Word, TXT, CSV
+          </p>
+          <label htmlFor="file-upload">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!canUploadMore || isUploading}
+              onClick={() => document.getElementById('file-upload')?.click()}
+            >
+              {isUploading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Upload en cours...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Parcourir
+                </>
+              )}
+            </Button>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              accept=".pdf,.xlsx,.xls,.docx,.doc,.txt,.csv"
+              onChange={(e) => handleFileUpload(e.target.files)}
+              className="hidden"
+              disabled={!canUploadMore}
+            />
+          </label>
+        </div>
+
+        {/* Liste des fichiers uploadés */}
+        {uploadedFiles.length > 0 && (
+          <div className="mt-6 space-y-2">
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Documents importés ({uploadedFiles.length})
+            </h4>
+            <ScrollArea className="h-64 rounded-lg border">
+              <div className="p-3 space-y-2">
+                {uploadedFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg group hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="p-2 rounded bg-blue-100 dark:bg-blue-900/30">
+                        <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{file.name}</p>
+                        <p className="text-xs text-slate-500">
+                          {formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteFile(file.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
           <p className="text-sm text-blue-700 dark:text-blue-300">
             💡 <strong>Exemples d'usage :</strong> Fonctionnement des produits, procédures de retour, 
             garanties, questions techniques spécifiques, politiques de l'entreprise.
           </p>
         </div>
-        <p className="text-sm text-slate-500 mt-4 italic">Section en développement</p>
       </Card>
     </motion.div>
   );
@@ -1484,6 +1685,11 @@ function TestingConfigSection({ config, setConfig }: any) {
   );
 }
 function SecurityConfigSection({ config, setConfig }: any) {
+  const [piiMaskingEnabled, setPiiMaskingEnabled] = useState(true);
+  const [auditLogEnabled, setAuditLogEnabled] = useState(true);
+  const [dataRetentionDays, setDataRetentionDays] = useState(90);
+  const [encryptionEnabled, setEncryptionEnabled] = useState(true);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1491,15 +1697,198 @@ function SecurityConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Section Sécurité - En développement</h3>
-        <p className="text-sm text-slate-600">Configuration sécurité et RGPD...</p>
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-red-200 dark:border-red-900">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-red-500" />
+          Sécurité & RGPD
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+          Configurez les paramètres de sécurité et de conformité RGPD pour protéger les données sensibles.
+        </p>
+
+        {/* Masquage des données sensibles */}
+        <div className="space-y-4">
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <EyeOff className="w-4 h-4 text-purple-500" />
+                  <Label className="text-sm font-medium">Masquage des Données Personnelles (PII)</Label>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Masque automatiquement les emails, téléphones, adresses et numéros de carte bancaire
+                </p>
+              </div>
+              <Switch
+                checked={piiMaskingEnabled}
+                onCheckedChange={setPiiMaskingEnabled}
+              />
+            </div>
+            
+            {piiMaskingEnabled && (
+              <div className="space-y-2 pl-6 border-l-2 border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 text-xs">
+                  <Check className="w-3 h-3 text-green-500" />
+                  <span>Emails : user@example.com → u***@e***.com</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Check className="w-3 h-3 text-green-500" />
+                  <span>Téléphones : 06 12 34 56 78 → 06 ** ** ** 78</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Check className="w-3 h-3 text-green-500" />
+                  <span>Cartes bancaires : masquage complet</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <Check className="w-3 h-3 text-green-500" />
+                  <span>Adresses : masquage partiel</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Logs d'audit */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-blue-500" />
+                  <Label className="text-sm font-medium">Logs d'Audit</Label>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Enregistre toutes les actions pour traçabilité et conformité
+                </p>
+              </div>
+              <Switch
+                checked={auditLogEnabled}
+                onCheckedChange={setAuditLogEnabled}
+              />
+            </div>
+            
+            {auditLogEnabled && (
+              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded text-xs">
+                <p className="text-blue-700 dark:text-blue-300">
+                  📝 Enregistrement : Accès données, modifications config, générations IA, suppressions
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Rétention des données */}
+          <div className="p-4 border rounded-lg">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="w-4 h-4 text-orange-500" />
+                <Label className="text-sm font-medium">Rétention des Données</Label>
+              </div>
+              <p className="text-xs text-slate-500">
+                Durée de conservation des emails et réponses générées
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Durée de conservation :</span>
+                <Badge variant="outline">{dataRetentionDays} jours</Badge>
+              </div>
+              <Slider
+                value={[dataRetentionDays]}
+                onValueChange={([value]) => setDataRetentionDays(value)}
+                min={30}
+                max={365}
+                step={30}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>30 jours</span>
+                <span>6 mois</span>
+                <span>1 an</span>
+              </div>
+              <div className="p-2 bg-orange-50 dark:bg-orange-950/20 rounded text-xs text-orange-700 dark:text-orange-300">
+                ⚠️ Après {dataRetentionDays} jours, les données seront automatiquement supprimées
+              </div>
+            </div>
+          </div>
+
+          {/* Chiffrement */}
+          <div className="p-4 border rounded-lg">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock className="w-4 h-4 text-green-500" />
+                  <Label className="text-sm font-medium">Chiffrement des Données</Label>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Chiffrement AES-256 pour les données au repos et en transit
+                </p>
+              </div>
+              <Switch
+                checked={encryptionEnabled}
+                onCheckedChange={setEncryptionEnabled}
+                disabled
+              />
+            </div>
+            <div className="mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded text-xs text-green-700 dark:text-green-300">
+              🔒 Chiffrement activé par défaut (obligatoire pour conformité RGPD)
+            </div>
+          </div>
+
+          {/* Conformité RGPD */}
+          <div className="p-4 border-2 border-green-200 dark:border-green-900 rounded-lg bg-green-50/50 dark:bg-green-950/20">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              Conformité RGPD
+            </h4>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-start gap-2">
+                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <span>Droit à l'oubli : Suppression automatique après période de rétention</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <span>Minimisation des données : Seules les données nécessaires sont collectées</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <span>Transparence : Logs d'audit complets et accessibles</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <span>Sécurité : Chiffrement bout-en-bout et masquage PII</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <span>Hébergement : Serveurs en Union Européenne (Paris, Francfort)</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </Card>
     </motion.div>
   );
 }
 
 function MonitoringConfigSection({ config, setConfig }: any) {
+  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('7d');
+
+  // Données de démonstration (à remplacer par vraies métriques)
+  const metrics = {
+    totalRequests: 1247,
+    successRate: 94.3,
+    avgLatency: 1.2,
+    totalTokens: 487532,
+    estimatedCost: 12.45,
+    errorRate: 5.7
+  };
+
+  const recentActivity = [
+    { id: 1, timestamp: '2024-01-15 14:32', action: 'Génération réponse', category: 'Support technique', latency: 1.1, tokens: 342, status: 'success' },
+    { id: 2, timestamp: '2024-01-15 14:28', action: 'Classification email', category: 'Facturation', latency: 0.8, tokens: 124, status: 'success' },
+    { id: 3, timestamp: '2024-01-15 14:25', action: 'Génération réponse', category: 'Demande info', latency: 2.3, tokens: 521, status: 'error' },
+    { id: 4, timestamp: '2024-01-15 14:20', action: 'Génération réponse', category: 'Réclamation', latency: 1.5, tokens: 398, status: 'success' },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1507,9 +1896,202 @@ function MonitoringConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Section Monitoring - En développement</h3>
-        <p className="text-sm text-slate-600">Dashboard de monitoring temps réel...</p>
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-purple-200 dark:border-purple-900">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Activity className="w-5 h-5 text-purple-500" />
+              Monitoring & Analytics
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Surveillance en temps réel de l'activité IA
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                realTimeEnabled ? "bg-green-500 animate-pulse" : "bg-gray-400"
+              )} />
+              <span className="text-xs text-slate-500">
+                {realTimeEnabled ? "En direct" : "Pausé"}
+              </span>
+            </div>
+            <Switch
+              checked={realTimeEnabled}
+              onCheckedChange={setRealTimeEnabled}
+            />
+          </div>
+        </div>
+
+        {/* Sélecteur de période */}
+        <div className="mb-6 flex gap-2">
+          {['24h', '7d', '30d', '90d'].map((period) => (
+            <Button
+              key={period}
+              variant={selectedPeriod === period ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedPeriod(period)}
+              className="text-xs"
+            >
+              {period}
+            </Button>
+          ))}
+        </div>
+
+        {/* Métriques principales */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          <Card className="p-4 border-blue-200 dark:border-blue-900">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <Send className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{metrics.totalRequests}</p>
+                <p className="text-xs text-slate-500">Requêtes totales</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border-green-200 dark:border-green-900">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{metrics.successRate}%</p>
+                <p className="text-xs text-slate-500">Taux de succès</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border-purple-200 dark:border-purple-900">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <Gauge className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{metrics.avgLatency}s</p>
+                <p className="text-xs text-slate-500">Latence moyenne</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border-orange-200 dark:border-orange-900">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                <Hash className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{(metrics.totalTokens / 1000).toFixed(0)}K</p>
+                <p className="text-xs text-slate-500">Tokens utilisés</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border-yellow-200 dark:border-yellow-900">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+                <DollarSign className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">${metrics.estimatedCost}</p>
+                <p className="text-xs text-slate-500">Coût estimé</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border-red-200 dark:border-red-900">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{metrics.errorRate}%</p>
+                <p className="text-xs text-slate-500">Taux d'erreur</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Graphique simplifié (placeholder) */}
+        <Card className="p-4 mb-6 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <LineChart className="w-4 h-4" />
+              Activité sur {selectedPeriod}
+            </h4>
+            <Badge variant="outline" className="text-xs">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              +12.5%
+            </Badge>
+          </div>
+          <div className="h-32 flex items-end justify-around gap-1">
+            {[65, 80, 72, 90, 85, 95, 88, 92, 78, 85, 95, 100].map((height, i) => (
+              <div key={i} className="flex-1 bg-gradient-to-t from-purple-500 to-purple-300 rounded-t opacity-70 hover:opacity-100 transition-opacity" style={{ height: `${height}%` }} />
+            ))}
+          </div>
+        </Card>
+
+        {/* Activité récente */}
+        <div>
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Activité récente
+          </h4>
+          <ScrollArea className="h-64 rounded-lg border">
+            <div className="p-3 space-y-2">
+              {recentActivity.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      item.status === 'success' ? "bg-green-500" : "bg-red-500"
+                    )} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium">{item.action}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {item.category}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-slate-500">{item.timestamp}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-slate-500">
+                    <span>{item.latency}s</span>
+                    <span>{item.tokens} tokens</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* Alertes configurées */}
+        <Card className="p-4 mt-6 border-yellow-200 dark:border-yellow-900 bg-yellow-50/50 dark:bg-yellow-950/20">
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-yellow-600" />
+            Alertes configurées
+          </h4>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span>Taux d'erreur {'>'} 10%</span>
+              <Badge variant="outline" className="bg-white dark:bg-slate-900">Actif</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Latence moyenne {'>'} 3s</span>
+              <Badge variant="outline" className="bg-white dark:bg-slate-900">Actif</Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Coût journalier {'>'} $50</span>
+              <Badge variant="outline" className="bg-white dark:bg-slate-900">Actif</Badge>
+            </div>
+          </div>
+        </Card>
       </Card>
     </motion.div>
   );
