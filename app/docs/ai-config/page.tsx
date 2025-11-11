@@ -280,13 +280,15 @@ export default function AIConfigDocumentation() {
 
             <div className="space-y-4">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                <strong>Clé API :</strong> Votre clé OpenAI est stockée de manière sécurisée côté serveur. 
-                Elle n'est jamais exposée dans le navigateur.
+                <strong>Clé API OpenAI :</strong> La clé API utilisée appartient au propriétaire de la plateforme. 
+                Tous les appels à l'IA sont effectués via cette clé centralisée, ce qui permet un contrôle total 
+                des coûts et de la qualité du service.
               </p>
               <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-900">
                 <p className="text-sm text-red-700 dark:text-red-300">
-                  ⚠️ <strong>Important :</strong> Toutes les configurations sont sauvegardées localement et synchronisées 
-                  de manière sécurisée. Les données sensibles sont chiffrées.
+                  ⚠️ <strong>Important :</strong> La clé API est stockée de manière sécurisée côté serveur 
+                  et n'est jamais exposée aux utilisateurs. Les configurations sont sauvegardées de manière 
+                  chiffrée et conforme au RGPD.
                 </p>
               </div>
             </div>

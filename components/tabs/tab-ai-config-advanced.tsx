@@ -424,7 +424,6 @@ export function TabAIConfigAdvanced() {
     { id: 'models', name: 'Modèles & Performance', icon: Cpu, color: 'blue' },
     { id: 'prompts', name: 'Prompts & Contexte', icon: FileText, color: 'purple' },
     { id: 'rag', name: 'Base de Connaissances', icon: Database, color: 'blue' },
-    { id: 'fewshots', name: 'Exemples & Entraînement', icon: Brain, color: 'orange' },
     { id: 'testing', name: 'Tests & Analyse', icon: TestTube, color: 'pink' },
     { id: 'security', name: 'Sécurité & RGPD', icon: Shield, color: 'red' },
     { id: 'monitoring', name: 'Surveillance & Logs', icon: Activity, color: 'cyan' },
@@ -492,9 +491,6 @@ export function TabAIConfigAdvanced() {
             )}
             {activeSection === 'rag' && (
               <RAGConfigSection key="rag" config={config} setConfig={setConfig} />
-            )}
-            {activeSection === 'fewshots' && (
-              <FewShotsConfigSection key="fewshots" config={config} setConfig={setConfig} />
             )}
             {activeSection === 'testing' && (
               <TestingConfigSection 
@@ -1192,9 +1188,22 @@ function RAGConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Section RAG - En développement</h3>
-        <p className="text-sm text-slate-600">Configuration RAG personnalisée...</p>
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-blue-200 dark:border-blue-900">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Database className="w-5 h-5 text-blue-500" />
+          Base de Connaissances (RAG)
+        </h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Importez vos documents (manuels produits, guides utilisateur, FAQ, procédures) pour enrichir 
+          les réponses de l'IA avec des informations spécifiques à votre entreprise.
+        </p>
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            💡 <strong>Exemples d'usage :</strong> Fonctionnement des produits, procédures de retour, 
+            garanties, questions techniques spécifiques, politiques de l'entreprise.
+          </p>
+        </div>
+        <p className="text-sm text-slate-500 mt-4 italic">Section en développement</p>
       </Card>
     </motion.div>
   );

@@ -1,130 +1,71 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
 
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  opacity: number;
+interface AnimatedBackgroundProps {
+  variant?: 'default' | 'mesh' | 'dots' | 'waves';
 }
 
-export function AnimatedBackground({ variant = 'default' }: { variant?: 'default' | 'mesh' | 'dots' | 'waves' }) {
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    // Générer des particules
-    const newParticles: Particle[] = [];
-    for (let i = 0; i < 50; i++) {
-      newParticles.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 1,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.5 + 0.2,
-      });
-    }
-    setParticles(newParticles);
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
+// Optimisé : Réduction drastique du nombre de particules et utilisation de CSS pour animations
+export const AnimatedBackground = memo(({ variant = 'default' }: AnimatedBackgroundProps) => {
+  
   if (variant === 'mesh') {
     return (
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-30">
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            backgroundPosition: ['0% 0%', '100% 100%'],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            repeatType: 'reverse',
-            ease: 'linear',
-          }}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-20">
+        {/* Grille statique en CSS (beaucoup plus performant) */}
+        <div 
+          className="absolute inset-0 animate-mesh"
           style={{
             backgroundImage: `
-              linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-              linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px)
+              linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+              linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px)
             `,
-            backgroundSize: '50px 50px',
+            backgroundSize: '60px 60px',
           }}
         />
         
-        {/* Gradient orbs */}
-        <motion.div
-          className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-purple-500/10 blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, -50, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 1,
-          }}
-        />
+        {/* Orbes simplifiés - réduit de 2 à 2 avec animations CSS */}
+        <div className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/5 blur-3xl animate-float" />
+        <div className="absolute right-1/4 bottom-1/4 h-96 w-96 rounded-full bg-purple-500/5 blur-3xl animate-float-delayed" />
       </div>
     );
   }
 
   if (variant === 'dots') {
+    // Réduction de 50 à 12 particules
+    const particles = useMemo(() => 
+      Array.from({ length: 12 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2 + 1,
+        delay: i * 0.3,
+        duration: 4 + i * 0.5,
+      })), 
+    []);
+
     return (
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-40">
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-30">
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="absolute rounded-full bg-gradient-to-br from-blue-500 to-purple-500"
+            className="absolute rounded-full bg-gradient-to-br from-blue-400/40 to-purple-400/40"
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
               width: particle.size,
               height: particle.size,
-              opacity: particle.opacity,
             }}
             animate={{
-              x: [(particle.x + mousePos.x) * 0.01, (particle.x - mousePos.x) * 0.01],
-              y: [(particle.y + mousePos.y) * 0.01, (particle.y - mousePos.y) * 0.01],
               scale: [1, 1.5, 1],
+              opacity: [0.3, 0.6, 0.3],
             }}
             transition={{
-              duration: 3 + particle.id * 0.1,
+              duration: particle.duration,
               repeat: Infinity,
               ease: 'easeInOut',
+              delay: particle.delay,
             }}
           />
         ))}
@@ -134,23 +75,24 @@ export function AnimatedBackground({ variant = 'default' }: { variant?: 'default
 
   if (variant === 'waves') {
     return (
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-20">
-        {[...Array(5)].map((_, i) => (
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-15">
+        {/* Réduction de 5 à 3 vagues */}
+        {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
             className="absolute inset-0"
             style={{
-              background: `radial-gradient(circle at 50% 50%, rgba(59, 130, 246, ${0.1 - i * 0.02}), transparent ${30 + i * 15}%)`,
+              background: `radial-gradient(circle at 50% 50%, rgba(59, 130, 246, ${0.08 - i * 0.02}), transparent ${35 + i * 20}%)`,
             }}
             animate={{
-              scale: [1, 1.5, 1],
-              opacity: [0.3, 0.1, 0.3],
+              scale: [1, 1.3, 1],
+              opacity: [0.4, 0.2, 0.4],
             }}
             transition={{
-              duration: 8 + i * 2,
+              duration: 10 + i * 3,
               repeat: Infinity,
               ease: 'easeInOut',
-              delay: i * 0.5,
+              delay: i * 0.8,
             }}
           />
         ))}
@@ -158,13 +100,26 @@ export function AnimatedBackground({ variant = 'default' }: { variant?: 'default
     );
   }
 
-  // Default variant - floating particles
+  // Default variant - particules flottantes ULTRA optimisées
+  const defaultParticles = useMemo(() => 
+    Array.from({ length: 15 }, (_, i) => ({ // Réduit de 50 à 15
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1,
+      speedX: (Math.random() - 0.5) * 30,
+      speedY: (Math.random() - 0.5) * 30,
+      opacity: Math.random() * 0.3 + 0.1,
+      delay: i * 0.2,
+    })),
+  []);
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 opacity-30">
-      {particles.map((particle) => (
+    <div className="pointer-events-none fixed inset-0 z-0 opacity-25">
+      {defaultParticles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute rounded-full bg-gradient-to-br from-blue-400 to-purple-500"
+          className="absolute rounded-full bg-gradient-to-br from-blue-400 to-purple-400"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
@@ -174,20 +129,21 @@ export function AnimatedBackground({ variant = 'default' }: { variant?: 'default
             filter: `blur(${particle.size * 0.5}px)`,
           }}
           animate={{
-            x: [0, particle.speedX * 50, 0],
-            y: [0, particle.speedY * 50, 0],
-            scale: [1, 1.3, 1],
-            opacity: [particle.opacity, particle.opacity * 1.5, particle.opacity],
+            x: [0, particle.speedX, 0],
+            y: [0, particle.speedY, 0],
+            scale: [1, 1.2, 1],
           }}
           transition={{
-            duration: 8 + particle.id * 0.3,
+            duration: 8 + particle.id * 0.4,
             repeat: Infinity,
             ease: 'easeInOut',
-            delay: particle.id * 0.1,
+            delay: particle.delay,
           }}
         />
       ))}
     </div>
   );
-}
+});
+
+AnimatedBackground.displayName = 'AnimatedBackground';
 

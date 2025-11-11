@@ -1,56 +1,16 @@
 ﻿'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useScroll } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, 
-  Inbox, 
-  Send, 
-  BarChart3, 
-  Bot, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle,
-  Plus,
-  RefreshCw,
-  Filter,
-  Search,
-  ChevronRight,
-  Star,
-  Archive,
-  Trash2,
-  Reply,
-  Eye,
-  Sparkles,
-  Menu,
-  X,
-  Settings,
-  Zap,
-  TrendingUp,
-  Users,
-  Bell,
-  FileText,
-  Sun,
-  Moon,
-  Home,
-  LogOut,
-  UserCircle,
-  CreditCard,
-  HelpCircle,
-  Package,
-  DollarSign,
-  Truck,
-  Wrench,
-  Info,
-  Receipt,
-  Laptop,
-  AlertTriangle,
-  Database,
-  BookOpen,
-  Edit,
-  Save
+  Mail, Inbox, Send, BarChart3, Bot, CheckCircle2, Clock, AlertCircle,
+  Plus, RefreshCw, Filter, Search, ChevronRight, Star, Archive, Trash2,
+  Reply, Eye, Sparkles, Menu, X, Settings, Zap, TrendingUp, Users,
+  Bell, FileText, Sun, Moon, Home, LogOut, UserCircle, CreditCard,
+  HelpCircle, Package, DollarSign, Truck, Wrench, Info, Receipt,
+  Laptop, AlertTriangle, Database, BookOpen, Edit, Save
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,67 +49,28 @@ import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/li
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
 
-// Composant TiltCard amélioré avec effets 3D
-function TiltCard({ children, className, glow = false }: { children: React.ReactNode; className?: string; glow?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['7deg', '-7deg']);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-7deg', '7deg']);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    x.set(0);
-    y.set(0);
-  };
-
+// Composant Card optimisé - Tilt effect simplifié avec CSS
+const TiltCard = React.memo(({ children, className, glow = false }: { 
+  children: React.ReactNode; 
+  className?: string; 
+  glow?: boolean 
+}) => {
+  // Simplifié : utilise seulement CSS pour le hover au lieu de Framer Motion complexe
   return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: 'preserve-3d',
-      }}
-      className={className}
-    >
-      {glow && isHovered && (
-        <motion.div
-          className="absolute inset-0 rounded-lg opacity-0 blur-xl"
-          animate={{ opacity: 0.3 }}
-          style={{
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4), transparent)',
-          }}
-        />
+    <div
+      className={cn(
+        "relative transition-all duration-300 ease-out",
+        "hover:scale-[1.02] hover:-translate-y-1",
+        glow && "hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]",
+        className
       )}
-      <div style={{ transform: 'translateZ(50px)', transformStyle: 'preserve-3d' }}>
-        {children}
-      </div>
-    </motion.div>
+    >
+      {children}
+    </div>
   );
-}
+});
+
+TiltCard.displayName = 'TiltCard';
 
 export default function MailCenterPage() {
   const router = useRouter();
@@ -227,13 +148,6 @@ export default function MailCenterPage() {
     setReplyGeneratorOpen(true);
     bringToFront('replyGenerator');
   };
-
-
-  // Scroll parallax
-  const { scrollYProgress } = useScroll();
-  
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.5]);
 
   // Vérifier l'authentification
   useEffect(() => {
@@ -564,40 +478,6 @@ export default function MailCenterPage() {
             : `radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.12), transparent 50%)`,
         }}
       />
-      
-      {/* Floating particles */}
-      <motion.div className="pointer-events-none absolute inset-0" style={{ y, opacity }}>
-        {[...Array(30)].map((_, i) => {
-          const size = Math.random() * 3 + 1;
-          const depth = Math.random();
-          return (
-            <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: size,
-                height: size,
-                background: `radial-gradient(circle, rgba(59, 130, 246, ${0.3 + depth * 0.2}), transparent)`,
-                filter: `blur(${depth * 1.5}px)`,
-              }}
-              animate={{
-                y: [0, -30 * (1 + depth), 0],
-                x: [0, Math.sin(i) * 15, 0],
-                opacity: [0.2, 0.4, 0.2],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 5 + Math.random() * 3,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-                ease: "easeInOut",
-              }}
-            />
-          );
-        })}
-      </motion.div>
 
       {/* Header */}
       <motion.header 
@@ -618,14 +498,12 @@ export default function MailCenterPage() {
             transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="flex items-center gap-2"
           >
-            <motion.button
+            <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
-                "flex lg:hidden items-center justify-center p-2 rounded-lg transition-colors",
+                "flex lg:hidden items-center justify-center p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95",
                 isLightMode ? "hover:bg-blue-100 text-gray-700" : "hover:bg-blue-500/10 text-white"
               )}
-              whileTap={{ scale: 0.95 }}
-              whileHover={{ scale: 1.05 }}
             >
               <AnimatePresence mode="wait">
                 {mobileMenuOpen ? (
@@ -648,31 +526,20 @@ export default function MailCenterPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.button>
+            </button>
             
             <Link href="/" className={cn("flex items-center gap-2 font-semibold group", isLightMode ? "text-gray-900" : "text-white")}>
-              <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.5 }}
-                className="relative"
-              >
+              <div className="relative transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110">
                 <Mail className={cn("h-5 w-5", isLightMode ? "text-blue-600" : "text-blue-400")} />
-                <motion.div
-                  className={cn("absolute inset-0 rounded-full blur-md", isLightMode ? "bg-blue-600/30" : "bg-blue-400/20")}
-                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              </motion.div>
-              <motion.span
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
+              </div>
+              <span
                 className={cn(
-                  "hidden sm:inline bg-gradient-to-r bg-clip-text text-transparent",
+                  "hidden sm:inline bg-gradient-to-r bg-clip-text text-transparent transition-transform duration-200 group-hover:scale-105",
                   isLightMode ? "from-gray-900 to-gray-700" : "from-white to-gray-300"
                 )}
               >
                 Mail Center
-              </motion.span>
+              </span>
             </Link>
           </motion.div>
           
@@ -682,12 +549,8 @@ export default function MailCenterPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Bouton Refresh amélioré */}
-            <motion.div 
-              whileHover={{ scale: 1.05 }} 
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-            >
+            {/* Bouton Refresh */}
+            <div className="transition-transform duration-300 hover:scale-105 active:scale-95">
               <Button
                 variant="outline"
                 size="icon"
@@ -698,23 +561,14 @@ export default function MailCenterPage() {
                 )}
               >
                 <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
-                {isSyncing && (
-                  <motion.div
-                    className="absolute inset-0 rounded-md border-2 border-blue-400"
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                )}
               </Button>
-            </motion.div>
+            </div>
             
             {/* Toggle Mode Clair/Sombre */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={() => setIsLightMode(!isLightMode)}
               className={cn(
-                "p-2 rounded-lg border transition-all shadow-lg",
+                "p-2 rounded-lg border transition-all duration-300 shadow-lg hover:scale-105 active:scale-95",
                 isLightMode 
                   ? "bg-gradient-to-br from-slate-500/10 to-gray-500/10 border-slate-500/30 hover:border-slate-400/50 shadow-slate-500/20" 
                   : "bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30 hover:border-yellow-400/50 shadow-yellow-500/20"
@@ -722,23 +576,15 @@ export default function MailCenterPage() {
               title={isLightMode ? "Passer au mode sombre" : "Passer au mode clair"}
             >
               {isLightMode ? (
-                <motion.div
-                  initial={{ rotate: -180, scale: 0 }}
-                  animate={{ rotate: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                >
+                <div className="transition-transform duration-300">
                   <Moon className="w-4 h-4 text-slate-700" />
-                </motion.div>
+                </div>
               ) : (
-                <motion.div
-                  initial={{ rotate: 180, scale: 0 }}
-                  animate={{ rotate: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                >
+                <div className="transition-transform duration-300">
                   <Sun className="w-4 h-4 text-yellow-400" />
-                </motion.div>
+                </div>
               )}
-            </motion.button>
+            </button>
             
             {/* Affichage du quota */}
             <QuotaDisplay isLightMode={isLightMode} />
@@ -746,11 +592,9 @@ export default function MailCenterPage() {
             {/* Menu utilisateur avec photo de profil */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <button
                   className={cn(
-                    "relative rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all",
+                    "relative rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 active:scale-95",
                     "hover:ring-2 hover:ring-blue-400/50"
                   )}
                 >
@@ -768,7 +612,7 @@ export default function MailCenterPage() {
                       {session?.user?.name?.charAt(0).toUpperCase() || session?.user?.email?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                </motion.button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
@@ -989,10 +833,9 @@ export default function MailCenterPage() {
                     { id: 'pending', label: 'Validation', icon: Clock, count: pendingReplies.length },
                     { id: 'analytics', label: 'Stats', icon: BarChart3, count: null },
                   ].map((tab) => (
-                    <motion.div
+                    <div
                       key={tab.id}
-                      whileHover={{ x: 4 }}
-                      transition={{ duration: 0.2 }}
+                      className="transition-all duration-200 hover:translate-x-1"
                     >
                       <Button
                         variant={activeTab === tab.id ? 'secondary' : 'ghost'}
@@ -1016,7 +859,7 @@ export default function MailCenterPage() {
                           </Badge>
                         )}
                       </Button>
-                    </motion.div>
+                    </div>
                   ))}
                 </nav>
               </Card>
@@ -1055,12 +898,9 @@ export default function MailCenterPage() {
                       : emails.filter(e => e.support_category === filter.id).length;
                     
                     return (
-                      <motion.div
+                      <div
                         key={filter.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.2 }}
-                        whileHover={{ x: 4 }}
+                        className="transition-all duration-200 hover:translate-x-1"
                       >
                         <Button
                           variant={filterCategory === filter.id ? 'secondary' : 'ghost'}
@@ -1089,30 +929,26 @@ export default function MailCenterPage() {
                             </Badge>
                           )}
                         </Button>
-                      </motion.div>
+                      </div>
                     );
                   })}
                   
                   {/* Bouton pour afficher plus de filtres */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     onClick={() => setShowAllFilters(!showAllFilters)}
                     className={cn(
-                      "w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium transition-all",
+                      "w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
                       isLightMode
                         ? "text-blue-600 hover:bg-blue-50"
                         : "text-blue-400 hover:bg-blue-500/10"
                     )}
                   >
-                    <motion.div
-                      animate={{ rotate: showAllFilters ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ChevronRight className="w-4 h-4 rotate-90" />
-                    </motion.div>
+                    <ChevronRight className={cn(
+                      "w-4 h-4 transition-transform duration-300",
+                      showAllFilters ? "rotate-[270deg]" : "rotate-90"
+                    )} />
                     {showAllFilters ? 'Moins de filtres' : 'Plus de filtres'}
-                  </motion.button>
+                  </button>
                 </div>
               </Card>
             </motion.div>
@@ -1212,16 +1048,14 @@ export default function MailCenterPage() {
                 </h3>
                 <div className="flex gap-1.5 flex-col">
                   {/* Configuration IA */}
-                  <motion.button
-                    whileHover={{ scale: 1.02, x: 2 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     onClick={() => {
                       setSupportConfigInitialTab('ai-config');
                       setIsSupportConfigOpen(true);
                       bringToFront('supportConfig');
                     }}
                     className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg border transition-all group text-left",
+                      "flex items-center gap-2 p-2 rounded-lg border transition-all duration-300 hover:scale-[1.02] hover:translate-x-0.5 active:scale-[0.98] group text-left",
                       isLightMode
                         ? "border-purple-300/40 hover:border-purple-400/60 bg-purple-500/10 hover:bg-purple-500/20"
                         : "border-purple-500/20 hover:border-purple-400/40 bg-purple-500/10 hover:bg-purple-500/20"
@@ -1237,16 +1071,14 @@ export default function MailCenterPage() {
                         Personnaliser les réponses
                       </div>
                     </div>
-                  </motion.button>
+                  </button>
 
                   {/* Toggle IA Active/Inactive */}
-                  <motion.button
-                    whileHover={{ scale: 1.02, x: 2 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     onClick={toggleAI}
                     disabled={isAILoading}
                     className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg border transition-all group text-left",
+                      "flex items-center gap-2 p-2 rounded-lg border transition-all duration-300 hover:scale-[1.02] hover:translate-x-0.5 active:scale-[0.98] group text-left",
                       isAIActive
                         ? isLightMode
                           ? "border-green-300/40 hover:border-green-400/60 bg-green-500/10 hover:bg-green-500/20"
@@ -1285,7 +1117,7 @@ export default function MailCenterPage() {
                         {isAIActive ? "Réponses auto activées" : "Réponses manuelles"}
                       </div>
                     </div>
-                  </motion.button>
+                  </button>
                 </div>
               </Card>
             </motion.div>
@@ -1343,12 +1175,10 @@ export default function MailCenterPage() {
                           </span>
                         </div>
                         
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
+                        <button
                           onClick={() => handleDeleteAccount(account.id, account.email)}
                           className={cn(
-                            "flex-shrink-0 p-1.5 rounded transition-all opacity-0 group-hover:opacity-100",
+                            "flex-shrink-0 p-1.5 rounded transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-90",
                             isLightMode
                               ? "hover:bg-red-100 text-red-600 hover:text-red-700"
                               : "hover:bg-red-500/20 text-red-400 hover:text-red-300"
@@ -1356,18 +1186,16 @@ export default function MailCenterPage() {
                           title={`Supprimer ${account.email}`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                        </motion.button>
+                        </button>
                       </motion.div>
                     ))}
                   </div>
 
                   {/* Bouton ajouter un compte */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     onClick={() => connectAccount('gmail')}
                     className={cn(
-                      "w-full flex items-center justify-center gap-2 p-2 rounded-lg border transition-all mt-2",
+                      "w-full flex items-center justify-center gap-2 p-2 rounded-lg border transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] mt-2",
                       isLightMode
                         ? "border-blue-300/40 hover:border-blue-400/60 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700"
                         : "border-blue-500/20 hover:border-blue-400/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300"
@@ -1375,7 +1203,7 @@ export default function MailCenterPage() {
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span className="text-xs font-medium">Ajouter un compte</span>
-                  </motion.button>
+                  </button>
                 </div>
               </Card>
             </motion.div>
@@ -1398,11 +1226,10 @@ export default function MailCenterPage() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: stat.color === 'blue' ? 0.1 : stat.color === 'orange' ? 0.2 : stat.color === 'yellow' ? 0.3 : 0.4 }}
-                      whileHover={{ scale: 1.02 }}
                       onMouseEnter={() => setHoveredCardIndex(index)}
                       onMouseLeave={() => setHoveredCardIndex(null)}
                       className={cn(
-                        "relative overflow-hidden rounded-md border p-1.5 shadow-sm cursor-pointer backdrop-blur-xl transition-all duration-700",
+                        "relative overflow-hidden rounded-md border p-1.5 shadow-sm cursor-pointer backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]",
                         isLightMode
                           ? "border-blue-200/50 bg-white/70 shadow-blue-100/50"
                           : "border-blue-500/20 bg-[#1a1f3a]/70 shadow-blue-500/10"
@@ -1799,34 +1626,6 @@ function EmailCard({
   isLightMode?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
-  
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['2deg', '-2deg']);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-2deg', '2deg']);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    x.set(0);
-    y.set(0);
-  };
 
   const initials = email.from_name
     ?.split(' ')
@@ -1839,33 +1638,16 @@ function EmailCard({
 
   return (
     <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, x: -20, scale: 0.95 }}
-      transition={{ 
-        delay: index * 0.03,
-        type: 'spring',
-        stiffness: 200,
-        damping: 20
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ delay: index * 0.03, duration: 0.2 }}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      onMouseMove={handleMouseMove}
-      whileHover={{ 
-        y: -6,
-        scale: 1.02,
-        transition: { duration: 0.2 }
-      }}
-      whileTap={{ scale: 0.98 }}
-      style={{
-        rotateX: isHovered ? rotateX : 0,
-        rotateY: isHovered ? rotateY : 0,
-        transformStyle: 'preserve-3d',
-      }}
+      onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        'relative p-3 rounded-lg border cursor-pointer transition-all overflow-hidden group',
+        'relative p-3 rounded-lg border cursor-pointer transition-all duration-200 overflow-hidden group',
+        'hover:scale-[1.01] hover:-translate-y-0.5',
         isSelected 
           ? isLightMode
             ? 'border-blue-400/60 bg-blue-100 shadow-lg shadow-blue-200/50'
@@ -1894,12 +1676,8 @@ function EmailCard({
       )}
       
       <div className="relative flex gap-3 z-10">
-        {/* Avatar plus petit */}
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className="relative"
-        >
+        {/* Avatar */}
+        <div className="relative transition-transform duration-300 hover:scale-110">
           <Avatar className={cn(
             "w-8 h-8 flex-shrink-0 border",
             isLightMode ? "border-blue-300/50" : "border-blue-500/30"
@@ -1925,7 +1703,7 @@ function EmailCard({
               transition={{ duration: 2, repeat: Infinity }}
             />
           )}
-        </motion.div>
+        </div>
 
         {/* Contenu compact */}
         <div className="flex-1 min-w-0">
@@ -1989,15 +1767,13 @@ function EmailCard({
             
             {/* Bouton de réponse rapide */}
             {onReply && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReply(email);
                 }}
                 className={cn(
-                  "p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100",
+                  "p-1.5 rounded-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95",
                   isLightMode
                     ? "bg-blue-500/20 hover:bg-blue-500/30 text-blue-700"
                     : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400"
@@ -2005,7 +1781,7 @@ function EmailCard({
                 title="Répondre"
               >
                 <Reply className="w-3.5 h-3.5" />
-              </motion.button>
+              </button>
             )}
           </div>
         </div>
