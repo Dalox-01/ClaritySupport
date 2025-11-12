@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Envoi de l'email via Resend
     const { data, error } = await resend.emails.send({
       from: 'MailWizard Contact <onboarding@resend.dev>', // Utilisez votre domaine vérifié
-      to: ['laszlojeanpierre@gmail.com'], // Votre email
+      to: ['clarityteamfr@gmail.com'], // Votre email
       replyTo: email, // L'email de l'utilisateur pour pouvoir répondre directement
       subject: `[Contact MailWizard] ${subject}`,
       html: `

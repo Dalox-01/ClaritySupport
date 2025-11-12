@@ -294,12 +294,12 @@ export default function ContactPage() {
               Vous pouvez également me contacter directement par email à{' '}
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText('laszlojeanpierre@gmail.com');
+                  navigator.clipboard.writeText('clarityteamfr@gmail.com');
                   toast.success('Email copié dans le presse-papier !');
                 }}
                 className="font-semibold text-primary hover:underline cursor-pointer"
               >
-                laszlojeanpierre@gmail.com
+                clarityteamfr@gmail.com
               </button>
             </p>
           </motion.div>

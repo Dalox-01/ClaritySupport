@@ -292,7 +292,7 @@ Copyright © 2025 MailWizard. Tous droits réservés.
 
 ## 🆘 Support
 
-- Email: support@mailwizard.app
+- Email: clarityteamfr@gmail.com
 - Documentation: Ce README
 - Issues: GitHub Issues (si repo public)
 
