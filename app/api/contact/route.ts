@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
 
     // Envoi de l'email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'MailWizard Contact <onboarding@resend.dev>', // Utilisez votre domaine vérifié
-      to: ['clarityteamfr@gmail.com'], // Votre email
-      replyTo: email, // L'email de l'utilisateur pour pouvoir répondre directement
-      subject: `[Contact MailWizard] ${subject}`,
+      from: 'ClaritySupport <onboarding@resend.dev>',
+      to: ['clarityteamfr@gmail.com'],
+      replyTo: email,
+      subject: `[Contact ClaritySupport] ${subject}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
           <body>
             <div class="header">
               <h1 style="margin: 0; font-size: 24px;">📧 Nouveau message de contact</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Via MailWizard</p>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Via ClaritySupport</p>
             </div>
             
             <div class="content">
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
             </div>
             
             <div class="footer">
-              <p style="margin: 0;">Ce message a été envoyé depuis le formulaire de contact de MailWizard</p>
+              <p style="margin: 0;">Ce message a été envoyé depuis le formulaire de contact de ClaritySupport</p>
               <p style="margin: 10px 0 0 0;">Pour répondre, cliquez simplement sur "Répondre" à cet email</p>
             </div>
           </body>
@@ -141,20 +141,23 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Erreur Resend:', error);
+      console.error('Détails erreur:', JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { success: false, error: 'Erreur lors de l\'envoi du message' },
+        { success: false, error: 'Erreur lors de l\'envoi du message', details: error.message || error },
         { status: 500 }
       );
     }
 
+    console.log('Email envoyé avec succès:', data);
     return NextResponse.json(
       { success: true, message: 'Message envoyé avec succès', data },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur API contact:', error);
+    console.error('Stack trace:', error.stack);
     return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
+      { success: false, error: 'Erreur serveur', details: error.message },
       { status: 500 }
     );
   }
