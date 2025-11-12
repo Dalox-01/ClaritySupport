@@ -397,13 +397,29 @@ export default function MailCenterPage() {
     setArchivedEmails(prev => [...prev, emailId]);
   };
 
-  const deleteEmail = (emailId: string) => {
-    // Supprimer définitivement l'email de la liste
-    setEmails(prev => prev.filter(email => email.id !== emailId));
-    // Retirer aussi des favoris et archives si présent
-    setFavoriteEmails(prev => prev.filter(id => id !== emailId));
-    setArchivedEmails(prev => prev.filter(id => id !== emailId));
-    setEmailDetailOpen(false); // Fermer la fenêtre de détail
+  const deleteEmail = async (emailId: string) => {
+    try {
+      // Suppression optimiste de l'UI
+      setEmails(prev => prev.filter(email => email.id !== emailId));
+      setFavoriteEmails(prev => prev.filter(id => id !== emailId));
+      setArchivedEmails(prev => prev.filter(id => id !== emailId));
+      setEmailDetailOpen(false);
+
+      // Appel API pour suppression côté serveur
+      const res = await fetch(`/api/mail-center/emails/${emailId}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        throw new Error('Erreur lors de la suppression');
+      }
+
+      console.log('✅ Email supprimé avec succès');
+    } catch (error) {
+      console.error('❌ Erreur suppression email:', error);
+      // En cas d'erreur, recharger les emails
+      fetchEmails();
+    }
   };
 
   const connectAccount = async (provider: 'gmail' | 'outlook') => {
@@ -1486,6 +1502,7 @@ export default function MailCenterPage() {
                                 setEmailToReply(email);
                                 setReplyDialogOpen(true);
                               }}
+                              onDelete={(email) => deleteEmail(email.id)}
                               isLightMode={isLightMode}
                             />
                           ))}
@@ -1661,6 +1678,7 @@ function EmailCard({
   getCategoryColor, 
   getSentimentIcon,
   onReply,
+  onDelete,
   isLightMode = false
 }: { 
   email: EmailCache;
@@ -1670,6 +1688,7 @@ function EmailCard({
   getCategoryColor: (cat: string | null) => string;
   getSentimentIcon: (sent: string | null, urg: number) => React.ReactNode;
   onReply?: (email: EmailCache) => void;
+  onDelete?: (emailId: string) => void;
   isLightMode?: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -1812,24 +1831,46 @@ function EmailCard({
               {getSentimentIcon(email.sentiment, email.urgency_score)}
             </div>
             
-            {/* Bouton de réponse rapide */}
-            {onReply && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onReply(email);
-                }}
-                className={cn(
-                  "p-1.5 rounded-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95",
-                  isLightMode
-                    ? "bg-blue-500/20 hover:bg-blue-500/30 text-blue-700"
-                    : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400"
-                )}
-                title="Répondre"
-              >
-                <Reply className="w-3.5 h-3.5" />
-              </button>
-            )}
+            {/* Boutons d'action */}
+            <div className="flex items-center gap-1">
+              {/* Bouton de réponse rapide */}
+              {onReply && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReply(email);
+                  }}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95",
+                    isLightMode
+                      ? "bg-blue-500/20 hover:bg-blue-500/30 text-blue-700"
+                      : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400"
+                  )}
+                  title="Répondre"
+                >
+                  <Reply className="w-3.5 h-3.5" />
+                </button>
+              )}
+              
+              {/* Bouton de suppression */}
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(email.id);
+                  }}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95",
+                    isLightMode
+                      ? "bg-red-500/20 hover:bg-red-500/30 text-red-700"
+                      : "bg-red-500/10 hover:bg-red-500/20 text-red-400"
+                  )}
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
