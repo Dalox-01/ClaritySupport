@@ -1491,9 +1491,8 @@ export default function MailCenterPage() {
                               key={email.id}
                               email={email}
                               index={index}
-                              isSelected={selectedEmail?.id === email.id}
+                              isSelected={false}
                               onClick={() => {
-                                setSelectedEmail(email);
                                 openEmailDetail(email);
                               }}
                               getCategoryColor={getCategoryColor}
@@ -1714,13 +1713,9 @@ function EmailCard({
       className={cn(
         'relative p-3 rounded-lg border cursor-pointer transition-all duration-200 overflow-hidden group',
         'hover:scale-[1.01] hover:-translate-y-0.5',
-        isSelected 
-          ? isLightMode
-            ? 'border-blue-400/60 bg-blue-100 shadow-lg shadow-blue-200/50'
-            : 'border-blue-500/50 bg-blue-500/10 shadow-lg shadow-blue-500/20'
-          : isLightMode
-            ? 'border-blue-200/40 bg-white/60 hover:border-blue-300/60 hover:bg-blue-50'
-            : 'border-blue-500/20 bg-[#0f1320] hover:border-blue-500/40 hover:bg-blue-500/5',
+        isLightMode
+          ? 'border-blue-200/40 bg-white/60 hover:border-blue-300/60 hover:bg-blue-50'
+          : 'border-blue-500/20 bg-[#0f1320] hover:border-blue-500/40 hover:bg-blue-500/5',
         !email.is_read && (isLightMode 
           ? 'font-semibold ring-1 ring-blue-400/40' 
           : 'font-semibold ring-1 ring-blue-500/30')
