@@ -19,15 +19,27 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
       );
     }
 
+    // Récupérer l'ID utilisateur depuis Supabase
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', session.user.email)
+      .single();
+
+    if (userError || !user) {
+      console.error('User not found in database:', session.user.email);
+      return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+    }
+
     const { id: accountId } = await params;
-    const userId = session.user.id;
+    const userId = user.id;
 
     console.log('🗑️ [DELETE ACCOUNT] Tentative de suppression:', { accountId, userId });
 
