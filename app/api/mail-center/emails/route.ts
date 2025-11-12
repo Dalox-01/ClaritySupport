@@ -11,11 +11,23 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    // Récupérer l'ID utilisateur depuis Supabase
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', session.user.email)
+      .single();
+
+    if (userError || !user) {
+      console.error('User not found in database:', session.user.email);
+      return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+    }
+
+    const userId = user.id;
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '50');
 
@@ -25,7 +37,7 @@ export async function GET(req: NextRequest) {
       .from('emails_cache')
       .select('*')
       .eq('user_id', userId)
-      .order('received_date', { ascending: false })
+      .order('received_at', { ascending: false })
       .limit(limit);
 
     if (error) {
