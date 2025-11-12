@@ -272,7 +272,7 @@ export default function AIConfigDocumentation() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-6 border-red-200 dark:border-red-900">
+          <Card>
             <div className="flex items-center gap-3 mb-6">
               <Shield className="w-6 h-6 text-red-500" />
               <h2 className="text-xl font-bold">Sécurité & RGPD</h2>
