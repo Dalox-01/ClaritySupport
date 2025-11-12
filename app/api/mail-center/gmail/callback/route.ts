@@ -106,62 +106,89 @@ export async function GET(req: NextRequest) {
     console.log('✅ [GMAIL CALLBACK] Gmail account saved:', gmailProfile.emailAddress, 'Account ID:', savedAccount.id);
 
     // Déclencher la synchronisation initiale des emails
+    console.log('🔄 [GMAIL CALLBACK] Début de la synchronisation initiale des emails...');
+    
     try {
       // Importer les fonctions nécessaires
       const { fetchGmailMessages, parseGmailMessage } = await import('@/lib/gmail-helpers');
       const { analyzeEmailWithAI } = await import('@/lib/mail-ai-helpers');
 
-      console.log('🔄 Starting initial email sync...');
+      console.log('📥 [GMAIL CALLBACK] Récupération des 50 derniers emails...');
 
       // Récupérer les 50 derniers emails
       const gmailMessages = await fetchGmailMessages(tokens.access_token, 50);
-      console.log(`📧 Fetched ${gmailMessages.length} emails from Gmail`);
+      console.log(`✅ [GMAIL CALLBACK] ${gmailMessages.length} emails récupérés de Gmail`);
+
+      let processedCount = 0;
+      let skippedCount = 0;
+      let errorCount = 0;
 
       // Traiter et insérer les emails
       for (const gmailMsg of gmailMessages) {
-        const msg = parseGmailMessage(gmailMsg as any);
+        try {
+          const msg = parseGmailMessage(gmailMsg as any);
 
-        // Vérifier si l'email existe déjà
-        const { data: existing } = await supabase
-          .from('emails_cache')
-          .select('id')
-          .eq('external_message_id', msg.id)
-          .eq('account_id', savedAccount.id)
-          .single();
+          // Vérifier si l'email existe déjà
+          const { data: existing } = await supabase
+            .from('emails_cache')
+            .select('id')
+            .eq('external_message_id', msg.id)
+            .eq('account_id', savedAccount.id)
+            .single();
 
-        if (existing) continue; // Skip si déjà en cache
+          if (existing) {
+            skippedCount++;
+            continue; // Skip si déjà en cache
+          }
 
-        // Analyser avec IA
-        const analysis = await analyzeEmailWithAI(
-          msg.from_email,
-          msg.subject || '',
-          msg.body_text || msg.snippet || ''
-        );
+          console.log(`📧 [GMAIL CALLBACK] Traitement email: ${msg.subject || '(sans objet)'}`);
 
-        // Insérer en base
-        await supabase.from('emails_cache').insert({
-          user_id: state,
-          account_id: savedAccount.id,
-          external_message_id: msg.id,
-          thread_id: msg.threadId,
-          from_email: msg.from_email,
-          from_name: msg.from_name,
-          to_email: msg.to_email || gmailProfile.emailAddress,
-          subject: msg.subject,
-          snippet: msg.snippet,
-          body_text: msg.body_text,
-          body_html: msg.body_html,
-          received_at: msg.received_at,
-          category: analysis.category,
-          sentiment: analysis.sentiment,
-          urgency_score: analysis.urgency_score || 0,
-          requires_validation: analysis.requires_validation || false,
-          has_attachments: msg.has_attachments || false,
-          is_read: false,
-          is_auto_replied: false,
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        });
+          // Analyser avec IA
+          const analysis = await analyzeEmailWithAI(
+            msg.from_email,
+            msg.subject || '',
+            msg.body_text || msg.snippet || ''
+          );
+
+          console.log(`🤖 [GMAIL CALLBACK] IA analyse terminée - Catégorie: ${analysis.category}, Sentiment: ${analysis.sentiment}`);
+
+          // Insérer en base
+          const { error: insertError } = await supabase.from('emails_cache').insert({
+            user_id: state,
+            account_id: savedAccount.id,
+            external_message_id: msg.id,
+            thread_id: msg.threadId,
+            from_email: msg.from_email,
+            from_name: msg.from_name,
+            to_email: msg.to_email || gmailProfile.emailAddress,
+            subject: msg.subject,
+            snippet: msg.snippet,
+            body_text: msg.body_text,
+            body_html: msg.body_html,
+            received_at: msg.received_at,
+            category: analysis.category,
+            sentiment: analysis.sentiment,
+            urgency_score: analysis.urgency_score || 0,
+            requires_validation: analysis.requires_validation || false,
+            has_attachments: msg.has_attachments || false,
+            is_read: false,
+            is_auto_replied: false,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          });
+
+          if (insertError) {
+            console.error(`❌ [GMAIL CALLBACK] Erreur insertion email:`, insertError);
+            errorCount++;
+          } else {
+            processedCount++;
+          }
+        } catch (emailError) {
+          console.error(`❌ [GMAIL CALLBACK] Erreur traitement email individuel:`, emailError);
+          errorCount++;
+        }
       }
+
+      console.log(`📊 [GMAIL CALLBACK] Synchronisation terminée - Traités: ${processedCount}, Ignorés: ${skippedCount}, Erreurs: ${errorCount}`);
 
       // Mettre à jour la date de dernière sync
       await supabase
@@ -169,19 +196,22 @@ export async function GET(req: NextRequest) {
         .update({ last_sync: new Date().toISOString() })
         .eq('id', savedAccount.id);
 
-      console.log(`✅ Successfully synced ${gmailMessages.length} emails`);
+      console.log(`✅ [GMAIL CALLBACK] Synchronisation complète - ${processedCount} emails ajoutés`);
     } catch (syncError) {
-      console.error('⚠️ Error during initial sync:', syncError);
+      console.error('❌ [GMAIL CALLBACK] Erreur pendant la synchronisation initiale:', syncError);
+      console.error('❌ [GMAIL CALLBACK] Stack trace:', syncError instanceof Error ? syncError.stack : syncError);
       // Ne pas bloquer la connexion si la sync échoue
       // L'utilisateur pourra cliquer sur le bouton refresh
     }
 
     // Rediriger vers Mail Center avec succès
+    console.log('🎉 [GMAIL CALLBACK] Redirection vers Mail Center avec succès');
     return NextResponse.redirect(
       new URL('/mail-center?success=gmail_connected', req.url)
     );
   } catch (error) {
-    console.error('Error in Gmail callback:', error);
+    console.error('❌ [GMAIL CALLBACK] Erreur générale:', error);
+    console.error('❌ [GMAIL CALLBACK] Stack:', error instanceof Error ? error.stack : error);
     return NextResponse.redirect(
       new URL('/mail-center?error=server_error', req.url)
     );
