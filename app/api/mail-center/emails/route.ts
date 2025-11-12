@@ -33,10 +33,12 @@ export async function GET(req: NextRequest) {
 
     // Récupérer les emails directement depuis la base
     // Triés par date de réception (plus récent en premier)
+    // Exclure les emails supprimés (soft delete)
     const { data: emails, error } = await supabase
       .from('emails_cache')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('received_at', { ascending: false })
       .limit(limit);
 

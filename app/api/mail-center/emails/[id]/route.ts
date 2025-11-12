@@ -36,10 +36,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Email non trouvé' }, { status: 404 });
     }
 
-    // Supprimer l'email
+    // Soft delete: marquer comme supprimé au lieu de supprimer définitivement
     const { error: deleteError } = await supabase
       .from('emails_cache')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', emailId)
       .eq('user_id', userId);
 
@@ -47,7 +47,7 @@ export async function DELETE(
       throw deleteError;
     }
 
-    console.log(`✅ Email supprimé: ${emailId}`);
+    console.log(`✅ Email marqué comme supprimé: ${emailId}`);
 
     return NextResponse.json({ 
       success: true,

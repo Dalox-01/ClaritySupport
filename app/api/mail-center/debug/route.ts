@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
       .from('emails_cache')
       .select('id, subject, from_email, received_at, category')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('received_at', { ascending: false })
       .limit(10);
 
@@ -65,7 +66,8 @@ export async function GET(req: NextRequest) {
     const { count: totalEmailCount } = await supabase
       .from('emails_cache')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .is('deleted_at', null);
 
     debug.checks.totalEmailsInDB = totalEmailCount || 0;
 

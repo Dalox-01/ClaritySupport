@@ -64,6 +64,8 @@ export type EmailCache = {
   has_attachments: boolean;
   labels: string[];
   
+  deleted_at: string | null; // Soft delete - NULL = actif
+  
   created_at: string;
   expires_at: string;
 };

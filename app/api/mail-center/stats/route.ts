@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
       .from('emails_cache')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .gte('received_at', startDate.toISOString());
 
     const totalReceived = todayEmails?.length || 0;
