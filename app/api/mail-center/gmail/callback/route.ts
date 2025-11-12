@@ -7,23 +7,36 @@ import { encrypt } from '@/lib/security';
 import { canAddEmailAccount } from '@/lib/subscription-limits';
 
 export async function GET(req: NextRequest) {
+  console.log('🔵 [GMAIL CALLBACK] Début du callback OAuth Gmail');
+  
   try {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state'); // userId
     const error = searchParams.get('error');
 
+    console.log('📋 [GMAIL CALLBACK] Paramètres reçus:', { 
+      hasCode: !!code, 
+      hasState: !!state, 
+      error: error,
+      state: state 
+    });
+
     if (error) {
+      console.error('❌ [GMAIL CALLBACK] Erreur OAuth:', error);
       return NextResponse.redirect(
         new URL(`/mail-center?error=${error}`, req.url)
       );
     }
 
     if (!code || !state) {
+      console.error('❌ [GMAIL CALLBACK] Paramètres manquants:', { code: !!code, state: !!state });
       return NextResponse.redirect(
         new URL('/mail-center?error=missing_params', req.url)
       );
     }
+
+    console.log('📧 [GMAIL CALLBACK] User ID:', state);
 
     // 🔒 VÉRIFICATION DES LIMITES : Peut-on ajouter un compte email ?
     const limitCheck = await canAddEmailAccount(state);
@@ -39,8 +52,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    console.log('✅ [GMAIL CALLBACK] Limite vérifiée, échange du code...');
+
     // Échanger le code contre des tokens
     const tokens = await exchangeGmailCode(code);
+    console.log('✅ [GMAIL CALLBACK] Tokens reçus, expiration:', new Date(tokens.expiry_date).toISOString());
 
     // Récupérer l'email Gmail de l'utilisateur
     const gmailResponse = await fetch(
@@ -50,12 +66,21 @@ export async function GET(req: NextRequest) {
       }
     );
     const gmailProfile = await gmailResponse.json();
+    console.log('✅ [GMAIL CALLBACK] Profil Gmail récupéré:', gmailProfile.emailAddress);
 
     // Chiffrer les tokens
     const encryptedAccessToken = encrypt(tokens.access_token);
     const encryptedRefreshToken = encrypt(tokens.refresh_token);
+    console.log('✅ [GMAIL CALLBACK] Tokens chiffrés');
 
     // Sauvegarder dans la base de données
+    console.log('💾 [GMAIL CALLBACK] Tentative d\'enregistrement dans mail_accounts...', {
+      user_id: state,
+      provider: 'gmail',
+      email: gmailProfile.emailAddress,
+      is_active: true,
+    });
+
     const { data: savedAccount, error: dbError } = await supabase
       .from('mail_accounts')
       .upsert({
@@ -66,20 +91,19 @@ export async function GET(req: NextRequest) {
         refresh_token: encryptedRefreshToken,
         token_expires_at: new Date(tokens.expiry_date).toISOString(),
         is_active: true,
-      }, {
-        onConflict: 'user_id,email',
       })
       .select()
       .single();
 
     if (dbError) {
-      console.error('Error saving Gmail account:', dbError);
+      console.error('❌ [GMAIL CALLBACK] Error saving Gmail account:', dbError);
+      console.error('❌ [GMAIL CALLBACK] Error details:', JSON.stringify(dbError, null, 2));
       return NextResponse.redirect(
         new URL('/mail-center?error=save_failed&details=' + encodeURIComponent(dbError.message), req.url)
       );
     }
 
-    console.log('✅ Gmail account saved:', gmailProfile.emailAddress);
+    console.log('✅ [GMAIL CALLBACK] Gmail account saved:', gmailProfile.emailAddress, 'Account ID:', savedAccount.id);
 
     // Déclencher la synchronisation initiale des emails
     try {
