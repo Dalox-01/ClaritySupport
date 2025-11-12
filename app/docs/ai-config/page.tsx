@@ -48,11 +48,11 @@ export default function AIConfigDocumentation() {
             </div>
 
             <div className="space-y-6">
-              {/* Température */}
+              {/* Niveau de Créativité */}
               <div className="border-l-4 border-blue-500 pl-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Thermometer className="w-5 h-5 text-blue-500" />
-                  <h3 className="font-semibold text-lg">Température</h3>
+                  <h3 className="font-semibold text-lg">Niveau de Créativité</h3>
                   <Badge variant="outline">0.0 - 2.0</Badge>
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
@@ -116,26 +116,26 @@ export default function AIConfigDocumentation() {
                 </div>
               </div>
 
-              {/* Pénalités */}
+              {/* Anti-Répétition & Diversité */}
               <div className="border-l-4 border-orange-500 pl-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Zap className="w-5 h-5 text-orange-500" />
-                  <h3 className="font-semibold text-lg">Pénalités de Fréquence et Présence</h3>
+                  <h3 className="font-semibold text-lg">Anti-Répétition & Diversité des Sujets</h3>
                   <Badge variant="outline">-2.0 - 2.0</Badge>
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
                   <strong>Rôle :</strong> Évitent les répétitions dans les réponses.
                 </p>
                 <ul className="text-sm space-y-2 text-slate-700 dark:text-slate-300">
-                  <li><strong>Frequency Penalty :</strong> Pénalise les mots déjà utilisés en fonction de leur fréquence</li>
-                  <li><strong>Presence Penalty :</strong> Pénalise les mots déjà utilisés, peu importe leur fréquence</li>
+                  <li><strong>Anti-Répétition :</strong> Pénalise les mots déjà utilisés en fonction de leur fréquence</li>
+                  <li><strong>Diversité des Sujets :</strong> Pénalise les mots déjà utilisés, peu importe leur fréquence</li>
                   <li><strong>Valeur positive (0.1-1.0) :</strong> Encourage la diversité, évite les répétitions</li>
                   <li><strong>Valeur négative :</strong> Autorise plus de répétitions (rare)</li>
                   <li><strong>0.0 :</strong> Aucune pénalité</li>
                 </ul>
                 <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
                   <p className="text-xs text-orange-700 dark:text-orange-300">
-                    💡 <strong>Recommandation :</strong> 0.3-0.5 pour frequency penalty, 0.0-0.2 pour presence penalty.
+                    💡 <strong>Recommandation :</strong> 0.3-0.5 pour Anti-Répétition, 0.0-0.2 pour Diversité des Sujets.
                   </p>
                 </div>
               </div>
