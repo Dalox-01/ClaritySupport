@@ -53,27 +53,30 @@ export async function GET(req: NextRequest) {
     const encryptedRefreshToken = encrypt(tokens.refresh_token);
 
     // Sauvegarder dans la base de données
-    const { error: dbError } = await supabase
+    const { data: savedAccount, error: dbError } = await supabase
       .from('mail_accounts')
       .upsert({
         user_id: state,
         provider: 'outlook',
         email: profile.userPrincipalName || profile.mail,
-        access_token_encrypted: encryptedAccessToken,
-        refresh_token_encrypted: encryptedRefreshToken,
+        access_token: encryptedAccessToken,
+        refresh_token: encryptedRefreshToken,
         token_expires_at: new Date(tokens.expiry_date).toISOString(),
         is_active: true,
-        sync_enabled: true,
       }, {
         onConflict: 'user_id,email',
-      });
+      })
+      .select()
+      .single();
 
     if (dbError) {
       console.error('Error saving Outlook account:', dbError);
       return NextResponse.redirect(
-        new URL('/mail-center?error=save_failed', req.url)
+        new URL('/mail-center?error=save_failed&details=' + encodeURIComponent(dbError.message), req.url)
       );
     }
+
+    console.log('✅ Outlook account saved:', profile.userPrincipalName || profile.mail);
 
     return NextResponse.redirect(
       new URL('/mail-center?success=outlook_connected', req.url)

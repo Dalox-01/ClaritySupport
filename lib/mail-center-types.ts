@@ -19,12 +19,11 @@ export type MailAccount = {
   user_id: string;
   provider: MailProvider;
   email: string;
-  access_token_encrypted: string;
-  refresh_token_encrypted: string;
+  access_token: string;
+  refresh_token: string;
   token_expires_at: string | null;
   is_active: boolean;
-  sync_enabled: boolean;
-  last_sync_at: string | null;
+  last_sync: string | null;
   created_at: string;
   updated_at: string;
 };

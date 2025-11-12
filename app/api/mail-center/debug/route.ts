@@ -40,8 +40,7 @@ export async function GET(req: NextRequest) {
         email: a.email,
         provider: a.provider,
         is_active: a.is_active,
-        sync_enabled: a.sync_enabled,
-        last_sync_at: a.last_sync_at,
+        last_sync: a.last_sync,
         created_at: a.created_at
       }))
     };

@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Envoyer la réponse
-        const accessToken = decrypt(email.account.access_token_encrypted);
+        const accessToken = decrypt(email.account.access_token);
         
         if (email.account.provider === 'gmail') {
           await sendGmailReply(

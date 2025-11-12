@@ -35,8 +35,7 @@ export async function GET(req: NextRequest) {
       .from('mail_accounts')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true)
-      .eq('sync_enabled', true);
+      .eq('is_active', true);
 
     if (accountsError || !accounts || accounts.length === 0) {
       return NextResponse.json({ newEmails: [], count: 0 });
@@ -46,8 +45,8 @@ export async function GET(req: NextRequest) {
     for (const account of accounts) {
       try {
         // Récupérer la date de la dernière vérification OU la date du dernier email
-        const lastCheckDate = account.last_sync_at 
-          ? new Date(account.last_sync_at)
+        const lastCheckDate = account.last_sync 
+          ? new Date(account.last_sync)
           : new Date(Date.now() - 24 * 60 * 60 * 1000); // Par défaut: dernières 24h
 
         let accessToken = decrypt(account.access_token);
@@ -158,10 +157,10 @@ export async function GET(req: NextRequest) {
           }
         }
 
-        // Mettre à jour last_sync_at
+        // Mettre à jour last_sync
         await supabase
           .from('mail_accounts')
-          .update({ last_sync_at: new Date().toISOString() })
+          .update({ last_sync: new Date().toISOString() })
           .eq('id', account.id);
 
       } catch (accountError) {

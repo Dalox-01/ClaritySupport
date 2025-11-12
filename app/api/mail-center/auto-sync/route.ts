@@ -40,8 +40,7 @@ export async function POST(req: NextRequest) {
       .from('mail_accounts')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true)
-      .eq('sync_enabled', true);
+      .eq('is_active', true);
 
     if (accountsError || !accounts || accounts.length === 0) {
       console.log('❌ [AUTO-SYNC] Aucun compte actif');
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
         // Récupérer les messages selon le provider
         if (account.provider === 'gmail') {
           // Vérifier/rafraîchir le token Gmail
-          if (account.expires_at && new Date(account.expires_at) <= new Date()) {
+          if (account.token_expires_at && new Date(account.token_expires_at) <= new Date()) {
             console.log('🔑 [AUTO-SYNC] Rafraîchissement du token Gmail');
             const refreshToken = decrypt(account.refresh_token);
             const newTokens = await refreshGmailToken(refreshToken);
@@ -183,10 +182,10 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Mettre à jour last_sync_at
+        // Mettre à jour last_sync
         await supabase
           .from('mail_accounts')
-          .update({ last_sync_at: new Date().toISOString() })
+          .update({ last_sync: new Date().toISOString() })
           .eq('id', account.id);
 
         totalNewEmails += accountNewCount;

@@ -42,8 +42,7 @@ export async function GET(req: NextRequest) {
       .from('mail_accounts')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true)
-      .eq('sync_enabled', true);
+      .eq('is_active', true);
 
     if (accountsError || !accounts) {
       return NextResponse.json({ error: 'Erreur récupération comptes' }, { status: 500 });
@@ -60,13 +59,13 @@ export async function GET(req: NextRequest) {
       try {
         // Vérifier si le token a expiré
         const tokenExpiry = new Date(account.token_expires_at);
-        let accessToken = decrypt(account.access_token_encrypted);
+        let accessToken = decrypt(account.access_token);
 
         if (tokenExpiry < new Date()) {
           console.log(`Token expired for ${account.email}, refreshing...`);
           
           // Rafraîchir le token
-          const refreshToken = decrypt(account.refresh_token_encrypted);
+          const refreshToken = decrypt(account.refresh_token);
           let newTokens;
 
           if (account.provider === 'gmail') {
@@ -80,7 +79,7 @@ export async function GET(req: NextRequest) {
           await supabase
             .from('mail_accounts')
             .update({
-              access_token_encrypted: encrypt(newTokens.access_token),
+              access_token: encrypt(newTokens.access_token),
               token_expires_at: new Date(newTokens.expiry_date).toISOString(),
               updated_at: new Date().toISOString(),
             })
@@ -153,7 +152,7 @@ export async function GET(req: NextRequest) {
         // Mettre à jour la date de dernière sync
         await supabase
           .from('mail_accounts')
-          .update({ last_sync_at: new Date().toISOString() })
+          .update({ last_sync: new Date().toISOString() })
           .eq('id', account.id);
 
         allEmails.push(...messages);
@@ -197,8 +196,7 @@ async function handleStreamSync(userId: string) {
           .from('mail_accounts')
           .select('*')
           .eq('user_id', userId)
-          .eq('is_active', true)
-          .eq('sync_enabled', true);
+          .eq('is_active', true);
 
         if (accountsError || !accounts || accounts.length === 0) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', message: 'Aucun compte actif' })}\n\n`));
@@ -331,10 +329,10 @@ async function handleStreamSync(userId: string) {
 
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'account-complete', email: account.email })}\n\n`));
 
-            // Mettre à jour last_sync_at
+            // Mettre à jour last_sync
             await supabase
               .from('mail_accounts')
-              .update({ last_sync_at: new Date().toISOString() })
+              .update({ last_sync: new Date().toISOString() })
               .eq('id', account.id);
 
           } catch (accountError) {

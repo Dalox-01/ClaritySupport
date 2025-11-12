@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       try {
         const email = pendingReply.email;
         const account = email.account;
-        const accessToken = decrypt(account.access_token_encrypted);
+        const accessToken = decrypt(account.access_token);
 
         // Envoyer via le bon provider
         if (account.provider === 'gmail') {

@@ -64,9 +64,8 @@ export async function GET(req: NextRequest) {
         email: gmailProfile.emailAddress,
         access_token: encryptedAccessToken,
         refresh_token: encryptedRefreshToken,
-        expires_at: new Date(tokens.expiry_date).toISOString(),
+        token_expires_at: new Date(tokens.expiry_date).toISOString(),
         is_active: true,
-        sync_enabled: true,
       }, {
         onConflict: 'user_id,email',
       })
@@ -76,7 +75,7 @@ export async function GET(req: NextRequest) {
     if (dbError) {
       console.error('Error saving Gmail account:', dbError);
       return NextResponse.redirect(
-        new URL('/mail-center?error=save_failed', req.url)
+        new URL('/mail-center?error=save_failed&details=' + encodeURIComponent(dbError.message), req.url)
       );
     }
 
@@ -143,7 +142,7 @@ export async function GET(req: NextRequest) {
       // Mettre à jour la date de dernière sync
       await supabase
         .from('mail_accounts')
-        .update({ last_sync_at: new Date().toISOString() })
+        .update({ last_sync: new Date().toISOString() })
         .eq('id', savedAccount.id);
 
       console.log(`✅ Successfully synced ${gmailMessages.length} emails`);
