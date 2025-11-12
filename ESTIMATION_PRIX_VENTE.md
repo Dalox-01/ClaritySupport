@@ -98,7 +98,7 @@
     - Gestion des variables personnalisées
     - Système de quotas par plan (FREE: 5/mois, STARTER: 100/mois, PRO: illimité)
     - Rate limiting API configuré
-    - Contact form avec Resend (laszlojeanpierre@gmail.com)
+    - Contact form avec Resend (clarityteamfr@gmail.com)
     - SEO optimisé (sitemap.xml, robots.txt, Open Graph, Twitter Cards)
     - Analytics utilisateurs complètes
     - Responsive ultra-complet (9 breakpoints: 320px à 4K)

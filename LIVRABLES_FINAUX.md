@@ -397,4 +397,4 @@ project/
 
 Tous les documents nécessaires sont fournis. L'équipe peut commencer l'implémentation immédiatement après validation du wireframe choisi.
 
-**Questions ?** → laszlojeanpierre@gmail.com
+**Questions ?** → clarityteamfr@gmail.com
