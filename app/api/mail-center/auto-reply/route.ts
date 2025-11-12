@@ -27,13 +27,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const userEmail = session.user.email;
+    const userId = session.user.id;
 
     // 1. Vérifier si l'IA est active
     const { data: aiSettings } = await supabase
       .from('ai_settings')
       .select('enabled, auto_reply_urgent')
-      .eq('user_email', userEmail)
+      .eq('user_id', userId)
       .single();
 
     if (!aiSettings || !aiSettings.enabled) {
@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
     const { data: emails, error: emailsError } = await supabase
       .from('emails_cache')
       .select('*')
-      .eq('account_email', userEmail)
-      .is('auto_replied', null)
+      .eq('user_id', userId)
+      .or('is_auto_replied.is.null,is_auto_replied.eq.false')
       .order('received_at', { ascending: false })
       .limit(10); // Traiter maximum 10 emails à la fois
 
@@ -164,8 +164,9 @@ export async function POST(req: NextRequest) {
         await supabase
           .from('emails_cache')
           .update({
-            auto_replied: true,
-            auto_replied_at: new Date().toISOString()
+            is_auto_replied: true,
+            replied_at: new Date().toISOString(),
+            reply_status: 'sent'
           })
           .eq('id', email.id);
 

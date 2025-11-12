@@ -166,6 +166,17 @@ export default function MailCenterPage() {
     }
   }, [status]);
 
+  // Auto-reply automatique toutes les 2 minutes si IA active
+  useEffect(() => {
+    if (status === 'authenticated' && isAIActive) {
+      const autoReplyInterval = setInterval(() => {
+        triggerAutoReply();
+      }, 120000); // 2 minutes
+      
+      return () => clearInterval(autoReplyInterval);
+    }
+  }, [status, isAIActive]);
+
   // Vérifier si connexion réussie
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -193,6 +204,27 @@ export default function MailCenterPage() {
     }
   }, []);
 
+  // Fonction pour déclencher l'auto-reply en arrière-plan
+  const triggerAutoReply = async () => {
+    try {
+      const response = await fetch('/api/mail-center/auto-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.processed > 0) {
+          toast.success(`${result.processed} réponse(s) automatique(s) envoyée(s)`);
+          // Recharger les emails pour voir les réponses envoyées
+          loadInitialData(false);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur auto-reply:', error);
+    }
+  };
+
   const loadInitialData = async (triggerSync = false) => {
     setIsLoading(true);
     try {
@@ -209,6 +241,11 @@ export default function MailCenterPage() {
       if (aiSettingsRes.ok) {
         const aiSettings = await aiSettingsRes.json();
         setIsAIActive(aiSettings.enabled || false);
+        
+        // Si l'IA est active, déclencher l'auto-reply pour les nouveaux emails
+        if (aiSettings.enabled) {
+          triggerAutoReply();
+        }
       }
 
       if (triggerSync) {
@@ -251,11 +288,21 @@ export default function MailCenterPage() {
 
       if (response.ok) {
         setIsAIActive(newState);
+        
+        // Si on active l'IA, déclencher immédiatement l'auto-reply
+        if (newState) {
+          toast.success('IA activée - Réponses automatiques 24/7');
+          triggerAutoReply();
+        } else {
+          toast.info('IA désactivée - Réponses manuelles uniquement');
+        }
       } else {
         console.error('Erreur lors de la mise à jour de l\'état de l\'IA');
+        toast.error('Erreur lors de l\'activation de l\'IA');
       }
     } catch (error) {
       console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'activation de l\'IA');
     } finally {
       setIsAILoading(false);
     }
