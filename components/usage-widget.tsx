@@ -17,37 +17,37 @@ interface UsageWidgetProps {
 }
 
 interface UsageData {
-  subscription: {
-    plan: PlanType;
-    status: string;
-  };
-  plan: {
-    name: string;
-    price: {
-      monthly: number;
-    };
-  };
-  usage: {
-    emailAccountsCount: number;
-    emailsThisMonth: number;
-    autoRepliesThisMonth: number;
-  };
+  plan: string;
+  segment: string;
   limits: {
     emailAccounts: {
-      current: number;
-      max: number;
+      used: number;
+      limit: number;
       percentage: number;
+      unlimited: boolean;
     };
-    emailsPerMonth: {
-      current: number;
-      max: number;
+    autoReplies: {
+      used: number;
+      limit: number;
       percentage: number;
+      unlimited: boolean;
     };
-    autoRepliesPerMonth: {
-      current: number;
-      max: number;
+    shopifyStores?: {
+      used: number;
+      limit: number;
       percentage: number;
+      unlimited: boolean;
     };
+  };
+  features: {
+    aiTemplates: boolean;
+    prioritySupport: boolean;
+    analytics: boolean;
+    whiteLabel: boolean;
+    customApi: boolean;
+    signatureDynamique: boolean;
+    upsellAuto: boolean;
+    orderTracking: boolean;
   };
 }
 
@@ -121,25 +121,17 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
     {
       icon: Mail,
       label: 'Comptes email',
-      current: data.limits.emailAccounts.current,
-      max: data.limits.emailAccounts.max,
+      current: data.limits.emailAccounts.used,
+      max: data.limits.emailAccounts.unlimited ? 99999 : data.limits.emailAccounts.limit,
       percentage: data.limits.emailAccounts.percentage,
-      unit: '',
-    },
-    {
-      icon: TrendingUp,
-      label: 'Emails ce mois',
-      current: data.limits.emailsPerMonth.current,
-      max: data.limits.emailsPerMonth.max,
-      percentage: data.limits.emailsPerMonth.percentage,
       unit: '',
     },
     {
       icon: Zap,
       label: 'Réponses auto',
-      current: data.limits.autoRepliesPerMonth.current,
-      max: data.limits.autoRepliesPerMonth.max,
-      percentage: data.limits.autoRepliesPerMonth.percentage,
+      current: data.limits.autoReplies.used,
+      max: data.limits.autoReplies.unlimited ? 99999 : data.limits.autoReplies.limit,
+      percentage: data.limits.autoReplies.percentage,
       unit: '',
     },
   ];
@@ -151,7 +143,7 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">Utilisation</h3>
             <Badge variant="outline" className="text-xs">
-              {data.plan.name}
+              {data.plan.toUpperCase()}
             </Badge>
           </div>
 
@@ -211,7 +203,7 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
         <UpgradeModal
           isOpen={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
-          currentPlan={data.subscription.plan}
+          currentPlan={data.plan as PlanType}
           reason={selectedLimit ? `Vous avez atteint ${selectedLimit.current} sur ${selectedLimit.max} pour ${selectedLimit.feature}` : undefined}
           limitReached={selectedLimit || undefined}
         />
@@ -227,15 +219,15 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
           <div>
             <h2 className="text-xl font-bold text-white mb-1">Utilisation du plan</h2>
             <p className="text-sm text-gray-400">
-              Plan actuel : <span className="font-semibold text-white">{data.plan.name}</span> -{' '}
-              {data.plan.price.monthly}€/mois
+              Plan actuel : <span className="font-semibold text-white">{data.plan.toUpperCase()}</span>
+              {data.segment && <span className="text-gray-500"> ({data.segment === 'shopify' ? 'E-commerce' : 'Freelance'})</span>}
             </p>
           </div>
           <Badge
-            variant={data.subscription.status === 'active' ? 'default' : 'secondary'}
+            variant="default"
             className="text-sm px-3 py-1"
           >
-            {data.subscription.status === 'active' ? '✅ Actif' : data.subscription.status}
+            ✅ Actif
           </Badge>
         </div>
 
@@ -332,7 +324,7 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        currentPlan={data.subscription.plan}
+        currentPlan={data.plan as PlanType}
         reason={selectedLimit ? `Vous avez atteint ${selectedLimit.current} sur ${selectedLimit.max} pour ${selectedLimit.feature}` : undefined}
         limitReached={selectedLimit || undefined}
       />

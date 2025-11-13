@@ -3,11 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { 
-  getUserSubscription, 
-  getUserUsageStats,
-  getSubscriptionSummary
-} from '@/lib/subscription-limits';
+import { getUsageSummary } from '@/lib/plan-enforcement';
 import { supabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +19,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const summary = await getSubscriptionSummary(session.user.id);
+    const summary = await getUsageSummary(session.user.id);
 
     return NextResponse.json({
       success: true,
