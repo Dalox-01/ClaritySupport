@@ -78,8 +78,8 @@ export async function createCheckoutSession(params: {
   successUrl: string;
   cancelUrl: string;
   userId: string;
-  planType: PlanType;
-  billingPeriod: 'monthly' | 'yearly';
+  planType: PlanType | string;
+  billingPeriod: 'monthly' | 'yearly' | string;
 }): Promise<Stripe.Checkout.Session> {
   const { customerId, priceId, successUrl, cancelUrl, userId, planType, billingPeriod } = params;
 

@@ -15,8 +15,20 @@ export default function CheckoutPage() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [priceId, setPriceId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Nouveau système avec priceId
+    const price = searchParams.get('priceId');
+    if (price) {
+      setPriceId(price);
+      setIsLoading(true);
+      // Créer immédiatement la session Stripe avec le priceId
+      handleCheckoutWithPriceId(price);
+      return;
+    }
+
+    // Ancien système avec plan et period (pour rétrocompatibilité)
     const plan = searchParams.get('plan') as PlanType;
     const period = searchParams.get('period') as 'monthly' | 'yearly';
 
@@ -27,6 +39,38 @@ export default function CheckoutPage() {
       setBillingPeriod(period);
     }
   }, [searchParams]);
+
+  const handleCheckoutWithPriceId = async (stripePriceId: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: stripePriceId,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erreur lors de la création de la session');
+      }
+
+      const { url } = await response.json();
+      
+      // Rediriger vers Stripe Checkout
+      window.location.href = url;
+
+    } catch (err) {
+      console.error('Erreur checkout:', err);
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      setIsLoading(false);
+    }
+  };
 
   const selectedPlan = PLANS[planType];
 

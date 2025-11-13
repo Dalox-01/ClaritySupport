@@ -20,33 +20,55 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { plan, billingPeriod } = await req.json();
+    const body = await req.json();
+    let priceId: string;
+    let planType: string = 'custom';
+    let billingPeriod: string = 'monthly';
 
-    // Valider le plan
-    const validPlans: PlanType[] = ['starter', 'pro', 'enterprise'];
-    if (!validPlans.includes(plan)) {
+    // Nouveau système: priceId direct
+    if (body.priceId) {
+      priceId = body.priceId;
+      console.log(`🆕 Utilisation du priceId direct: ${priceId}`);
+    } 
+    // Ancien système: plan + billingPeriod
+    else if (body.plan && body.billingPeriod) {
+      const { plan, billingPeriod: period } = body;
+
+      // Valider le plan
+      const validPlans: PlanType[] = ['starter', 'pro', 'enterprise'];
+      if (!validPlans.includes(plan)) {
+        return NextResponse.json({ 
+          error: 'Plan invalide',
+          validPlans 
+        }, { status: 400 });
+      }
+
+      // Valider la période de facturation
+      if (period !== 'monthly' && period !== 'yearly') {
+        return NextResponse.json({ 
+          error: 'Période de facturation invalide' 
+        }, { status: 400 });
+      }
+
+      planType = plan;
+      billingPeriod = period;
+
+      // Récupérer le Price ID Stripe
+      priceId = STRIPE_PRICE_IDS[plan as PlanType][period as 'monthly' | 'yearly'];
+      
+      if (!priceId) {
+        return NextResponse.json({ 
+          error: 'Price ID Stripe non configuré pour ce plan',
+          plan,
+          billingPeriod: period
+        }, { status: 500 });
+      }
+
+      console.log(`🔧 Ancien système - Plan: ${plan}, Période: ${period}, PriceId: ${priceId}`);
+    } else {
       return NextResponse.json({ 
-        error: 'Plan invalide',
-        validPlans 
+        error: 'Paramètres manquants: fournissez soit priceId, soit plan et billingPeriod' 
       }, { status: 400 });
-    }
-
-    // Valider la période de facturation
-    if (billingPeriod !== 'monthly' && billingPeriod !== 'yearly') {
-      return NextResponse.json({ 
-        error: 'Période de facturation invalide' 
-      }, { status: 400 });
-    }
-
-    // Récupérer le Price ID Stripe
-    const priceId = STRIPE_PRICE_IDS[plan as PlanType][billingPeriod as 'monthly' | 'yearly'];
-    
-    if (!priceId) {
-      return NextResponse.json({ 
-        error: 'Price ID Stripe non configuré pour ce plan',
-        plan,
-        billingPeriod
-      }, { status: 500 });
     }
 
     // Récupérer ou créer le customer Stripe
@@ -64,8 +86,9 @@ export async function POST(req: NextRequest) {
     // Log des paramètres AVANT création
     console.log(`🔍 Création checkout avec métadonnées:`);
     console.log(`   - userId: ${session.user.id}`);
-    console.log(`   - planType: ${plan}`);
+    console.log(`   - planType: ${planType}`);
     console.log(`   - billingPeriod: ${billingPeriod}`);
+    console.log(`   - priceId: ${priceId}`);
 
     // Créer la session Checkout
     const checkoutSession = await createCheckoutSession({
@@ -74,7 +97,7 @@ export async function POST(req: NextRequest) {
       successUrl,
       cancelUrl,
       userId: session.user.id,
-      planType: plan,
+      planType,
       billingPeriod,
     });
 

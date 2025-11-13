@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Check, X, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { PricingPlan } from '@/lib/constants/pricing';
 import { Button } from '@/components/ui/button';
 
@@ -12,6 +13,20 @@ interface PlanCardProps {
 
 export default function PlanCard({ plan, index }: PlanCardProps) {
   const isPopular = plan.popular;
+  const router = useRouter();
+
+  const handleSubscribe = async () => {
+    // Si c'est un plan "Contactez-nous", rediriger vers la page contact
+    if (plan.cta === 'Contactez-nous') {
+      router.push('/contact');
+      return;
+    }
+
+    // Sinon, rediriger vers le checkout Stripe avec le priceId
+    if (plan.stripePriceId) {
+      router.push(`/checkout?priceId=${plan.stripePriceId}`);
+    }
+  };
 
   return (
     <motion.div
@@ -56,6 +71,7 @@ export default function PlanCard({ plan, index }: PlanCardProps) {
 
         {/* CTA Button */}
         <Button
+          onClick={handleSubscribe}
           className={`w-full mb-6 h-12 text-base font-semibold transition-all duration-300 ${
             isPopular
               ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl hover:scale-105'

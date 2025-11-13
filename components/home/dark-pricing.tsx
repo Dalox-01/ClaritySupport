@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, Sparkles, ShoppingCart, User, Building2 } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PRICING_SEGMENTS, type SegmentType, type PricingPlan } from '@/lib/constants/pricing';
 
 // Thèmes de couleur par segment
@@ -50,6 +51,20 @@ const SEGMENT_COLORS = {
 function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; segment: SegmentType }) {
   const isPopular = plan.popular;
   const colors = SEGMENT_COLORS[segment];
+  const router = useRouter();
+
+  const handleSubscribe = () => {
+    // Si c'est un plan "Contactez-nous", rediriger vers la page contact
+    if (plan.cta === 'Contactez-nous') {
+      router.push('/contact');
+      return;
+    }
+
+    // Sinon, rediriger vers le checkout Stripe avec le priceId
+    if (plan.stripePriceId) {
+      router.push(`/checkout?priceId=${plan.stripePriceId}`);
+    }
+  };
 
   return (
     <motion.div
@@ -94,6 +109,7 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
 
         {/* CTA Button */}
         <button
+          onClick={handleSubscribe}
           className={`w-full mb-6 h-12 text-base font-semibold rounded-xl transition-all duration-300 ${
             isPopular
               ? `bg-gradient-to-r ${colors.button} text-white shadow-lg hover:shadow-xl hover:scale-105`
