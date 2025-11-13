@@ -5,11 +5,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { 
   canAddEmailAccount,
-  canProcessEmail,
   canSendAutoReply,
   canAccessFeature,
-} from '@/lib/subscription-limits';
-import type { PlanFeatures } from '@/lib/pricing-plans';
+} from '@/lib/plan-enforcement';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,10 +28,6 @@ export async function POST(req: NextRequest) {
         result = await canAddEmailAccount(session.user.id);
         break;
 
-      case 'process_email':
-        result = await canProcessEmail(session.user.id);
-        break;
-
       case 'send_auto_reply':
         result = await canSendAutoReply(session.user.id);
         break;
@@ -44,13 +38,25 @@ export async function POST(req: NextRequest) {
             error: 'Feature name required for access_feature action' 
           }, { status: 400 });
         }
-        result = await canAccessFeature(session.user.id, feature as keyof PlanFeatures);
+        
+        const validFeatures = ['aiTemplates', 'prioritySupport', 'analytics', 'whiteLabel', 'customApi', 'signatureDynamique', 'upsellAuto', 'orderTracking'];
+        if (!validFeatures.includes(feature)) {
+          return NextResponse.json({ 
+            error: 'Feature invalide',
+            validFeatures
+          }, { status: 400 });
+        }
+        
+        result = await canAccessFeature(
+          session.user.id, 
+          feature as 'aiTemplates' | 'prioritySupport' | 'analytics' | 'whiteLabel' | 'customApi' | 'signatureDynamique' | 'upsellAuto' | 'orderTracking'
+        );
         break;
 
       default:
         return NextResponse.json({ 
           error: 'Action invalide',
-          validActions: ['add_email_account', 'process_email', 'send_auto_reply', 'access_feature']
+          validActions: ['add_email_account', 'send_auto_reply', 'access_feature']
         }, { status: 400 });
     }
 
@@ -60,7 +66,7 @@ export async function POST(req: NextRequest) {
         reason: result.reason,
         currentUsage: result.currentUsage,
         limit: result.limit,
-        upgradePlans: result.upgradePlans,
+        suggestedPlans: result.suggestedPlans,
       }, { status: 403 });
     }
 

@@ -145,7 +145,7 @@ export async function getUserUsageStats(userId: string): Promise<UsageStats> {
 /**
  * Vérifier si l'utilisateur peut ajouter un compte email
  */
-export async function canAddEmailAccountWithSubscription(userId: string): Promise<CheckResult> {
+export async function canAddEmailAccountWithSubscription(userId: string): Promise<LimitCheckResult> {
   const subscription = await getUserSubscription(userId);
   if (!subscription) {
     return { allowed: false, reason: 'Abonnement non trouvé' };
@@ -207,7 +207,7 @@ export async function canProcessEmail(userId: string): Promise<LimitCheckResult>
 /**
  * Vérifier si l'utilisateur peut envoyer une réponse automatique
  */
-export async function canSendAutoReplyWithSubscription(userId: string): Promise<CheckResult> {
+export async function canSendAutoReplyWithSubscription(userId: string): Promise<LimitCheckResult> {
   const subscription = await getUserSubscription(userId);
   if (!subscription) {
     return { allowed: false, reason: 'Abonnement non trouvé' };

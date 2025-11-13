@@ -6,10 +6,6 @@ import { authOptions } from '@/lib/auth';
 import { 
   getUserSubscription, 
   getUserUsageStats,
-  canAddEmailAccount,
-  canProcessEmail,
-  canSendAutoReply,
-  canAccessFeature,
   getSubscriptionSummary
 } from '@/lib/subscription-limits';
 import { supabase } from '@/lib/db';

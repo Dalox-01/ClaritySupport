@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { generateReplyWithAI } from '@/lib/mail-ai-helpers';
 import { supabase } from '@/lib/db';
-import { canSendAutoReply } from '@/lib/subscription-limits';
+import { canSendAutoReply } from '@/lib/plan-enforcement';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         reason: limitCheck.reason,
         currentUsage: limitCheck.currentUsage,
         limit: limitCheck.limit,
-        upgradePlans: limitCheck.upgradePlans,
+        suggestedPlans: limitCheck.suggestedPlans,
         limitReached: {
           feature: 'Réponses automatiques',
           current: limitCheck.currentUsage || 0,
