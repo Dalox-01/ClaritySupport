@@ -1,6 +1,6 @@
 // Configuration des thèmes par segment d'abonnement
 
-export type ThemeType = 'ecommerce' | 'freelance' | 'tpe' | 'default';
+export type ThemeType = 'ecommerce' | 'freelance' | 'default';
 
 // Mapping des plans vers les segments
 export const PLAN_TO_SEGMENT: Record<string, ThemeType> = {
@@ -12,11 +12,9 @@ export const PLAN_TO_SEGMENT: Record<string, ThemeType> = {
   // Freelance
   'solo': 'freelance',
   'unlimited': 'freelance',
-  
-  // TPE/PME
-  'team': 'tpe',
-  'business': 'tpe',
-  'company': 'tpe',
+  'team': 'freelance',
+  'business': 'freelance',
+  'company': 'freelance',
   
   // Default
   'free': 'default',
@@ -37,11 +35,10 @@ export function detectSegmentFromPlan(planName: string | null | undefined): Them
   if (normalizedPlan.includes('starter') || normalizedPlan.includes('scale')) {
     return 'ecommerce';
   }
-  if (normalizedPlan.includes('solo') || normalizedPlan.includes('unlimited')) {
+  if (normalizedPlan.includes('solo') || normalizedPlan.includes('unlimited') || 
+      normalizedPlan.includes('team') || normalizedPlan.includes('business') || 
+      normalizedPlan.includes('company')) {
     return 'freelance';
-  }
-  if (normalizedPlan.includes('team') || normalizedPlan.includes('business') || normalizedPlan.includes('company')) {
-    return 'tpe';
   }
   if (normalizedPlan.includes('pro')) {
     // Si c'est juste "pro", on doit deviner - par défaut ecommerce
@@ -88,24 +85,6 @@ export const THEME_COLORS = {
     glow: 'shadow-blue-500/50',
     badge: 'bg-blue-600',
     rgb: { r: 37, g: 99, b: 235 },
-  },
-  tpe: {
-    name: 'TPE / PME',
-    primary: 'rgb(147, 51, 234)', // purple-600
-    primaryHover: 'rgb(126, 34, 206)', // purple-700
-    secondary: 'rgb(236, 72, 153)', // pink-500
-    gradient: 'from-purple-600 to-pink-600',
-    gradientHover: 'from-purple-700 to-pink-700',
-    bg: {
-      light: 'bg-gradient-to-br from-purple-50 via-white to-pink-50',
-      dark: 'bg-gradient-to-br from-[#0A0E27] via-[#0F1629] to-[#0A0E27]',
-      class: 'bg-purple-500/10',
-    },
-    border: 'border-purple-500/30',
-    text: 'text-purple-600 dark:text-purple-400',
-    glow: 'shadow-purple-500/50',
-    badge: 'bg-purple-600',
-    rgb: { r: 147, g: 51, b: 234 },
   },
   default: {
     name: 'Standard',
