@@ -1,6 +1,6 @@
-import { ShoppingCart, User, Building2 } from 'lucide-react';
+import { ShoppingCart, User } from 'lucide-react';
 
-export type SegmentType = 'shopify' | 'freelance' | 'tpe';
+export type SegmentType = 'shopify' | 'freelance';
 
 export interface PricingFeature {
   text: string;
@@ -139,65 +139,6 @@ export const PRICING_SEGMENTS: Segment[] = [
           { text: 'IA personnalisée à votre ton', included: true },
           { text: 'Intégrations avancées', included: true },
           { text: 'API personnalisée complète', included: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'tpe',
-    label: 'TPE / PME',
-    icon: Building2,
-    plans: [
-      {
-        name: 'TEAM',
-        price: 79,
-        period: 'mois',
-        description: 'Pour les petites équipes',
-        cta: 'Commencer',
-        features: [
-          { text: '5 comptes email', included: true },
-          { text: '15 000 réponses automatiques/mois', included: true },
-          { text: '5 utilisateurs', included: true },
-          { text: 'Assignation automatique', included: true },
-          { text: 'Support par email', included: true },
-          { text: 'Templates partagés', included: true },
-          { text: 'Permissions avancées', included: false },
-          { text: 'White-label', included: false },
-        ],
-      },
-      {
-        name: 'BUSINESS',
-        price: 149,
-        period: 'mois',
-        description: 'Pour les équipes en croissance',
-        popular: true,
-        cta: 'Démarrer l\'essai',
-        features: [
-          { text: '15 comptes email', included: true },
-          { text: '40 000 réponses automatiques/mois', included: true },
-          { text: '15 utilisateurs', included: true },
-          { text: 'Assignation intelligente par IA', included: true },
-          { text: 'Support prioritaire 24/7', included: true },
-          { text: 'Base de connaissance partagée', included: true },
-          { text: 'Permissions & rôles personnalisés', included: true },
-          { text: 'Analytics équipe avancées', included: true },
-        ],
-      },
-      {
-        name: 'COMPANY',
-        price: 299,
-        period: 'mois',
-        description: 'Pour les entreprises établies',
-        cta: 'Contactez-nous',
-        features: [
-          { text: 'Comptes email illimités', included: true },
-          { text: 'Réponses automatiques illimitées', included: true },
-          { text: '50 utilisateurs', included: true },
-          { text: 'IA d\'assignation avancée', included: true },
-          { text: 'Support VIP dédié', included: true },
-          { text: 'Formation équipe incluse', included: true },
-          { text: 'Permissions enterprise', included: true },
-          { text: 'White-label complet', included: true },
         ],
       },
     ],
