@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { PlanType, PRICING_PLANS, getPlanByType } from './pricing-plans';
+import { getPlanLimits, canAddEmailAccount as checkEmailAccountLimit, canGenerateReply } from './plan-limits';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -119,22 +120,24 @@ export async function canAddEmailAccount(userId: string): Promise<LimitCheckResu
   if (!subscription) {
     return { allowed: false, reason: 'Abonnement non trouvé' };
   }
-  const plan = getPlanByType(subscription.plan);
+  
+  const planLimits = getPlanLimits(subscription.plan);
   const usage = await getUserUsageStats(userId);
 
-  const allowed = usage.emailAccountsCount < plan.features.maxEmailAccounts;
+  // -1 signifie illimité
+  if (planLimits.emailAccounts === -1) {
+    return { allowed: true };
+  }
+
+  const allowed = usage.emailAccountsCount < planLimits.emailAccounts;
 
   if (!allowed) {
     return {
       allowed: false,
-      reason: `Vous avez atteint la limite de ${plan.features.maxEmailAccounts} compte(s) email pour le plan ${plan.name}`,
+      reason: `Vous avez atteint la limite de ${planLimits.emailAccounts} compte(s) email pour le plan ${subscription.plan}`,
       currentUsage: usage.emailAccountsCount,
-      limit: plan.features.maxEmailAccounts,
-      upgradePlans: subscription.plan === 'free' 
-        ? ['starter', 'pro', 'enterprise']
-        : subscription.plan === 'starter'
-        ? ['pro', 'enterprise']
-        : ['enterprise'],
+      limit: planLimits.emailAccounts,
+      upgradePlans: ['pro' as PlanType, 'enterprise' as PlanType],
     };
   }
 
@@ -179,22 +182,24 @@ export async function canSendAutoReply(userId: string): Promise<LimitCheckResult
   if (!subscription) {
     return { allowed: false, reason: 'Abonnement non trouvé' };
   }
-  const plan = getPlanByType(subscription.plan);
+  
+  const planLimits = getPlanLimits(subscription.plan);
   const usage = await getUserUsageStats(userId);
 
-  const allowed = usage.autoRepliesThisMonth < plan.features.autoRepliesPerMonth;
+  // -1 signifie illimité
+  if (planLimits.autoRepliesPerMonth === -1) {
+    return { allowed: true };
+  }
+
+  const allowed = usage.autoRepliesThisMonth < planLimits.autoRepliesPerMonth;
 
   if (!allowed) {
     return {
       allowed: false,
-      reason: `Vous avez atteint la limite de ${plan.features.autoRepliesPerMonth} réponses automatiques/mois pour le plan ${plan.name}`,
+      reason: `Vous avez atteint la limite de ${planLimits.autoRepliesPerMonth} réponses automatiques/mois pour le plan ${subscription.plan}`,
       currentUsage: usage.autoRepliesThisMonth,
-      limit: plan.features.autoRepliesPerMonth,
-      upgradePlans: subscription.plan === 'free' 
-        ? ['starter', 'pro', 'enterprise']
-        : subscription.plan === 'starter'
-        ? ['pro', 'enterprise']
-        : ['enterprise'],
+      limit: planLimits.autoRepliesPerMonth,
+      upgradePlans: ['pro' as PlanType, 'enterprise' as PlanType],
     };
   }
 

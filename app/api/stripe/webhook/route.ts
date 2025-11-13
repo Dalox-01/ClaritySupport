@@ -298,7 +298,16 @@ async function handlePaymentFailed(invoice: any) {
 }
 
 function mapPlanToUserPlan(planType?: string | null): string | null {
-  switch ((planType || '').toLowerCase()) {
+  if (!planType) return null;
+  
+  // Nouveaux plans (depuis pricing.ts)
+  const newPlans = ['STARTER', 'PRO', 'SCALE', 'SOLO', 'UNLIMITED'];
+  if (newPlans.includes(planType.toUpperCase())) {
+    return planType.toUpperCase();
+  }
+  
+  // Anciens plans (pour rétrocompatibilité)
+  switch (planType.toLowerCase()) {
     case 'starter':
       return 'STARTER';
     case 'pro':
