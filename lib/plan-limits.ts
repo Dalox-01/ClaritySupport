@@ -1,15 +1,29 @@
 /**
  * Limites et fonctionnalités par plan
- * Basé sur les plans définis dans lib/constants/pricing.ts
+ * 6 PLANS DISTINCTS : 3 E-commerce + 2 Freelance + 1 Gratuit
+ * IMPORTANT: PRO_SHOPIFY ≠ PRO_FREELANCE (prix, limites, features différents)
  */
 
 export type PlanName = 
-  // E-commerce (Shopify)
-  | 'STARTER' | 'PRO' | 'SCALE'
-  // Freelance
-  | 'SOLO' | 'UNLIMITED'
+  // E-commerce (Shopify) - 3 plans
+  | 'STARTER_SHOPIFY' | 'PRO_SHOPIFY' | 'SCALE_SHOPIFY'
+  // Freelance - 2 plans
+  | 'SOLO_FREELANCE' | 'PRO_FREELANCE' | 'UNLIMITED_FREELANCE'
   // Système
   | 'FREE';
+
+// Compatibilité ancienne nomenclature (pour migration)
+export const PLAN_NAME_MAPPING: Record<string, PlanName> = {
+  // E-commerce
+  'STARTER': 'STARTER_SHOPIFY',
+  'PRO': 'PRO_SHOPIFY', // Par défaut, PRO = E-commerce
+  'SCALE': 'SCALE_SHOPIFY',
+  // Freelance
+  'SOLO': 'SOLO_FREELANCE',
+  'UNLIMITED': 'UNLIMITED_FREELANCE',
+  // Gratuit
+  'FREE': 'FREE',
+};
 
 export interface PlanLimits {
   // Limites emails
@@ -31,12 +45,12 @@ export interface PlanLimits {
 }
 
 /**
- * Configuration des limites par plan
- * Note: Les plans de base (fallback si segment non spécifié)
+ * Configuration des 6 PLANS DISTINCTS
+ * Chaque plan est unique avec ses propres limites et prix
  */
 export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
-  // ============ PLANS E-COMMERCE (SHOPIFY) - DEFAULTS ============
-  STARTER: {
+  // ============ E-COMMERCE (SHOPIFY) - 3 PLANS ============
+  STARTER_SHOPIFY: {
     emailAccounts: 3,
     autoRepliesPerMonth: 5000,
     aiTemplates: false,
@@ -50,7 +64,7 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     orderTracking: true,
   },
   
-  PRO: {
+  PRO_SHOPIFY: {
     emailAccounts: 10,
     autoRepliesPerMonth: 20000,
     aiTemplates: true,
@@ -64,7 +78,7 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     orderTracking: true,
   },
   
-  SCALE: {
+  SCALE_SHOPIFY: {
     emailAccounts: -1, // illimité
     autoRepliesPerMonth: 50000,
     aiTemplates: true,
@@ -78,8 +92,8 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     orderTracking: true,
   },
   
-  // ============ PLANS FREELANCE - DEFAULTS ============
-  SOLO: {
+  // ============ FREELANCE - 3 PLANS ============
+  SOLO_FREELANCE: {
     emailAccounts: 1,
     autoRepliesPerMonth: 500,
     aiTemplates: false,
@@ -93,7 +107,21 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     orderTracking: false,
   },
   
-  UNLIMITED: {
+  PRO_FREELANCE: {
+    emailAccounts: 1,
+    autoRepliesPerMonth: 2000,  // ⚠️ DIFFÉRENT de PRO_SHOPIFY (20000)
+    aiTemplates: true,
+    prioritySupport: true,
+    analytics: true,
+    multiShops: 0,
+    whiteLabel: false,
+    customApi: false,
+    signatureDynamique: true,
+    upsellAuto: false,
+    orderTracking: false,
+  },
+  
+  UNLIMITED_FREELANCE: {
     emailAccounts: 1,
     autoRepliesPerMonth: -1, // illimité
     aiTemplates: true,
@@ -107,7 +135,7 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     orderTracking: false,
   },
   
-  // ============ PLAN GRATUIT ============
+  // ============ GRATUIT ============
   FREE: {
     emailAccounts: 1,
     autoRepliesPerMonth: 100,
@@ -124,79 +152,51 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
 };
 
 /**
- * Configurations spécifiques par segment
- * Ces valeurs surchargent PLAN_LIMITS quand le segment est spécifié
+ * Convertir un nom de plan + segment en PlanName unifié
  */
-const SEGMENT_OVERRIDES: Record<'shopify' | 'freelance', Partial<Record<PlanName, Partial<PlanLimits>>>> = {
-  shopify: {
-    // STARTER Shopify (identique au default)
-    STARTER: {
-      emailAccounts: 3,
-      autoRepliesPerMonth: 5000,
-      multiShops: 1,
-      orderTracking: true,
-    },
-    // PRO Shopify (identique au default)
-    PRO: {
-      emailAccounts: 10,
-      autoRepliesPerMonth: 20000,
-      multiShops: 3,
-      orderTracking: true,
-      upsellAuto: true,
-    },
-    // SCALE Shopify (identique au default)
-    SCALE: {
-      emailAccounts: -1,
-      autoRepliesPerMonth: 50000,
-      multiShops: -1,
-      orderTracking: true,
-    },
-  },
-  freelance: {
-    // SOLO Freelance (identique au default)
-    SOLO: {
-      emailAccounts: 1,
-      autoRepliesPerMonth: 500,
-      multiShops: 0,
-      orderTracking: false,
-    },
-    // PRO Freelance (⚠️ DIFFÉRENT de PRO Shopify)
-    PRO: {
-      emailAccounts: 1,
-      autoRepliesPerMonth: 2000,  // ⚠️ 2000 vs 20000 pour Shopify
-      multiShops: 0,
-      orderTracking: false,
-      upsellAuto: false,
-    },
-    // UNLIMITED Freelance (identique au default)
-    UNLIMITED: {
-      emailAccounts: 1,
-      autoRepliesPerMonth: -1,
-      multiShops: 0,
-      orderTracking: false,
-    },
-  },
-};
+export function getPlanNameWithSegment(planBaseName: string, segment: 'shopify' | 'freelance'): PlanName {
+  const normalized = planBaseName.toUpperCase();
+  
+  if (segment === 'shopify') {
+    if (normalized === 'STARTER') return 'STARTER_SHOPIFY';
+    if (normalized === 'PRO') return 'PRO_SHOPIFY';
+    if (normalized === 'SCALE') return 'SCALE_SHOPIFY';
+  }
+  
+  if (segment === 'freelance') {
+    if (normalized === 'SOLO') return 'SOLO_FREELANCE';
+    if (normalized === 'PRO') return 'PRO_FREELANCE';
+    if (normalized === 'UNLIMITED') return 'UNLIMITED_FREELANCE';
+  }
+  
+  if (normalized === 'FREE') return 'FREE';
+  
+  // Fallback: essayer le mapping direct
+  return PLAN_NAME_MAPPING[normalized] || 'FREE';
+}
 
 /**
  * Récupérer les limites d'un plan avec gestion du segment
- * Applique les overrides spécifiques au segment si fourni
+ * NOUVELLE VERSION: Utilise les plans unifiés (PRO_SHOPIFY vs PRO_FREELANCE)
  */
 export function getPlanLimits(planName: string | null | undefined, segment?: 'shopify' | 'freelance'): PlanLimits {
   if (!planName) return PLAN_LIMITS.FREE;
   
-  const normalizedPlan = planName.toUpperCase() as PlanName;
-  const baseLimits = PLAN_LIMITS[normalizedPlan] || PLAN_LIMITS.FREE;
-  
-  // Si un segment est spécifié, appliquer les overrides
-  if (segment && SEGMENT_OVERRIDES[segment]?.[normalizedPlan]) {
-    return {
-      ...baseLimits,
-      ...SEGMENT_OVERRIDES[segment][normalizedPlan],
-    };
+  // Si segment fourni, construire le nom de plan complet
+  if (segment) {
+    const fullPlanName = getPlanNameWithSegment(planName, segment);
+    return PLAN_LIMITS[fullPlanName] || PLAN_LIMITS.FREE;
   }
   
-  return baseLimits;
+  // Essayer en tant que plan unifié direct
+  const normalizedPlan = planName.toUpperCase() as PlanName;
+  if (PLAN_LIMITS[normalizedPlan]) {
+    return PLAN_LIMITS[normalizedPlan];
+  }
+  
+  // Fallback: utiliser le mapping
+  const mappedPlan = PLAN_NAME_MAPPING[normalizedPlan];
+  return PLAN_LIMITS[mappedPlan] || PLAN_LIMITS.FREE;
 }
 
 /**

@@ -299,6 +299,8 @@ export default function BillingPage() {
   const router = useRouter();
   
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [currentPlanDisplay, setCurrentPlanDisplay] = useState<string>('Gratuit');
+  const [currentSegment, setCurrentSegment] = useState<SegmentType>('shopify');
   const [isLoading, setIsLoading] = useState(true);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
@@ -321,6 +323,16 @@ export default function BillingPage() {
       setIsLoading(true);
       setError(null);
 
+      // Charger le plan actuel depuis plan-enforcement
+      const planResponse = await fetch('/api/plan/current');
+      if (planResponse.ok) {
+        const planData = await planResponse.json();
+        setCurrentPlanDisplay(planData.planDisplay || 'Gratuit');
+        setCurrentSegment(planData.segment || 'shopify');
+        setActiveSegment(planData.segment || 'shopify');
+      }
+
+      // Charger la subscription Stripe
       const response = await fetch('/api/subscription/current');
       
       if (!response.ok) {
@@ -406,6 +418,13 @@ export default function BillingPage() {
   const currentPlanName = subscription?.plan || 'free';
   const periodEnd = subscription ? new Date(subscription.current_period_end) : null;
   const currentPlans = PRICING_SEGMENTS.find((s) => s.id === activeSegment)?.plans || [];
+  
+  // Vérifier si le plan correspond au segment actif
+  const isCurrentPlan = (planName: string) => {
+    // Comparer en fonction du segment actuel de l'utilisateur ET du segment sélectionné
+    if (currentSegment !== activeSegment) return false;
+    return currentPlanDisplay.toUpperCase().includes(planName.toUpperCase());
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] py-12 px-4">
@@ -445,7 +464,7 @@ export default function BillingPage() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="mb-1 text-sm text-slate-400">Plan actuel</div>
-                <div className="text-2xl font-bold text-white">{currentPlanName.toUpperCase()}</div>
+                <div className="text-2xl font-bold text-white">{currentPlanDisplay}</div>
               </div>
 
               {periodEnd && (
@@ -525,7 +544,7 @@ export default function BillingPage() {
               }}
             >
               {currentPlans.map((plan, index) => {
-                const isCurrentPlan = currentPlanName.toLowerCase() === plan.name.toLowerCase();
+                const isPlanCurrent = isCurrentPlan(plan.name);
                 
                 return (
                   <div
@@ -536,7 +555,7 @@ export default function BillingPage() {
                       plan={plan} 
                       index={index} 
                       segment={activeSegment}
-                      isCurrentPlan={isCurrentPlan}
+                      isCurrentPlan={isPlanCurrent}
                       onUpgrade={() => handleUpgrade(plan.name)}
                       isUpgrading={isUpgrading === plan.name}
                     />

@@ -6,8 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getUserPlanInfo } from '@/lib/plan-enforcement';
-import { PLAN_LIMITS, type PlanName } from '@/lib/plan-limits';
+import { getUserPlanInfo, getHumanReadablePlanName } from '@/lib/plan-enforcement';
+import { getPlanLimits, type PlanName } from '@/lib/plan-limits';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,43 +29,31 @@ export async function GET(req: NextRequest) {
     }
 
     // Récupérer les limites du plan
-    const limits = PLAN_LIMITS[planInfo.plan as PlanName] || PLAN_LIMITS.FREE;
-
-    // Formater le nom du plan pour l'affichage
-    const planLabels: Record<string, string> = {
-      'FREE': 'Gratuit',
-      'STARTER': 'Starter',
-      'PRO': 'Pro',
-      'SCALE': 'Scale',
-      'SOLO': 'Solo',
-      'UNLIMITED': 'Unlimited',
-    };
+    const limits = getPlanLimits(planInfo.plan);
 
     return NextResponse.json({
       success: true,
-      data: {
-        plan: planInfo.plan,
-        planLabel: planLabels[planInfo.plan] || planInfo.plan,
-        segment: planInfo.segment,
-        status: planInfo.status,
-        limits: {
-          emailAccounts: limits.emailAccounts,
-          autoRepliesPerMonth: limits.autoRepliesPerMonth,
-          aiTemplates: limits.aiTemplates,
-          prioritySupport: limits.prioritySupport,
-          analytics: limits.analytics,
-          multiShops: limits.multiShops,
-          whiteLabel: limits.whiteLabel,
-          customApi: limits.customApi,
-        },
-        subscription: {
-          currentPeriodStart: planInfo.currentPeriodStart,
-          currentPeriodEnd: planInfo.currentPeriodEnd,
-          cancelAtPeriodEnd: planInfo.cancelAtPeriodEnd,
-          stripeCustomerId: planInfo.stripeCustomerId,
-          stripeSubscriptionId: planInfo.stripeSubscriptionId,
-        }
+      plan: planInfo.plan,
+      planDisplay: getHumanReadablePlanName(planInfo.plan),
+      segment: planInfo.segment,
+      status: planInfo.status,
+      limits: {
+        emailAccounts: limits.emailAccounts,
+        autoRepliesPerMonth: limits.autoRepliesPerMonth,
+        aiTemplates: limits.aiTemplates,
+        prioritySupport: limits.prioritySupport,
+        analytics: limits.analytics,
+        multiShops: limits.multiShops,
+        whiteLabel: limits.whiteLabel,
+        customApi: limits.customApi,
       },
+      subscription: {
+        currentPeriodStart: planInfo.currentPeriodStart,
+        currentPeriodEnd: planInfo.currentPeriodEnd,
+        cancelAtPeriodEnd: planInfo.cancelAtPeriodEnd,
+        stripeCustomerId: planInfo.stripeCustomerId,
+        stripeSubscriptionId: planInfo.stripeSubscriptionId,
+      }
     });
 
   } catch (error) {

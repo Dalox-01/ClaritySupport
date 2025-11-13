@@ -15,7 +15,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { getPlanLimits, PlanName } from './plan-limits';
+import { getPlanLimits, PlanName, getPlanNameWithSegment } from './plan-limits';
 import { PRICING_SEGMENTS, SegmentType } from './constants/pricing';
 
 const supabase = createClient(
@@ -56,7 +56,7 @@ export interface UserPlanInfo {
 
 /**
  * Récupère les informations complètes du plan d'un utilisateur
- * Vérifie d'abord subscriptions puis users
+ * Retourne le plan UNIFIÉ (PRO_SHOPIFY, PRO_FREELANCE, etc.)
  */
 export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   // Essayer d'abord la table subscriptions
@@ -68,10 +68,13 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
     .single();
 
   if (subscription) {
+    const segment = subscription.segment || 'shopify';
+    const unifiedPlanName = getPlanNameWithSegment(subscription.plan, segment);
+    
     return {
       userId,
-      plan: subscription.plan.toUpperCase() as PlanName,
-      segment: subscription.segment || 'shopify',
+      plan: unifiedPlanName,
+      segment: segment,
       stripeCustomerId: subscription.stripe_customer_id,
       stripeSubscriptionId: subscription.stripe_subscription_id,
       currentPeriodStart: subscription.current_period_start,
@@ -157,7 +160,7 @@ export async function countShopifyStores(userId: string): Promise<number> {
  */
 export async function canAddEmailAccount(userId: string): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan, planInfo.segment);
+  const limits = getPlanLimits(planInfo.plan);
   const currentCount = await countEmailAccounts(userId);
 
   // Illimité
@@ -194,7 +197,7 @@ export async function canAddEmailAccount(userId: string): Promise<EnforcementRes
  */
 export async function canSendAutoReply(userId: string): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan, planInfo.segment);
+  const limits = getPlanLimits(planInfo.plan);
   const currentCount = await countAutoRepliesThisMonth(userId);
 
   // Illimité
@@ -231,7 +234,7 @@ export async function canSendAutoReply(userId: string): Promise<EnforcementResul
  */
 export async function canAddShopifyStore(userId: string): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan, planInfo.segment);
+  const limits = getPlanLimits(planInfo.plan);
   const currentCount = await countShopifyStores(userId);
 
   // Pas d'accès Shopify
@@ -285,7 +288,7 @@ export async function canAccessFeature(
   feature: 'aiTemplates' | 'prioritySupport' | 'analytics' | 'whiteLabel' | 'customApi' | 'signatureDynamique' | 'upsellAuto' | 'orderTracking'
 ): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan, planInfo.segment); // ✅ Ajout du segment
+  const limits = getPlanLimits(planInfo.plan);
 
   const hasAccess = limits[feature] as boolean;
 
@@ -349,8 +352,28 @@ export function getNextPlan(currentPlan: PlanName, currentSegment: SegmentType):
 // RÉSUMÉ COMPLET DES LIMITES
 // ============================================================================
 
+/**
+ * Obtient le nom human-readable d'un plan
+ * PRO_SHOPIFY → "PRO E-commerce"
+ * PRO_FREELANCE → "PRO Freelance"
+ */
+export function getHumanReadablePlanName(planName: PlanName): string {
+  const mapping: Record<PlanName, string> = {
+    STARTER_SHOPIFY: 'STARTER E-commerce',
+    PRO_SHOPIFY: 'PRO E-commerce',
+    SCALE_SHOPIFY: 'SCALE E-commerce',
+    SOLO_FREELANCE: 'SOLO Freelance',
+    PRO_FREELANCE: 'PRO Freelance',
+    UNLIMITED_FREELANCE: 'UNLIMITED Freelance',
+    FREE: 'Gratuit',
+  };
+  
+  return mapping[planName] || planName;
+}
+
 export interface UsageSummary {
   plan: PlanName;
+  planDisplay: string; // Nom human-readable
   segment: SegmentType;
   limits: {
     emailAccounts: {
@@ -390,7 +413,7 @@ export interface UsageSummary {
  */
 export async function getUsageSummary(userId: string): Promise<UsageSummary> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan, planInfo.segment); // ✅ Ajout du segment
+  const limits = getPlanLimits(planInfo.plan);
 
   const emailAccountsCount = await countEmailAccounts(userId);
   const autoRepliesCount = await countAutoRepliesThisMonth(userId);
@@ -402,6 +425,7 @@ export async function getUsageSummary(userId: string): Promise<UsageSummary> {
 
   return {
     plan: planInfo.plan,
+    planDisplay: getHumanReadablePlanName(planInfo.plan),
     segment: planInfo.segment,
     limits: {
       emailAccounts: {

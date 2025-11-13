@@ -18,6 +18,7 @@ interface UsageWidgetProps {
 
 interface UsageData {
   plan: string;
+  planDisplay: string; // Nom human-readable
   segment: string;
   limits: {
     emailAccounts: {
@@ -143,7 +144,7 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">Utilisation</h3>
             <Badge variant="outline" className="text-xs">
-              {data.plan.toUpperCase()}
+              {data.planDisplay}
             </Badge>
           </div>
 
@@ -219,8 +220,7 @@ export function UsageWidget({ className, compact = false }: UsageWidgetProps) {
           <div>
             <h2 className="text-xl font-bold text-white mb-1">Utilisation du plan</h2>
             <p className="text-sm text-gray-400">
-              Plan actuel : <span className="font-semibold text-white">{data.plan.toUpperCase()}</span>
-              {data.segment && <span className="text-gray-500"> ({data.segment === 'shopify' ? 'E-commerce' : 'Freelance'})</span>}
+              Plan actuel : <span className="font-semibold text-white">{data.planDisplay}</span>
             </p>
           </div>
           <Badge
