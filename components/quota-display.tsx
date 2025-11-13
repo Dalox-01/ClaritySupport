@@ -48,21 +48,17 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
       }
       const usageData = await usageResponse.json();
       
-      const autoRepliesUsed = usageData.usage?.autoReplies || 0;
-      const autoRepliesLimit = planData.data.limits.autoRepliesPerMonth === -1 
-        ? 999999 
-        : planData.data.limits.autoRepliesPerMonth;
-      const percentage = autoRepliesLimit === -1 
-        ? 0 
-        : (autoRepliesUsed / autoRepliesLimit) * 100;
+      // Extraire les données depuis la structure correcte
+      const autoRepliesUsed = usageData.limits?.autoReplies?.used || 0;
+      const autoRepliesLimit = usageData.limits?.autoReplies?.limit || 0;
+      const autoRepliesUnlimited = usageData.limits?.autoReplies?.unlimited || false;
+      const percentage = usageData.limits?.autoReplies?.percentage || 0;
       
       setQuotaData({
-        emailsUsed: usageData.usage?.emailAccounts || 0,
-        emailsLimit: planData.data.limits.emailAccounts === -1 
-          ? 999999 
-          : planData.data.limits.emailAccounts,
+        emailsUsed: usageData.limits?.emailAccounts?.used || 0,
+        emailsLimit: autoRepliesUnlimited ? 999999 : autoRepliesLimit,
         autoRepliesUsed,
-        autoRepliesLimit,
+        autoRepliesLimit: autoRepliesUnlimited ? 999999 : autoRepliesLimit,
         plan: planData.data.plan,
         planLabel: planData.data.planLabel,
         percentage,

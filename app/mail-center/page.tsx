@@ -516,49 +516,92 @@ export default function MailCenterPage() {
       ref={containerRef} 
       className={cn(
         "min-h-screen relative overflow-hidden transition-all duration-700",
+        // Nouveau thème unique "Clarity" - Gradient sophistiqué
         isLightMode 
-          ? colors.bg.light
-          : colors.bg.dark
+          ? "bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20"
+          : "bg-gradient-to-br from-[#0A0E27] via-[#0d1435] to-[#0A0E27]"
       )}
     >
-      {/* Grille animée en arrière-plan (même style que homepage) */}
-      <div className={cn("absolute inset-0 transition-opacity duration-700", isLightMode ? "opacity-10" : "opacity-20")}>
-        <motion.div
+      {/* Pattern mesh subtil en arrière-plan */}
+      <div className={cn(
+        "absolute inset-0 transition-opacity duration-700",
+        isLightMode ? "opacity-[0.03]" : "opacity-[0.08]"
+      )}>
+        <div
           className="h-full w-full"
           style={{
             backgroundImage: isLightMode
-              ? `linear-gradient(rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.2) 1px, transparent 1px)`
-              : `linear-gradient(rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.1) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
-          }}
-          animate={{
-            backgroundPosition: ['0px 0px', '50px 50px'],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: 'linear',
+              ? `radial-gradient(circle at 1px 1px, rgb(59, 130, 246) 1px, transparent 0)`
+              : `radial-gradient(circle at 1px 1px, rgba(99, 179, 237, 0.15) 1px, transparent 0)`,
+            backgroundSize: '40px 40px',
           }}
         />
       </div>
       
-      {/* Blob lumineux qui suit la souris */}
+      {/* Orbes lumineux animés pour profondeur */}
       <motion.div
-        className={cn("pointer-events-none absolute inset-0 transition-opacity duration-700", isLightMode ? "opacity-30" : "opacity-100")}
+        className={cn(
+          "pointer-events-none absolute transition-opacity duration-700",
+          isLightMode ? "opacity-20" : "opacity-30"
+        )}
         style={{
+          top: '20%',
+          left: '10%',
+          width: '600px',
+          height: '600px',
           background: isLightMode
-            ? `radial-gradient(circle at 50% 50%, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.2), transparent 50%)`
-            : `radial-gradient(circle at 50% 50%, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.12), transparent 50%)`,
+            ? 'radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%)'
+            : 'radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%)',
+          filter: 'blur(60px)',
+        }}
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, 30, 0],
+          y: [0, -20, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+      
+      <motion.div
+        className={cn(
+          "pointer-events-none absolute transition-opacity duration-700",
+          isLightMode ? "opacity-15" : "opacity-25"
+        )}
+        style={{
+          bottom: '10%',
+          right: '15%',
+          width: '500px',
+          height: '500px',
+          background: isLightMode
+            ? 'radial-gradient(circle, rgba(99, 102, 241, 0.12), transparent 70%)'
+            : 'radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent 70%)',
+          filter: 'blur(70px)',
+        }}
+        animate={{
+          scale: [1, 1.15, 1],
+          x: [0, -25, 0],
+          y: [0, 15, 0],
+        }}
+        transition={{
+          duration: 18,
+          repeat: Infinity,
+          ease: 'easeInOut',
+          delay: 1,
         }}
       />
 
-      {/* Header */}
+      {/* Header avec glassmorphism moderne */}
       <motion.header 
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl transition-all duration-700",
+          "fixed inset-x-0 top-0 z-50 transition-all duration-700",
+          // Glassmorphism professionnel
           isLightMode
-            ? `border-${theme}-200/50 bg-white/70 shadow-lg shadow-${theme}-100/50`
-            : `${colors.border} bg-[#0A0E27]/70 shadow-lg ${colors.glow}`
+            ? "bg-white/80 backdrop-blur-2xl border-b border-slate-200/60 shadow-sm shadow-slate-200/50"
+            : "bg-slate-900/40 backdrop-blur-2xl border-b border-slate-700/30 shadow-lg shadow-black/10"
         )}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -601,17 +644,24 @@ export default function MailCenterPage() {
               </AnimatePresence>
             </button>
             
-            <Link href="/" className={cn("flex items-center gap-2 font-semibold group", isLightMode ? "text-gray-900" : "text-white")}>
+            <Link href="/" className={cn("flex items-center gap-2 font-semibold group", isLightMode ? "text-slate-900" : "text-white")}>
               <div className="relative transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110">
-                <Mail className={cn("h-5 w-5", colors.text)} />
+                <div className={cn(
+                  "absolute inset-0 rounded-full blur-md transition-opacity",
+                  isLightMode ? "bg-blue-400/20" : "bg-blue-400/30",
+                  "opacity-0 group-hover:opacity-100"
+                )} />
+                <Mail className={cn("h-5 w-5 relative z-10", isLightMode ? "text-blue-600" : "text-blue-400")} />
               </div>
               <span
                 className={cn(
                   "hidden sm:inline bg-gradient-to-r bg-clip-text text-transparent transition-transform duration-200 group-hover:scale-105",
-                  isLightMode ? "from-gray-900 to-gray-700" : "from-white to-gray-300"
+                  isLightMode 
+                    ? "from-slate-900 via-blue-700 to-slate-900" 
+                    : "from-white via-blue-300 to-white"
                 )}
               >
-                Mail Center
+                Clarity Mail Center
               </span>
             </Link>
           </motion.div>
@@ -887,14 +937,23 @@ export default function MailCenterPage() {
               transition={{ delay: 0.3 }}
             >
               <Card className={cn(
-                "p-4 border shadow-lg backdrop-blur-xl transition-all duration-700",
+                "p-4 border backdrop-blur-2xl transition-all duration-700 shadow-xl overflow-hidden group",
                 isLightMode 
-                  ? "border-blue-200/50 bg-white/70 shadow-blue-100/50" 
-                  : "border-blue-500/20 bg-[#1a1f3a]/70 shadow-blue-500/10"
+                  ? "border-slate-200/60 bg-white/60 shadow-slate-200/50 hover:bg-white/80 hover:shadow-slate-300/60" 
+                  : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
+                {/* Effet de brillance au survol */}
+                <div className={cn(
+                  "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                  "bg-gradient-to-br",
+                  isLightMode 
+                    ? "from-blue-50/50 via-transparent to-indigo-50/50"
+                    : "from-blue-500/5 via-transparent to-indigo-500/5"
+                )} />
+                
                 <h3 className={cn(
-                  "font-semibold mb-4 text-xs uppercase tracking-wide flex items-center gap-2",
-                  isLightMode ? "text-gray-700" : "text-white"
+                  "font-semibold mb-4 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
+                  isLightMode ? "text-slate-700" : "text-slate-200"
                 )}>
                   <Zap className={cn("w-4 h-4", isLightMode ? "text-blue-600" : "text-blue-400")} />
                   Navigation
@@ -944,14 +1003,22 @@ export default function MailCenterPage() {
               transition={{ delay: 0.4 }}
             >
               <Card className={cn(
-                "p-4 border shadow-lg backdrop-blur-xl transition-all duration-700",
+                "p-4 border backdrop-blur-2xl transition-all duration-700 shadow-xl overflow-hidden group",
                 isLightMode 
-                  ? "border-blue-200/50 bg-white/70 shadow-blue-100/50" 
-                  : "border-blue-500/20 bg-[#1a1f3a]/70 shadow-blue-500/10"
+                  ? "border-slate-200/60 bg-white/60 shadow-slate-200/50 hover:bg-white/80 hover:shadow-slate-300/60" 
+                  : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
+                <div className={cn(
+                  "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                  "bg-gradient-to-br",
+                  isLightMode 
+                    ? "from-blue-50/50 via-transparent to-indigo-50/50"
+                    : "from-blue-500/5 via-transparent to-indigo-500/5"
+                )} />
+                
                 <h3 className={cn(
-                  "font-semibold mb-3 text-xs uppercase tracking-wide flex items-center gap-2",
-                  isLightMode ? "text-gray-700" : "text-white"
+                  "font-semibold mb-3 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
+                  isLightMode ? "text-slate-700" : "text-slate-200"
                 )}>
                   <Filter className={cn("w-4 h-4", isLightMode ? "text-blue-600" : "text-blue-400")} />
                   Filtres
@@ -1032,14 +1099,22 @@ export default function MailCenterPage() {
               transition={{ delay: 0.5 }}
             >
               <Card className={cn(
-                "p-4 border shadow-lg backdrop-blur-xl transition-all duration-700",
+                "p-4 border backdrop-blur-2xl transition-all duration-700 shadow-xl overflow-hidden group",
                 isLightMode 
-                  ? "border-blue-200/50 bg-white/70 shadow-blue-100/50" 
-                  : "border-blue-500/20 bg-[#1a1f3a]/70 shadow-blue-500/10"
+                  ? "border-slate-200/60 bg-white/60 shadow-slate-200/50 hover:bg-white/80 hover:shadow-slate-300/60" 
+                  : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
+                <div className={cn(
+                  "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                  "bg-gradient-to-br",
+                  isLightMode 
+                    ? "from-blue-50/50 via-transparent to-indigo-50/50"
+                    : "from-blue-500/5 via-transparent to-indigo-500/5"
+                )} />
+                
                 <h3 className={cn(
-                  "font-semibold mb-3 text-xs uppercase tracking-wide flex items-center gap-2",
-                  isLightMode ? "text-gray-700" : "text-white"
+                  "font-semibold mb-3 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
+                  isLightMode ? "text-slate-700" : "text-slate-200"
                 )}>
                   <Users className={cn("w-4 h-4", isLightMode ? "text-blue-600" : "text-blue-400")} />
                   Comptes
@@ -1106,14 +1181,22 @@ export default function MailCenterPage() {
               transition={{ delay: 0.6 }}
             >
               <Card className={cn(
-                "p-3 border shadow-lg backdrop-blur-xl transition-all duration-700",
+                "p-3 border backdrop-blur-2xl transition-all duration-700 shadow-xl overflow-hidden group",
                 isLightMode 
-                  ? "border-blue-200/50 bg-white/70 shadow-blue-100/50" 
-                  : "border-blue-500/20 bg-[#1a1f3a]/70 shadow-blue-500/10"
+                  ? "border-slate-200/60 bg-white/60 shadow-slate-200/50 hover:bg-white/80 hover:shadow-slate-300/60" 
+                  : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
+                <div className={cn(
+                  "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                  "bg-gradient-to-br",
+                  isLightMode 
+                    ? "from-blue-50/50 via-transparent to-indigo-50/50"
+                    : "from-blue-500/5 via-transparent to-indigo-500/5"
+                )} />
+                
                 <h3 className={cn(
-                  "text-xs font-semibold mb-2 flex items-center gap-2",
-                  isLightMode ? "text-gray-700" : "text-gray-200"
+                  "text-xs font-semibold mb-2 flex items-center gap-2 relative z-10",
+                  isLightMode ? "text-slate-700" : "text-slate-200"
                 )}>
                   <Sparkles className={cn("w-3 h-3", isLightMode ? "text-blue-500" : "text-blue-400")} />
                   Configuration Support
@@ -1301,40 +1384,49 @@ export default function MailCenterPage() {
                       onMouseEnter={() => setHoveredCardIndex(index)}
                       onMouseLeave={() => setHoveredCardIndex(null)}
                       className={cn(
-                        "relative overflow-hidden rounded-md border p-1.5 shadow-sm cursor-pointer backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]",
+                        "relative overflow-hidden rounded-lg border p-2 shadow-lg cursor-pointer backdrop-blur-2xl transition-all duration-300 hover:scale-[1.03] hover:shadow-xl group",
                         isLightMode
-                          ? "border-blue-200/50 bg-white/70 shadow-blue-100/50"
-                          : "border-blue-500/20 bg-[#1a1f3a]/70 shadow-blue-500/10"
+                          ? "border-slate-200/60 bg-white/70 shadow-slate-200/50 hover:bg-white/90 hover:border-slate-300/80"
+                          : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/50 hover:border-slate-600/60"
                       )}
                     >
-                      <div className="relative flex items-center gap-1.5 z-10">
+                      {/* Effet de brillance au survol */}
+                      <div className={cn(
+                        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br",
+                        stat.color === 'blue' && (isLightMode ? "from-blue-50/50 to-transparent" : "from-blue-500/10 to-transparent"),
+                        stat.color === 'orange' && (isLightMode ? "from-orange-50/50 to-transparent" : "from-orange-500/10 to-transparent"),
+                        stat.color === 'yellow' && (isLightMode ? "from-yellow-50/50 to-transparent" : "from-yellow-500/10 to-transparent"),
+                        stat.color === 'purple' && (isLightMode ? "from-purple-50/50 to-transparent" : "from-purple-500/10 to-transparent")
+                      )} />
+                      
+                      <div className="relative flex items-center gap-2 z-10">
                         <motion.div
                           animate={{ 
-                            scale: hoveredCardIndex === index ? 1.1 : 1
+                            scale: hoveredCardIndex === index ? 1.15 : 1
                           }}
-                          transition={{ duration: 0.3 }}
+                          transition={{ duration: 0.3, type: 'spring', stiffness: 300 }}
                           className={cn(
-                            "p-1 rounded-md bg-gradient-to-br flex-shrink-0",
-                            stat.color === 'blue' && (isLightMode ? "from-blue-500/30 to-blue-600/20" : "from-blue-500/20 to-blue-600/10"),
-                            stat.color === 'orange' && (isLightMode ? "from-orange-500/30 to-orange-600/20" : "from-orange-500/20 to-orange-600/10"),
-                            stat.color === 'yellow' && (isLightMode ? "from-yellow-500/30 to-yellow-600/20" : "from-yellow-500/20 to-yellow-600/10"),
-                            stat.color === 'purple' && (isLightMode ? "from-purple-500/30 to-purple-600/20" : "from-purple-500/20 to-purple-600/10")
+                            "p-2 rounded-lg bg-gradient-to-br flex-shrink-0 shadow-sm",
+                            stat.color === 'blue' && (isLightMode ? "from-blue-500/40 to-blue-600/30 shadow-blue-200/50" : "from-blue-500/30 to-blue-600/20 shadow-blue-500/20"),
+                            stat.color === 'orange' && (isLightMode ? "from-orange-500/40 to-orange-600/30 shadow-orange-200/50" : "from-orange-500/30 to-orange-600/20 shadow-orange-500/20"),
+                            stat.color === 'yellow' && (isLightMode ? "from-yellow-500/40 to-yellow-600/30 shadow-yellow-200/50" : "from-yellow-500/30 to-yellow-600/20 shadow-yellow-500/20"),
+                            stat.color === 'purple' && (isLightMode ? "from-purple-500/40 to-purple-600/30 shadow-purple-200/50" : "from-purple-500/30 to-purple-600/20 shadow-purple-500/20")
                           )}
                         >
-                          {stat.color === 'blue' && <stat.icon className={cn("w-3 h-3", isLightMode ? "text-blue-600" : "text-blue-400")} />}
-                          {stat.color === 'orange' && <stat.icon className={cn("w-3 h-3", isLightMode ? "text-orange-600" : "text-orange-400")} />}
-                          {stat.color === 'yellow' && <stat.icon className={cn("w-3 h-3", isLightMode ? "text-yellow-600" : "text-yellow-400")} />}
-                          {stat.color === 'purple' && <stat.icon className={cn("w-3 h-3", isLightMode ? "text-purple-600" : "text-purple-400")} />}
+                          {stat.color === 'blue' && <stat.icon className={cn("w-4 h-4", isLightMode ? "text-blue-700" : "text-blue-300")} />}
+                          {stat.color === 'orange' && <stat.icon className={cn("w-4 h-4", isLightMode ? "text-orange-700" : "text-orange-300")} />}
+                          {stat.color === 'yellow' && <stat.icon className={cn("w-4 h-4", isLightMode ? "text-yellow-700" : "text-yellow-300")} />}
+                          {stat.color === 'purple' && <stat.icon className={cn("w-4 h-4", isLightMode ? "text-purple-700" : "text-purple-300")} />}
                         </motion.div>
                         <div className="flex-1 min-w-0">
                           <p className={cn(
-                            "text-[9px] font-medium mb-0 truncate",
-                            isLightMode ? "text-gray-600" : "text-gray-400"
+                            "text-[10px] font-semibold mb-0.5 truncate uppercase tracking-wide",
+                            isLightMode ? "text-slate-600" : "text-slate-300"
                           )}>
                             {stat.label}
                           </p>
                           <motion.p 
-                            className={cn("text-sm font-bold", isLightMode ? "text-gray-900" : "text-white")}
+                            className={cn("text-lg font-bold", isLightMode ? "text-slate-900" : "text-white")}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ delay: (stat.color === 'blue' ? 0.1 : stat.color === 'orange' ? 0.2 : stat.color === 'yellow' ? 0.3 : 0.4) + 0.2, type: 'spring', stiffness: 200 }}
@@ -1726,43 +1818,50 @@ function EmailCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        'relative p-3 rounded-lg border cursor-pointer transition-all duration-200 overflow-hidden group',
-        'hover:scale-[1.01] hover:-translate-y-0.5',
+        'relative p-4 rounded-xl border cursor-pointer transition-all duration-300 overflow-hidden group backdrop-blur-2xl shadow-lg',
+        'hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl',
         isLightMode
-          ? 'border-blue-200/40 bg-white/60 hover:border-blue-300/60 hover:bg-blue-50'
-          : 'border-blue-500/20 bg-[#0f1320] hover:border-blue-500/40 hover:bg-blue-500/5',
+          ? 'border-slate-200/60 bg-white/70 hover:border-blue-300/70 hover:bg-white/90 shadow-slate-200/50 hover:shadow-blue-200/60'
+          : 'border-slate-700/40 bg-slate-900/30 hover:border-blue-500/50 hover:bg-slate-900/50 shadow-black/20 hover:shadow-blue-500/20',
         !email.is_read && (isLightMode 
-          ? 'font-semibold ring-1 ring-blue-400/40' 
-          : 'font-semibold ring-1 ring-blue-500/30')
+          ? 'font-semibold ring-2 ring-blue-400/50 shadow-blue-200/60' 
+          : 'font-semibold ring-2 ring-blue-500/40 shadow-blue-500/30')
       )}
     >
-      {/* Barre latérale pour emails non lus - plus fine */}
+      {/* Effet de brillance au survol */}
+      <div className={cn(
+        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br",
+        isLightMode 
+          ? "from-blue-50/60 via-transparent to-indigo-50/60"
+          : "from-blue-500/10 via-transparent to-indigo-500/10"
+      )} />
+      {/* Barre latérale pour emails non lus */}
       {!email.is_read && (
         <motion.div
           className={cn(
-            "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg",
+            "absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl shadow-lg",
             isLightMode
-              ? "bg-gradient-to-b from-blue-500 to-cyan-500"
-              : "bg-gradient-to-b from-blue-400 to-cyan-400"
+              ? "bg-gradient-to-b from-blue-500 via-blue-600 to-cyan-500 shadow-blue-400/50"
+              : "bg-gradient-to-b from-blue-400 via-blue-500 to-cyan-400 shadow-blue-500/50"
           )}
           initial={{ scaleY: 0 }}
           animate={{ scaleY: 1 }}
-          transition={{ duration: 0.5, delay: index * 0.02 }}
+          transition={{ duration: 0.5, delay: index * 0.02, type: 'spring', stiffness: 200 }}
         />
       )}
       
       <div className="relative flex gap-3 z-10">
         {/* Avatar */}
-        <div className="relative transition-transform duration-300 hover:scale-110">
+        <div className="relative transition-transform duration-300 hover:scale-110 group-hover:scale-105">
           <Avatar className={cn(
-            "w-8 h-8 flex-shrink-0 border",
-            isLightMode ? "border-blue-300/50" : "border-blue-500/30"
+            "w-10 h-10 flex-shrink-0 border-2 shadow-md transition-all duration-300",
+            isLightMode ? "border-blue-300/60 group-hover:border-blue-400/80 shadow-blue-200/30" : "border-blue-500/40 group-hover:border-blue-400/60 shadow-blue-500/20"
           )}>
             <AvatarFallback className={cn(
-              "font-bold text-xs",
+              "font-bold text-sm",
               isLightMode 
-                ? "bg-blue-500/30 text-blue-700"
-                : "bg-blue-500/20 text-blue-400"
+                ? "bg-gradient-to-br from-blue-500/40 to-blue-600/30 text-blue-800"
+                : "bg-gradient-to-br from-blue-500/30 to-blue-600/20 text-blue-300"
             )}>
               {initials}
             </AvatarFallback>
@@ -1770,13 +1869,13 @@ function EmailCard({
           {!email.is_read && (
             <motion.div
               className={cn(
-                "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border",
+                "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 shadow-lg",
                 isLightMode
-                  ? "bg-blue-500 border-white"
-                  : "bg-blue-400 border-[#1a1f3a]"
+                  ? "bg-blue-500 border-white shadow-blue-400/50"
+                  : "bg-blue-400 border-slate-900 shadow-blue-500/50"
               )}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
           )}
         </div>

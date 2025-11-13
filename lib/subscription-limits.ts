@@ -15,6 +15,7 @@ const supabase = createClient(
 export interface UserSubscription {
   user_id: string;
   plan: PlanType;
+  segment?: 'shopify' | 'freelance';
   status: 'active' | 'cancelled' | 'expired' | 'trial';
   current_period_start: string;
   current_period_end: string;
@@ -144,13 +145,13 @@ export async function getUserUsageStats(userId: string): Promise<UsageStats> {
 /**
  * Vérifier si l'utilisateur peut ajouter un compte email
  */
-export async function canAddEmailAccount(userId: string): Promise<LimitCheckResult> {
+export async function canAddEmailAccountWithSubscription(userId: string): Promise<CheckResult> {
   const subscription = await getUserSubscription(userId);
   if (!subscription) {
     return { allowed: false, reason: 'Abonnement non trouvé' };
   }
   
-  const planLimits = getPlanLimits(subscription.plan);
+  const planLimits = getPlanLimits(subscription.plan, subscription.segment);
   const usage = await getUserUsageStats(userId);
 
   // -1 signifie illimité
@@ -206,13 +207,13 @@ export async function canProcessEmail(userId: string): Promise<LimitCheckResult>
 /**
  * Vérifier si l'utilisateur peut envoyer une réponse automatique
  */
-export async function canSendAutoReply(userId: string): Promise<LimitCheckResult> {
+export async function canSendAutoReplyWithSubscription(userId: string): Promise<CheckResult> {
   const subscription = await getUserSubscription(userId);
   if (!subscription) {
     return { allowed: false, reason: 'Abonnement non trouvé' };
   }
   
-  const planLimits = getPlanLimits(subscription.plan);
+  const planLimits = getPlanLimits(subscription.plan, subscription.segment);
   const usage = await getUserUsageStats(userId);
 
   // -1 signifie illimité

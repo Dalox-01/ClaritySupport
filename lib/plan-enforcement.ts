@@ -157,7 +157,7 @@ export async function countShopifyStores(userId: string): Promise<number> {
  */
 export async function canAddEmailAccount(userId: string): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan);
+  const limits = getPlanLimits(planInfo.plan, planInfo.segment);
   const currentCount = await countEmailAccounts(userId);
 
   // Illimité
@@ -194,7 +194,7 @@ export async function canAddEmailAccount(userId: string): Promise<EnforcementRes
  */
 export async function canSendAutoReply(userId: string): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan);
+  const limits = getPlanLimits(planInfo.plan, planInfo.segment);
   const currentCount = await countAutoRepliesThisMonth(userId);
 
   // Illimité
@@ -231,7 +231,7 @@ export async function canSendAutoReply(userId: string): Promise<EnforcementResul
  */
 export async function canAddShopifyStore(userId: string): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan);
+  const limits = getPlanLimits(planInfo.plan, planInfo.segment);
   const currentCount = await countShopifyStores(userId);
 
   // Pas d'accès Shopify
@@ -285,7 +285,7 @@ export async function canAccessFeature(
   feature: 'aiTemplates' | 'prioritySupport' | 'analytics' | 'whiteLabel' | 'customApi' | 'signatureDynamique' | 'upsellAuto' | 'orderTracking'
 ): Promise<EnforcementResult> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan);
+  const limits = getPlanLimits(planInfo.plan, planInfo.segment); // ✅ Ajout du segment
 
   const hasAccess = limits[feature] as boolean;
 
@@ -390,7 +390,7 @@ export interface UsageSummary {
  */
 export async function getUsageSummary(userId: string): Promise<UsageSummary> {
   const planInfo = await getUserPlanInfo(userId);
-  const limits = getPlanLimits(planInfo.plan);
+  const limits = getPlanLimits(planInfo.plan, planInfo.segment); // ✅ Ajout du segment
 
   const emailAccountsCount = await countEmailAccounts(userId);
   const autoRepliesCount = await countAutoRepliesThisMonth(userId);
