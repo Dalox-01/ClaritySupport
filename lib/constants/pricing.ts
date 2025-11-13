@@ -15,6 +15,8 @@ export interface PricingPlan {
   features: PricingFeature[];
   popular?: boolean;
   cta: string;
+  stripeProductId?: string;
+  stripePriceId?: string;
 }
 
 export interface Segment {
@@ -36,6 +38,8 @@ export const PRICING_SEGMENTS: Segment[] = [
         period: 'mois',
         description: 'Parfait pour démarrer votre boutique en ligne',
         cta: 'Commencer',
+        stripeProductId: 'prod_TPrM3fOyRync4I',
+        stripePriceId: 'price_1ST1dgGJn0NQpREzoGsS4OPI',
         features: [
           { text: '3 comptes email', included: true },
           { text: '5 000 réponses automatiques/mois', included: true },
@@ -54,6 +58,8 @@ export const PRICING_SEGMENTS: Segment[] = [
         description: 'Pour les boutiques en croissance',
         popular: true,
         cta: 'Essayer gratuitement',
+        stripeProductId: 'prod_TPrPIGmPWUTOxL',
+        stripePriceId: 'price_1ST1gZGJn0NQpREz5KODKSCP',
         features: [
           { text: '10 comptes email', included: true },
           { text: '20 000 réponses automatiques/mois', included: true },
@@ -71,6 +77,8 @@ export const PRICING_SEGMENTS: Segment[] = [
         period: 'mois',
         description: 'Pour les entreprises e-commerce établies',
         cta: 'Contactez-nous',
+        stripeProductId: 'prod_TPrR9cb7ptCzIV',
+        stripePriceId: 'price_1ST1iLGJn0NQpREzIdkg9x2N',
         features: [
           { text: 'Comptes email illimités', included: true },
           { text: '50 000 réponses automatiques/mois', included: true },
@@ -95,6 +103,8 @@ export const PRICING_SEGMENTS: Segment[] = [
         period: 'mois',
         description: 'Pour les indépendants qui démarrent',
         cta: 'Commencer',
+        stripeProductId: 'prod_TPrW8AoxGc2X5C',
+        stripePriceId: 'price_1ST1nmGJn0NQpREzqP6lfgbH',
         features: [
           { text: '1 compte email', included: true },
           { text: '500 réponses automatiques/mois', included: true },
@@ -113,6 +123,8 @@ export const PRICING_SEGMENTS: Segment[] = [
         description: 'Pour les freelances professionnels',
         popular: true,
         cta: 'Essayer 14 jours',
+        stripeProductId: 'prod_TPrZSMdjLdu6kF',
+        stripePriceId: 'price_1ST1qTGJn0NQpREzJUHjVmtt',
         features: [
           { text: '1 compte email', included: true },
           { text: '2 000 réponses automatiques/mois', included: true },
@@ -130,6 +142,8 @@ export const PRICING_SEGMENTS: Segment[] = [
         period: 'mois',
         description: 'Pour les freelances high-performers',
         cta: 'Commencer',
+        stripeProductId: 'prod_TPrcMECD2gO3Et',
+        stripePriceId: 'price_1ST1t9GJn0NQpREzTsWCr3w4',
         features: [
           { text: '1 compte email', included: true },
           { text: 'Réponses automatiques illimitées', included: true },
