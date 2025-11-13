@@ -57,7 +57,7 @@ export const PRICING_SEGMENTS: Segment[] = [
         period: 'mois',
         description: 'Pour les boutiques en croissance',
         popular: true,
-        cta: 'Essayer gratuitement',
+        cta: 'Commencer',
         stripeProductId: 'prod_TPrPIGmPWUTOxL',
         stripePriceId: 'price_1ST1gZGJn0NQpREz5KODKSCP',
         features: [
@@ -122,7 +122,7 @@ export const PRICING_SEGMENTS: Segment[] = [
         period: 'mois',
         description: 'Pour les freelances professionnels',
         popular: true,
-        cta: 'Essayer 14 jours',
+        cta: 'Commencer',
         stripeProductId: 'prod_TPrZSMdjLdu6kF',
         stripePriceId: 'price_1ST1qTGJn0NQpREzJUHjVmtt',
         features: [

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { SegmentType, PRICING_SEGMENTS } from '@/lib/constants/pricing';
 import PricingSegmentSelector from '@/components/pricing/PricingSegmentSelector';
 import PricingPlans from '@/components/pricing/PricingPlans';
@@ -93,27 +94,31 @@ export default function PricingPage() {
         {/* Pricing Plans with 3D rotation */}
         <PricingPlans plans={currentPlans} segmentId={activeSegment} />
 
-        {/* FAQ / Contact Section */}
+        {/* Essai Gratuit Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-20 text-center"
         >
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-gray-200 max-w-3xl mx-auto">
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-blue-200 max-w-3xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">
-              Des questions sur nos offres ?
+              Essayez gratuitement pendant 7 jours
             </h2>
             <p className="text-gray-600 mb-6 text-lg">
-              Notre équipe est disponible pour vous aider à choisir le plan idéal pour votre activité.
+              Testez toutes les fonctionnalités sans engagement. Aucune carte bancaire requise.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
-                Contacter un conseiller
-              </button>
-              <button className="px-8 py-3 bg-white border-2 border-purple-600 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-all duration-300">
-                Voir la FAQ
-              </button>
+              <Link href="/checkout">
+                <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+                  Commencer l'essai gratuit
+                </button>
+              </Link>
+              <Link href="/contact">
+                <button className="px-8 py-3 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-all duration-300">
+                  Contacter un conseiller
+                </button>
+              </Link>
             </div>
           </div>
         </motion.div>
