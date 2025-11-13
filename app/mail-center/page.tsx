@@ -417,8 +417,7 @@ export default function MailCenterPage() {
       console.log('✅ Email supprimé avec succès');
     } catch (error) {
       console.error('❌ Erreur suppression email:', error);
-      // En cas d'erreur, recharger les emails
-      fetchEmails();
+      toast.error('Erreur lors de la suppression de l\'email');
     }
   };
 
@@ -1501,7 +1500,7 @@ export default function MailCenterPage() {
                                 setEmailToReply(email);
                                 setReplyDialogOpen(true);
                               }}
-                              onDelete={(email) => deleteEmail(email.id)}
+                              onDelete={(emailId) => deleteEmail(emailId)}
                               isLightMode={isLightMode}
                             />
                           ))}
