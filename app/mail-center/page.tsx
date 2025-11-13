@@ -48,6 +48,7 @@ import { SUPPORT_CATEGORIES, getCategoryColor, getCategoryConfig } from '@/lib/s
 import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/lib/product-knowledge';
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
+import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -75,8 +76,18 @@ TiltCard.displayName = 'TiltCard';
 export default function MailCenterPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { theme, colors } = useMailCenterTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'inbox' | 'pending' | 'sent' | 'rules' | 'analytics' | 'favorites' | 'archives'>('inbox');
+  
+  // Classes de style dynamiques basées sur le thème
+  const menuItemClass = (isLightMode: boolean) => cn(
+    "flex items-center cursor-pointer transition-colors",
+    isLightMode 
+      ? `text-gray-900 hover:bg-${theme}-50 hover:text-${theme}-600` 
+      : `text-gray-200 ${colors.bg.class} ${colors.text}`
+  );
+  
   const [selectedEmail, setSelectedEmail] = useState<EmailCache | null>(null);
   const [emails, setEmails] = useState<EmailCache[]>([]);
   const [pendingReplies, setPendingReplies] = useState<PendingReply[]>([]);
@@ -481,7 +492,7 @@ export default function MailCenterPage() {
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           >
-            <Mail className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+            <Mail className={`w-12 h-12 ${colors.text} mx-auto mb-4`} />
           </motion.div>
           <p className="text-gray-600 dark:text-gray-400">Chargement...</p>
         </motion.div>
@@ -494,7 +505,7 @@ export default function MailCenterPage() {
   }
 
   const stats = [
-    { label: 'Total emails', value: emails.length, icon: Mail, color: 'blue', gradient: 'from-blue-500 to-blue-600' },
+    { label: 'Total emails', value: emails.length, icon: Mail, color: theme, gradient: colors.gradient },
     { label: 'Non lus', value: emails.filter(e => !e.is_read).length, icon: Inbox, color: 'orange', gradient: 'from-orange-500 to-orange-600' },
     { label: 'En attente', value: pendingReplies.length, icon: Clock, color: 'yellow', gradient: 'from-yellow-500 to-yellow-600' },
     { label: 'Comptes', value: accounts.length, icon: Users, color: 'purple', gradient: 'from-purple-500 to-purple-600' },
@@ -506,8 +517,8 @@ export default function MailCenterPage() {
       className={cn(
         "min-h-screen relative overflow-hidden transition-all duration-700",
         isLightMode 
-          ? "bg-gradient-to-br from-blue-50 via-white to-cyan-50" 
-          : "bg-gradient-to-br from-[#0A0E27] via-[#0F1629] to-[#0A0E27]"
+          ? colors.bg.light
+          : colors.bg.dark
       )}
     >
       {/* Grille animée en arrière-plan (même style que homepage) */}
@@ -516,8 +527,8 @@ export default function MailCenterPage() {
           className="h-full w-full"
           style={{
             backgroundImage: isLightMode
-              ? `linear-gradient(rgba(59, 130, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.2) 1px, transparent 1px)`
-              : `linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)`,
+              ? `linear-gradient(rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.2) 1px, transparent 1px)`
+              : `linear-gradient(rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.1) 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
           }}
           animate={{
@@ -536,8 +547,8 @@ export default function MailCenterPage() {
         className={cn("pointer-events-none absolute inset-0 transition-opacity duration-700", isLightMode ? "opacity-30" : "opacity-100")}
         style={{
           background: isLightMode
-            ? `radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.2), transparent 50%)`
-            : `radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.12), transparent 50%)`,
+            ? `radial-gradient(circle at 50% 50%, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.2), transparent 50%)`
+            : `radial-gradient(circle at 50% 50%, rgba(${colors.rgb.r}, ${colors.rgb.g}, ${colors.rgb.b}, 0.12), transparent 50%)`,
         }}
       />
 
@@ -546,8 +557,8 @@ export default function MailCenterPage() {
         className={cn(
           "fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl transition-all duration-700",
           isLightMode
-            ? "border-blue-200/50 bg-white/70 shadow-lg shadow-blue-100/50"
-            : "border-blue-500/20 bg-[#0A0E27]/70 shadow-lg shadow-blue-500/10"
+            ? `border-${theme}-200/50 bg-white/70 shadow-lg shadow-${theme}-100/50`
+            : `${colors.border} bg-[#0A0E27]/70 shadow-lg ${colors.glow}`
         )}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -564,7 +575,7 @@ export default function MailCenterPage() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
                 "flex lg:hidden items-center justify-center p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95",
-                isLightMode ? "hover:bg-blue-100 text-gray-700" : "hover:bg-blue-500/10 text-white"
+                isLightMode ? `hover:bg-${theme}-100 text-gray-700` : `hover:bg-${theme}-500/10 text-white`
               )}
             >
               <AnimatePresence mode="wait">
@@ -592,7 +603,7 @@ export default function MailCenterPage() {
             
             <Link href="/" className={cn("flex items-center gap-2 font-semibold group", isLightMode ? "text-gray-900" : "text-white")}>
               <div className="relative transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110">
-                <Mail className={cn("h-5 w-5", isLightMode ? "text-blue-600" : "text-blue-400")} />
+                <Mail className={cn("h-5 w-5", colors.text)} />
               </div>
               <span
                 className={cn(
@@ -619,7 +630,7 @@ export default function MailCenterPage() {
                 onClick={syncEmails}
                 disabled={isSyncing}
                 className={cn(
-                  "relative border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 text-blue-400 hover:text-blue-300 transition-all shadow-lg shadow-blue-500/20"
+                  `relative ${colors.border} bg-gradient-to-br ${colors.bg.class} hover:opacity-80 ${colors.text} transition-all shadow-lg ${colors.glow}`
                 )}
               >
                 <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
@@ -656,20 +667,19 @@ export default function MailCenterPage() {
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "relative rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 active:scale-95",
-                    "hover:ring-2 hover:ring-blue-400/50"
+                    `relative rounded-full focus:outline-none focus:ring-2 focus:ring-${theme}-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 active:scale-95`,
+                    `hover:ring-2 hover:ring-${theme}-400/50`
                   )}
                 >
                   <Avatar className={cn(
                     "h-9 w-9 border-2 transition-all",
-                    isLightMode 
-                      ? "border-blue-500/30 hover:border-blue-500" 
-                      : "border-blue-500/30 hover:border-blue-400"
+                    colors.border,
+                    `hover:border-${theme}-500`
                   )}>
                     <AvatarImage src={session?.user?.image || undefined} alt={session?.user?.name || 'User'} />
                     <AvatarFallback className={cn(
                       "text-xs font-semibold transition-colors",
-                      isLightMode ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
+                      isLightMode ? `bg-${theme}-100 text-${theme}-700 hover:bg-${theme}-200` : `${colors.bg.class} ${colors.text} hover:opacity-80`
                     )}>
                       {session?.user?.name?.charAt(0).toUpperCase() || session?.user?.email?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
@@ -708,8 +718,8 @@ export default function MailCenterPage() {
                     className={cn(
                       "flex items-center cursor-pointer transition-colors",
                       isLightMode 
-                        ? "text-gray-900 hover:bg-blue-50 hover:text-blue-600" 
-                        : "text-gray-200 hover:bg-blue-500/10 hover:text-blue-400"
+                        ? `text-gray-900 hover:bg-${theme}-50 hover:text-${theme}-600` 
+                        : `text-gray-200 ${colors.bg.class} ${colors.text}`
                     )}
                   >
                     <Home className="w-4 h-4 mr-2" />
@@ -720,8 +730,8 @@ export default function MailCenterPage() {
                   className={cn(
                     "flex items-center cursor-pointer transition-colors",
                     isLightMode 
-                      ? "text-gray-900 hover:bg-blue-50 hover:text-blue-600" 
-                      : "text-gray-200 hover:bg-blue-500/10 hover:text-blue-400"
+                      ? `text-gray-900 hover:bg-${theme}-50 hover:text-${theme}-600` 
+                      : `text-gray-200 ${colors.bg.class} ${colors.text}`
                   )}
                   onClick={() => connectAccount('gmail')}
                 >
@@ -916,7 +926,7 @@ export default function MailCenterPage() {
                         <tab.icon className="w-5 h-5" />
                         <span className="flex-1 text-left font-medium">{tab.label}</span>
                         {tab.count !== null && tab.count > 0 && (
-                          <Badge className="bg-blue-500 text-white shadow-sm">
+                          <Badge className={`${colors.badge} text-white shadow-sm`}>
                             {tab.count}
                           </Badge>
                         )}
@@ -1502,6 +1512,8 @@ export default function MailCenterPage() {
                               }}
                               onDelete={(emailId) => deleteEmail(emailId)}
                               isLightMode={isLightMode}
+                              theme={theme}
+                              colors={colors}
                             />
                           ))}
                         </AnimatePresence>
@@ -1677,7 +1689,9 @@ function EmailCard({
   getSentimentIcon,
   onReply,
   onDelete,
-  isLightMode = false
+  isLightMode = false,
+  theme,
+  colors
 }: { 
   email: EmailCache;
   index: number;
@@ -1688,6 +1702,8 @@ function EmailCard({
   onReply?: (email: EmailCache) => void;
   onDelete?: (emailId: string) => void;
   isLightMode?: boolean;
+  theme: string;
+  colors: any;
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -1800,7 +1816,7 @@ function EmailCard({
                 </Badge>
               )}
               {email.is_auto_replied && (
-                <Badge variant="outline" className="text-xs h-5 px-1.5 bg-blue-500/10 text-blue-400 border-blue-500/20">
+                <Badge variant="outline" className={`text-xs h-5 px-1.5 ${colors.bg.class} ${colors.text} ${colors.border}`}>
                   <Bot className="w-3 h-3 mr-0.5" />
                   Auto
                 </Badge>
