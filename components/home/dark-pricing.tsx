@@ -54,7 +54,7 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ duration: 0.25, delay: index * 0.03 }}
       className={`relative flex flex-col h-full rounded-2xl border-2 bg-gradient-to-br from-[#1a1f3a] to-[#0f1320] shadow-lg transition-all duration-300 hover:shadow-2xl ${
         isPopular
           ? `${colors.border} scale-105 md:scale-110 z-10`
@@ -338,18 +338,17 @@ export function DarkPricing() {
             transformStyle: 'preserve-3d',
           }}
         >
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={activeSegment}
               initial={{ opacity: 0, rotateY: 90 }}
               animate={{ opacity: 1, rotateY: 0 }}
               exit={{ opacity: 0, rotateY: -90 }}
               transition={{
-                duration: 0.5,
-                ease: 'easeInOut',
-                type: 'spring',
-                stiffness: 100,
-                damping: 15,
+                duration: 0.3,
+                ease: [0.32, 0.72, 0, 1],
+                rotateY: { duration: 0.3 },
+                opacity: { duration: 0.2 },
               }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-6"
               style={{
