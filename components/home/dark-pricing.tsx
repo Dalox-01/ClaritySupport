@@ -1,139 +1,188 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Check, Zap, Crown, Rocket } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X, Sparkles, ShoppingCart, User, Building2 } from 'lucide-react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { PRICING_SEGMENTS, type SegmentType, type PricingPlan } from '@/lib/constants/pricing';
 
-const plans = [
-  {
-    id: 'starter',
-    name: 'STARTER',
-    price: 49,
-    period: 'mois',
-    description: 'Pour les petites équipes',
-    icon: Rocket,
-    iconColor: 'text-blue-400',
-    gradient: 'from-blue-500 to-cyan-500',
-    borderGradient: 'from-blue-500/50 to-cyan-500/50',
-    features: [
-      '3 comptes email',
-      '2 000 réponses IA/mois',
-      'IA de base',
-      'Base de connaissances',
-      '2 membres d\'équipe',
-      '10 templates personnalisés',
-    ],
-    cta: 'Démarrer avec Starter',
-    highlighted: false,
-  },
-  {
-    id: 'pro',
-    name: 'PRO',
-    price: 139,
-    period: 'mois',
-    description: 'Pour les équipes en croissance',
-    icon: Crown,
-    iconColor: 'text-purple-400',
-    gradient: 'from-purple-500 to-pink-500',
-    borderGradient: 'from-purple-500/50 to-pink-500/50',
-    features: [
-      '10 comptes email',
-      '7 500 réponses IA/mois',
-      'IA avancée + personnalisation',
-      'Base de connaissances complète',
-      'Analytics détaillées',
-      'Branding personnalisé',
-      '5 membres d\'équipe',
-      '50 templates personnalisés',
-      'Support prioritaire',
-    ],
-    cta: 'Choisir Pro - Recommandé',
-    highlighted: true,
-    badge: 'PLUS POPULAIRE',
-  },
-  {
-    id: 'enterprise',
-    name: 'ENTERPRISE',
-    price: 229,
-    period: 'mois',
-    description: 'Pour les grandes équipes',
-    icon: Zap,
-    iconColor: 'text-amber-400',
-    gradient: 'from-amber-500 to-orange-500',
-    borderGradient: 'from-amber-500/50 to-orange-500/50',
-    features: [
-      'Comptes email illimités',
-      '25 000 réponses IA/mois',
-      'IA premium + personnalisation avancée',
-      'Base de connaissances illimitée',
-      'Analytics avancées',
-      'Branding personnalisé',
-      '20 membres d\'équipe',
-      'Templates illimités',
-      'Support dédié (prioritaire)',
-      'Gestionnaire de compte dédié',
-    ],
-    cta: 'Passer à Enterprise',
-    highlighted: false,
-  },
-];
-
-export function DarkPricing() {
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const router = useRouter();
-  const { data: session } = useSession();
-
-  // Récupérer le plan actuel de l'utilisateur
-  const currentPlan = session?.user?.plan || 'FREE';
-
-  const handlePlanClick = async (planId: string) => {
-    // Si l'utilisateur a déjà ce plan, ne rien faire
-    if (currentPlan.toUpperCase() === planId.toUpperCase()) {
-      return;
-    }
-
-    // If user is not authenticated, redirect to sign in
-    if (!session) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    try {
-      // Create Stripe checkout session
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan: planId,
-          billingPeriod,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.url) {
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      } else {
-        console.error('Failed to create checkout session:', data.error);
-        alert('Erreur lors de la création de la session de paiement. Veuillez réessayer.');
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      alert('Erreur lors de la création de la session de paiement. Veuillez réessayer.');
-    }
-  };
+// Component pour une carte de plan individuelle
+function PlanCard({ plan, index }: { plan: PricingPlan; index: number }) {
+  const isPopular = plan.popular;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] py-32">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className={`relative flex flex-col h-full rounded-2xl border-2 bg-gradient-to-br from-[#1a1f3a] to-[#0f1320] shadow-lg transition-all duration-300 hover:shadow-2xl ${
+        isPopular
+          ? 'border-purple-500 scale-105 md:scale-110 z-10'
+          : 'border-blue-500/20 hover:border-purple-300/50'
+      }`}
+    >
+      {/* Badge Recommandé */}
+      {isPopular && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+          <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-1.5 text-xs font-semibold text-white shadow-lg">
+            <Sparkles className="h-3.5 w-3.5" />
+            Recommandé
+          </div>
+        </div>
+      )}
+
+      {/* Fond gradient subtil */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-50/50 via-transparent to-pink-50/50 opacity-20 transition-opacity duration-500" />
+
+      <div className="relative flex flex-col h-full p-6 md:p-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+          <p className="text-sm text-gray-400 min-h-[40px]">{plan.description}</p>
+        </div>
+
+        {/* Prix */}
+        <div className="mb-6">
+          <div className="flex items-baseline gap-1">
+            <span className="text-5xl font-extrabold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              {plan.price}€
+            </span>
+            <span className="text-gray-400 font-medium">/{plan.period}</span>
+          </div>
+        </div>
+
+        {/* CTA Button */}
+        <button
+          className={`w-full mb-6 h-12 text-base font-semibold rounded-xl transition-all duration-300 ${
+            isPopular
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl hover:scale-105'
+              : 'bg-white/5 border-2 border-purple-600/50 text-purple-300 hover:bg-purple-500/20'
+          }`}
+        >
+          {plan.cta}
+        </button>
+
+        {/* Features List */}
+        <div className="flex-1">
+          <div className="space-y-3">
+            {plan.features.map((feature, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-3 group/feature"
+              >
+                <div
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-transform duration-200 group-hover/feature:scale-110 ${
+                    feature.included
+                      ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                      : 'bg-gray-700'
+                  }`}
+                >
+                  {feature.included ? (
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                  ) : (
+                    <X className="h-3 w-3 text-gray-500" strokeWidth={2} />
+                  )}
+                </div>
+                <span
+                  className={`text-sm leading-relaxed ${
+                    feature.included
+                      ? 'text-gray-200 font-medium'
+                      : 'text-gray-500 line-through'
+                  }`}
+                >
+                  {feature.text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer gradient bar (only for popular) */}
+        {isPopular && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-b-2xl" />
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Component pour le sélecteur de segment
+function SegmentSelector({
+  activeSegment,
+  onSegmentChange,
+}: {
+  activeSegment: SegmentType;
+  onSegmentChange: (segment: SegmentType) => void;
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12">
+      {PRICING_SEGMENTS.map((segment) => {
+        const Icon = segment.icon;
+        const isActive = activeSegment === segment.id;
+
+        return (
+          <motion.button
+            key={segment.id}
+            onClick={() => onSegmentChange(segment.id)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`
+              relative flex items-center gap-3 px-6 py-3.5 rounded-xl font-semibold text-base
+              transition-all duration-300 shadow-md hover:shadow-lg
+              w-full sm:w-auto min-w-[180px] justify-center
+              ${
+                isActive
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white scale-105 shadow-purple-400/50'
+                  : 'bg-white/5 text-gray-300 hover:bg-white/10 border-2 border-blue-500/20'
+              }
+            `}
+          >
+            {/* Background glow for active */}
+            {isActive && (
+              <motion.div
+                layoutId="activeSegment"
+                className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 blur-sm opacity-50"
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              />
+            )}
+
+            {/* Icon */}
+            <Icon
+              className={`h-5 w-5 transition-transform duration-300 relative z-10 ${
+                isActive ? 'rotate-12' : ''
+              }`}
+            />
+
+            {/* Label */}
+            <span className="relative z-10">{segment.label}</span>
+
+            {/* Active indicator dot */}
+            {isActive && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-[#0A0E27] shadow-sm"
+              />
+            )}
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Component principal
+export function DarkPricing() {
+  const [activeSegment, setActiveSegment] = useState<SegmentType>('shopify');
+
+  const currentPlans =
+    PRICING_SEGMENTS.find((s) => s.id === activeSegment)?.plans || [];
+
+  return (
+    <section id="pricing" className="relative overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] py-32">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
         <motion.div
-          className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/30 blur-3xl"
+          className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-purple-500/30 blur-3xl"
           animate={{
             scale: [1, 1.3, 1],
             x: [0, 50, 0],
@@ -146,7 +195,7 @@ export function DarkPricing() {
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-purple-500/30 blur-3xl"
+          className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-pink-500/30 blur-3xl"
           animate={{
             scale: [1, 1.4, 1],
             x: [0, -50, 0],
@@ -171,9 +220,8 @@ export function DarkPricing() {
             transition={{ duration: 0.6 }}
             className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
-            Des tarifs{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              transparents et flexibles
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+              Tarification Simple & Transparente
             </span>
           </motion.h2>
 
@@ -184,257 +232,121 @@ export function DarkPricing() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Choisissez le plan qui correspond à vos besoins. Changez ou annulez à tout moment.
+            Choisissez le plan parfait pour votre activité. Changez ou annulez à tout moment, sans engagement.
           </motion.p>
 
-          {/* Billing toggle */}
+          {/* Trust badges */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-8 flex items-center justify-center gap-4"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-400"
           >
-            <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-white' : 'text-gray-500'}`}>
-              Mensuel
-            </span>
-            <motion.button
-              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative h-8 w-16 rounded-full border border-blue-500/30 bg-blue-500/10"
-              whileTap={{ scale: 0.95 }}
-            >
-              <motion.div
-                className="absolute top-1 h-6 w-6 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/50"
-                animate={{
-                  x: billingPeriod === 'monthly' ? 2 : 34,
-                }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            </motion.button>
-            <span className={`text-sm font-medium ${billingPeriod === 'yearly' ? 'text-white' : 'text-gray-500'}`}>
-              Annuel
-              <span className="ml-2 rounded-full bg-green-500/20 px-2 py-1 text-xs text-green-400">
-                -20%
-              </span>
-            </span>
+            {[
+              'Essai gratuit 14 jours',
+              'Sans carte bancaire',
+              'Annulation en 1 clic'
+            ].map((badge) => (
+              <div key={badge} className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>{badge}</span>
+              </div>
+            ))}
           </motion.div>
         </div>
 
-        {/* Pricing cards */}
-        <div className="grid gap-8 lg:grid-cols-3">
-          {plans.map((plan, index) => {
-            const Icon = plan.icon;
-            const finalPrice = billingPeriod === 'yearly' ? plan.price * 0.8 : plan.price;
+        {/* Segment Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <SegmentSelector
+            activeSegment={activeSegment}
+            onSegmentChange={setActiveSegment}
+          />
+        </motion.div>
 
-            return (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.6,
-                  delay: index * 0.1,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                whileHover={{
-                  scale: plan.highlighted ? 1.05 : 1.03,
-                  rotateY: plan.highlighted ? 3 : 2,
-                  transition: { duration: 0.3 },
-                }}
-                className={`group relative ${plan.highlighted ? 'lg:-mt-4' : ''}`}
-                style={{ transformStyle: 'preserve-3d' }}
-              >
-                {/* Badge */}
-                {plan.badge && (
-                  <motion.div
-                    className="absolute -top-4 left-1/2 z-20 -translate-x-1/2"
-                    initial={{ opacity: 0, y: -10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <motion.span
-                      className="inline-block rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-blue-500/50"
-                      animate={{
-                        boxShadow: [
-                          '0 10px 30px rgba(59, 130, 246, 0.3)',
-                          '0 10px 50px rgba(59, 130, 246, 0.5)',
-                          '0 10px 30px rgba(59, 130, 246, 0.3)',
-                        ],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                    >
-                      {plan.badge}
-                    </motion.span>
-                  </motion.div>
-                )}
-
+        {/* Pricing Plans with 3D rotation */}
+        <div
+          className="relative"
+          style={{
+            perspective: '1000px',
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSegment}
+              initial={{ opacity: 0, rotateY: 90 }}
+              animate={{ opacity: 1, rotateY: 0 }}
+              exit={{ opacity: 0, rotateY: -90 }}
+              transition={{
+                duration: 0.5,
+                ease: 'easeInOut',
+                type: 'spring',
+                stiffness: 100,
+                damping: 15,
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-6"
+              style={{
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              {currentPlans.map((plan, index) => (
                 <div
-                  className={`relative h-full overflow-hidden rounded-3xl border ${
-                    plan.highlighted ? 'border-blue-500/30' : 'border-blue-500/10'
-                  } bg-gradient-to-br from-[#1a1f3a] to-[#0f1320] p-8 transition-all duration-300 ${
-                    plan.highlighted ? 'shadow-2xl shadow-blue-500/20' : ''
-                  } group-hover:border-blue-500/50`}
+                  key={`${activeSegment}-${plan.name}`}
+                  className={`flex ${plan.popular ? 'md:my-0' : 'md:my-4'}`}
                 >
-                  {/* Animated border on hover */}
-                  <motion.div
-                    className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100"
-                    style={{
-                      background: `linear-gradient(135deg, transparent 0%, ${
-                        plan.highlighted ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)'
-                      } 50%, transparent 100%)`,
-                    }}
-                    animate={{
-                      backgroundPosition: ['0% 0%', '100% 100%'],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                  />
-
-                  {/* Icon */}
-                  <motion.div
-                    className={`mb-6 inline-flex rounded-2xl bg-gradient-to-br ${plan.gradient} p-4`}
-                    whileHover={{
-                      rotate: [0, -10, 10, -10, 0],
-                      scale: 1.15,
-                      transition: { duration: 0.5 },
-                    }}
-                    animate={
-                      plan.highlighted
-                        ? {
-                            boxShadow: [
-                              '0 0 0 0 rgba(59, 130, 246, 0)',
-                              '0 0 40px 10px rgba(59, 130, 246, 0.4)',
-                              '0 0 0 0 rgba(59, 130, 246, 0)',
-                            ],
-                          }
-                        : {}
-                    }
-                    transition={{
-                      boxShadow: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-                    }}
-                  >
-                    <Icon className={`h-7 w-7 ${plan.iconColor}`} />
-                  </motion.div>
-
-                  {/* Plan name */}
-                  <h3 className="mb-2 text-2xl font-bold text-white">{plan.name}</h3>
-                  <p className="mb-6 text-sm text-gray-400">{plan.description}</p>
-
-                  {/* Price */}
-                  <div className="mb-6">
-                    <motion.div
-                      className="flex items-baseline gap-2"
-                      key={billingPeriod}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <span className="text-5xl font-bold text-white">
-                        {finalPrice === 0 ? 'Gratuit' : `${finalPrice.toFixed(2)}€`}
-                      </span>
-                      {finalPrice > 0 && <span className="text-gray-400">/{plan.period}</span>}
-                    </motion.div>
-                    {billingPeriod === 'yearly' && finalPrice > 0 && (
-                      <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-2 text-sm text-green-400"
-                      >
-                        Soit {(finalPrice * 12).toFixed(2)}€/an au lieu de {(plan.price * 12).toFixed(2)}€
-                      </motion.p>
-                    )}
-                  </div>
-
-                  {/* Features */}
-                  <ul className="mb-8 space-y-4">
-                    {plan.features.map((feature, i) => (
-                      <motion.li
-                        key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.3 + i * 0.05 }}
-                        className="flex items-start gap-3"
-                      >
-                        <motion.div
-                          whileHover={{ rotate: 360, scale: 1.2 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-cyan-400" />
-                        </motion.div>
-                        <span className="text-sm text-gray-300">{feature}</span>
-                      </motion.li>
-                    ))}
-                  </ul>
-
-                  {/* CTA */}
-                  <motion.button
-                    onClick={() => handlePlanClick(plan.id)}
-                    disabled={currentPlan.toUpperCase() === plan.id.toUpperCase()}
-                    whileHover={currentPlan.toUpperCase() !== plan.id.toUpperCase() ? { scale: 1.02 } : {}}
-                    whileTap={currentPlan.toUpperCase() !== plan.id.toUpperCase() ? { scale: 0.98 } : {}}
-                    className={`group/btn relative w-full overflow-hidden rounded-full py-4 font-bold transition-all ${
-                      currentPlan.toUpperCase() === plan.id.toUpperCase()
-                        ? 'cursor-not-allowed border border-green-500/30 bg-green-500/10 text-green-400 opacity-70'
-                        : plan.highlighted
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/70'
-                        : 'border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:border-blue-500/50 hover:bg-blue-500/20'
-                    }`}
-                  >
-                    <span className="relative z-10">
-                      {currentPlan.toUpperCase() === plan.id.toUpperCase() 
-                        ? '✓ Plan actuel' 
-                        : plan.cta}
-                    </span>
-                    {plan.highlighted && currentPlan.toUpperCase() !== plan.id.toUpperCase() && (
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500"
-                        initial={{ x: '-100%' }}
-                        whileHover={{ x: '100%' }}
-                        transition={{ duration: 0.5 }}
-                      />
-                    )}
-                  </motion.button>
+                  <PlanCard plan={plan} index={index} />
                 </div>
-
-                {/* Glow effect */}
-                {plan.highlighted && (
-                  <motion.div
-                    className={`absolute inset-0 -z-10 rounded-3xl bg-gradient-to-br ${plan.gradient} opacity-0 blur-2xl group-hover:opacity-30 transition-opacity duration-500`}
-                    animate={{
-                      scale: [1, 1.05, 1],
-                    }}
-                    transition={{
-                      duration: 4,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                  />
-                )}
-              </motion.div>
-            );
-          })}
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* Bottom note */}
-        <motion.p
+        {/* FAQ / Contact Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="mt-20 text-center"
+        >
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-blue-500/20 max-w-3xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
+              Des questions sur nos offres ?
+            </h2>
+            <p className="text-gray-400 mb-6 text-lg">
+              Notre équipe est disponible pour vous aider à choisir le plan idéal pour votre activité.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+                Contacter un conseiller
+              </button>
+              <button className="px-8 py-3 bg-white/5 border-2 border-purple-600/50 text-purple-300 font-semibold rounded-xl hover:bg-purple-500/20 transition-all duration-300">
+                Voir la FAQ
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Garantie satisfaction */}
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.8 }}
-          className="mt-12 text-center text-sm text-gray-500"
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-12 text-center text-gray-500"
         >
-          Tous les plans incluent une période d&apos;essai de 30 jours. Aucune carte bancaire requise.
-        </motion.p>
+          <p className="text-sm">
+            🛡️ Garantie satisfait ou remboursé 30 jours • 🔒 Paiement sécurisé • 🇫🇷 Support en français
+          </p>
+        </motion.div>
       </div>
     </section>
   );
