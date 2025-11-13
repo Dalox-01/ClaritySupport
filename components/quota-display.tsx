@@ -16,7 +16,8 @@ interface QuotaData {
   emailsLimit: number;
   autoRepliesUsed: number;
   autoRepliesLimit: number;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
+  plan: string;
+  planLabel: string;
   percentage: number;
 }
 
@@ -31,39 +32,52 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
 
   const fetchQuota = async () => {
     try {
-      const response = await fetch('/api/subscription/usage');
-      if (response.ok) {
-        const result = await response.json();
-        const summary = result.data;
-        
-        setQuotaData({
-          emailsUsed: summary.usage.emailsThisMonth || 0,
-          emailsLimit: summary.limits.emailsPerMonth.max || 10,
-          autoRepliesUsed: summary.usage.autoRepliesThisMonth || 0,
-          autoRepliesLimit: summary.limits.autoRepliesPerMonth.max || 10,
-          plan: summary.subscription.plan.toLowerCase(),
-          percentage: summary.limits.autoRepliesPerMonth.percentage || 0,
-        });
-        
-        // Afficher le prompt d'upgrade si quota atteint
-        if (summary.limits.autoRepliesPerMonth.percentage >= 100) {
-          setShowUpgradePrompt(true);
-        }
+      // Récupérer le plan actuel
+      const planResponse = await fetch('/api/plan/current');
+      if (!planResponse.ok) {
+        console.error('Erreur récupération plan');
+        return;
+      }
+      const planData = await planResponse.json();
+      
+      // Récupérer l'utilisation
+      const usageResponse = await fetch('/api/plan/usage-summary');
+      if (!usageResponse.ok) {
+        console.error('Erreur récupération usage');
+        return;
+      }
+      const usageData = await usageResponse.json();
+      
+      const autoRepliesUsed = usageData.usage?.autoReplies || 0;
+      const autoRepliesLimit = planData.data.limits.autoRepliesPerMonth === -1 
+        ? 999999 
+        : planData.data.limits.autoRepliesPerMonth;
+      const percentage = autoRepliesLimit === -1 
+        ? 0 
+        : (autoRepliesUsed / autoRepliesLimit) * 100;
+      
+      setQuotaData({
+        emailsUsed: usageData.usage?.emailAccounts || 0,
+        emailsLimit: planData.data.limits.emailAccounts === -1 
+          ? 999999 
+          : planData.data.limits.emailAccounts,
+        autoRepliesUsed,
+        autoRepliesLimit,
+        plan: planData.data.plan,
+        planLabel: planData.data.planLabel,
+        percentage,
+      });
+      
+      // Afficher le prompt d'upgrade si quota atteint
+      if (percentage >= 100 && planData.data.plan !== 'UNLIMITED' && planData.data.plan !== 'SCALE') {
+        setShowUpgradePrompt(true);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération du quota:', error);
     }
   };
 
-  const getPlanLabel = (plan: string) => {
-    switch (plan) {
-      case 'free': return 'Gratuit';
-      case 'starter': return 'Starter';
-      case 'pro': return 'Pro';
-      case 'enterprise': return 'Enterprise';
-      default: return 'Free';
-    }
-  };
+  // getPlanLabel est maintenant fourni par l'API
 
   const getQuotaColor = (percentage: number) => {
     if (percentage >= 100) return 'text-red-600 dark:text-red-400';
@@ -105,7 +119,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
               </span>
             </div>
             <span className={cn("text-xs", isLightMode ? "text-gray-500" : "text-gray-400")}>
-              {getPlanLabel(quotaData.plan)} - Réponses IA
+              {quotaData.planLabel} - Réponses IA
             </span>
           </div>
         </div>
@@ -120,7 +134,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
           />
         </div>
 
-        {quotaData.percentage >= 80 && quotaData.plan !== 'enterprise' && (
+        {quotaData.percentage >= 80 && quotaData.plan !== 'SCALE' && quotaData.plan !== 'UNLIMITED' && (
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -138,7 +152,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
       </motion.div>
 
       {/* Upgrade Modal quand quota atteint */}
-      {showUpgradePrompt && quotaData.plan !== 'enterprise' && (
+      {showUpgradePrompt && quotaData.plan !== 'SCALE' && quotaData.plan !== 'UNLIMITED' && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -171,7 +185,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
                 </p>
               </div>
 
-              {quotaData.plan === 'free' && (
+              {quotaData.plan === 'FREE' && (
                 <div className={cn(
                   "p-4 rounded-xl border-2",
                   isLightMode
@@ -200,7 +214,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
                 </div>
               )}
 
-              {quotaData.plan === 'starter' && (
+              {quotaData.plan === 'STARTER' && (
                 <div className={cn(
                   "p-4 rounded-xl border-2",
                   isLightMode
@@ -244,7 +258,7 @@ export function QuotaDisplay({ isLightMode = true }: QuotaDisplayProps) {
                   }}
                   className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
                 >
-                  Passer au plan {quotaData.plan === 'free' ? 'Starter' : quotaData.plan === 'starter' ? 'Pro' : 'Enterprise'}
+                  Passer au plan {quotaData.plan === 'FREE' ? 'Starter' : quotaData.plan === 'STARTER' ? 'Pro' : quotaData.plan === 'SOLO' ? 'Pro' : 'Scale'}
                 </Button>
               </div>
             </div>

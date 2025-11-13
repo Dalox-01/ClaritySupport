@@ -115,16 +115,17 @@ export async function GET(req: NextRequest) {
         reason: activeCanceling ? 'canceling' : activeRecent ? 'active-recent' : 'most-recent',
       });
 
-      // Mapper le price_id au plan
-      const priceToPlans: Record<string, string> = {
-        [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER || '']: 'STARTER',
-        [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || '']: 'PRO',
-        [process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || '']: 'ENTERPRISE',
-      };
+      // Mapper le price_id au plan en utilisant NEW_PRICE_TO_PLAN_MAP
+      const { getPlanTypeFromPriceId } = await import('@/lib/stripe');
+      const priceId = stripeSub.items.data[0]?.price.id;
       
-      const plan = stripeSub.items.data[0]?.price.id 
-        ? priceToPlans[stripeSub.items.data[0].price.id] || userData.plan 
-        : userData.plan;
+      let plan = userData.plan || 'FREE';
+      if (priceId) {
+        const planInfo = getPlanTypeFromPriceId(priceId);
+        if (planInfo) {
+          plan = typeof planInfo.planType === 'string' ? planInfo.planType : 'FREE';
+        }
+      }
 
       // Récupérer l'ID de la DB si existe
       const { data: dbSub } = await supabase

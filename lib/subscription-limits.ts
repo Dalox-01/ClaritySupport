@@ -41,6 +41,7 @@ export interface LimitCheckResult {
 
 /**
  * Récupérer l'abonnement actif d'un utilisateur
+ * Compatible avec les anciens et nouveaux noms de plans
  */
 export async function getUserSubscription(userId: string): Promise<UserSubscription | null> {
   const { data, error } = await supabase
@@ -58,11 +59,13 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
       .eq('id', userId)
       .single();
 
-    const userPlan = (userData?.plan || 'FREE').toLowerCase() as PlanType;
+    // Normaliser le plan (compatibilité ancien/nouveau système)
+    const userPlan = userData?.plan || 'FREE';
+    const normalizedPlan = normalizePlanName(userPlan);
 
     return {
       user_id: userId,
-      plan: userPlan,
+      plan: normalizedPlan as PlanType,
       status: 'active',
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -71,7 +74,33 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
     };
   }
 
-  return data as UserSubscription;
+  // Normaliser le plan récupéré de la table subscriptions
+  return {
+    ...data,
+    plan: normalizePlanName(data.plan) as PlanType,
+  } as UserSubscription;
+}
+
+/**
+ * Normaliser le nom du plan (compatibilité ancien/nouveau système)
+ * Nouveaux plans: STARTER, PRO, SCALE, SOLO, UNLIMITED, FREE
+ * Anciens plans: starter, pro, enterprise, free
+ */
+function normalizePlanName(plan: string): string {
+  const planUpper = (plan || 'FREE').toUpperCase();
+  
+  // Mapping ancien → nouveau
+  const planMapping: Record<string, string> = {
+    'STARTER': 'starter',   // Nouveau → Ancien pour subscription-limits.ts
+    'PRO': 'pro',
+    'SCALE': 'enterprise',  // SCALE équivaut à enterprise
+    'SOLO': 'starter',      // SOLO équivaut à starter (niveau similaire)
+    'UNLIMITED': 'enterprise', // UNLIMITED équivaut à enterprise
+    'FREE': 'free',
+    'ENTERPRISE': 'enterprise',
+  };
+
+  return planMapping[planUpper] || 'free';
 }
 
 /**

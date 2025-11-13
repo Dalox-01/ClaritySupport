@@ -123,9 +123,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     ? new Date(subscriptionData.current_period_end * 1000).toISOString()
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // +30 jours par défaut
 
+  // Déterminer le segment depuis le Price ID
+  const priceId = subscriptionData.items.data[0].price.id;
+  const { NEW_PRICE_TO_PLAN_MAP } = await import('@/lib/stripe');
+  const planMapping = NEW_PRICE_TO_PLAN_MAP[priceId];
+  const segment = planMapping?.segment || 'shopify'; // Défaut shopify si non trouvé
+
   const subscriptionPayload = {
     user_id: userId,
     plan: planType,
+    segment: segment, // AJOUT DU SEGMENT
     status: 'active',
     stripe_customer_id: session.customer as string,
     stripe_subscription_id: subscriptionData.id,
@@ -158,6 +165,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   await syncUserPlan({
     userId,
     planType,
+    segment,
     status: 'active',
     stripeCustomerId: typeof session.customer === 'string' ? session.customer : session.customer?.id,
   });
@@ -198,11 +206,12 @@ async function handleSubscriptionUpdated(subscription: any) {
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Mettre à jour l'abonnement
+  // Mettre à jour l'abonnement avec le segment
   const { error } = await supabase
     .from('subscriptions')
     .update({
       plan: planInfo.planType,
+      segment: planInfo.segment || 'shopify', // AJOUT DU SEGMENT
       status: normalizedStatus,
       stripe_price_id: priceId,
       current_period_start: currentPeriodStart,
@@ -223,6 +232,7 @@ async function handleSubscriptionUpdated(subscription: any) {
   await syncUserPlan({
     userId,
     planType: planInfo.planType,
+    segment: planInfo.segment,
     status: normalizedStatus,
     stripeCustomerId,
   });
@@ -346,10 +356,11 @@ function mapStripeStatus(status?: string | null): 'active' | 'past_due' | 'cance
 async function syncUserPlan(params: {
   userId: string;
   planType?: string | null;
+  segment?: 'shopify' | 'freelance' | null;
   status?: string | null;
   stripeCustomerId?: string | null;
 }): Promise<void> {
-  const { userId, planType, status, stripeCustomerId } = params;
+  const { userId, planType, segment, status, stripeCustomerId } = params;
   const normalizedStatus = mapStripeStatus(status);
   const updates: Record<string, any> = {};
 

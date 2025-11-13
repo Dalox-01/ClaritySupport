@@ -43,6 +43,10 @@ export interface UserPlanInfo {
   segment: SegmentType;
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
+  currentPeriodStart?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean;
+  status: string;
   isActive: boolean;
 }
 
@@ -58,7 +62,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   // Essayer d'abord la table subscriptions
   const { data: subscription } = await supabase
     .from('subscriptions')
-    .select('plan, segment, stripe_customer_id, stripe_subscription_id, status')
+    .select('plan, segment, stripe_customer_id, stripe_subscription_id, status, current_period_start, current_period_end, cancel_at_period_end')
     .eq('user_id', userId)
     .eq('status', 'active')
     .single();
@@ -70,6 +74,10 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
       segment: subscription.segment || 'shopify',
       stripeCustomerId: subscription.stripe_customer_id,
       stripeSubscriptionId: subscription.stripe_subscription_id,
+      currentPeriodStart: subscription.current_period_start,
+      currentPeriodEnd: subscription.current_period_end,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
+      status: subscription.status,
       isActive: subscription.status === 'active',
     };
   }
@@ -87,6 +95,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
     userId,
     plan: planName,
     segment: 'shopify', // Par défaut
+    status: 'active',
     isActive: true,
   };
 }
