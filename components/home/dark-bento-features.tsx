@@ -23,42 +23,42 @@ const mainFeatures = [
   {
     icon: Bot,
     title: 'IA Avancée',
-    description: 'Réponses automatiques intelligentes qui comprennent le contexte et s\'adaptent à votre ton.',
+    description: 'Réponses automatiques contextuelles qui comprennent l\'intent du client et reproduisent votre ton professionnel.',
     gradient: 'from-purple-500 to-pink-500',
     borderGradient: 'from-purple-500/50 to-pink-500/50',
   },
   {
     icon: Mail,
-    title: 'Multi-Comptes',
-    description: 'Connectez Gmail, Outlook et gérez tous vos emails depuis une interface unique.',
+    title: 'Centralisation',
+    description: 'Unifiez Gmail, Outlook et autres boîtes mail. Une seule interface pour gérer tout votre support.',
     gradient: 'from-blue-500 to-cyan-500',
     borderGradient: 'from-blue-500/50 to-cyan-500/50',
   },
   {
     icon: Zap,
     title: 'Automatisation',
-    description: 'Réponses automatiques 24/7 pour ne jamais manquer une demande de support.',
+    description: 'Réponses instantanées 24/7. L\'IA traite les demandes récurrentes pendant que vous dormez.',
     gradient: 'from-cyan-500 to-teal-500',
     borderGradient: 'from-cyan-500/50 to-teal-500/50',
   },
   {
     icon: BarChart3,
     title: 'Analytics',
-    description: 'Suivez vos performances : temps de réponse, taux de satisfaction, volumes traités.',
+    description: 'Tableaux de bord en temps réel : temps de réponse, satisfaction client, volume traité, tendances.',
     gradient: 'from-orange-500 to-red-500',
     borderGradient: 'from-orange-500/50 to-red-500/50',
   },
   {
     icon: Shield,
     title: 'Sécurité',
-    description: 'Chiffrement end-to-end, conformité RGPD, vos données restent privées.',
+    description: 'Chiffrement AES-256, conformité RGPD, hébergement EU. Vos données sont protégées.',
     gradient: 'from-green-500 to-emerald-500',
     borderGradient: 'from-green-500/50 to-emerald-500/50',
   },
   {
     icon: Clock,
     title: 'Gain de Temps',
-    description: 'Économisez jusqu\'à 90% de votre temps sur les réponses de support client.',
+    description: 'Économisez jusqu\'\u00e0 85% de temps sur le support. Concentrez-vous sur la croissance de votre business.',
     gradient: 'from-indigo-500 to-blue-500',
     borderGradient: 'from-indigo-500/50 to-blue-500/50',
   },
@@ -188,9 +188,9 @@ export function DarkBentoFeatures() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
-            Automatisez votre support client{' '}
+            Transformez votre support client{' '}
             <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              en quelques clics
+              avec l\'IA
             </span>
           </motion.h2>
 
@@ -201,7 +201,7 @@ export function DarkBentoFeatures() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Gagnez du temps, améliorez la satisfaction client et concentrez-vous sur ce qui compte vraiment
+            Délivrez un service exceptionnel, augmentez la satisfaction client et libérez du temps pour votre équipe
           </motion.p>
         </div>
 

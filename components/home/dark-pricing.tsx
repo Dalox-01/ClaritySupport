@@ -297,7 +297,7 @@ export function DarkPricing() {
             className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Tarification Simple & Transparente
+              Tarifs simples et transparents
             </span>
           </motion.h2>
 
@@ -308,7 +308,7 @@ export function DarkPricing() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Choisissez le plan parfait pour votre activité. Changez ou annulez à tout moment, sans engagement.
+            Choisissez le plan parfait pour votre entreprise. Changez ou annulez à tout moment, sans engagement.
           </motion.p>
 
           {/* Trust badges */}
@@ -394,10 +394,10 @@ export function DarkPricing() {
         >
           <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-blue-500/30 max-w-3xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
-              Essayez gratuitement pendant 7 jours
+              Essayez gratuitement pendant 14 jours
             </h2>
             <p className="text-gray-300 mb-6 text-lg">
-              Testez toutes les fonctionnalités sans engagement. Aucune carte bancaire requise.
+              Découvrez la puissance de ClaritySupport sans risque. Toutes les fonctionnalités incluses, aucune carte bancaire requise.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/checkout">

@@ -279,7 +279,7 @@ export default function HomePage() {
                 </motion.span>
               </Link>
               <p className="text-sm text-gray-400">
-                Support client automatisé par IA. Connectez vos emails et laissez notre intelligence artificielle gérer vos réponses automatiques.
+                Transformez votre support client avec l'IA. ClaritySupport centralise vos emails et automatise vos réponses pour un service exceptionnel 24/7.
               </p>
             </motion.div>
             

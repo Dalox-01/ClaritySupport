@@ -14,7 +14,7 @@ import {
 } from '@/lib/mail-ai-helpers';
 import { sendGmailReply } from '@/lib/gmail-helpers';
 import { sendOutlookReply } from '@/lib/outlook-helpers';
-import { canSendAutoReply, canProcessEmail } from '@/lib/subscription-limits';
+import { canSendAutoReply } from '@/lib/plan-enforcement';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,27 +29,6 @@ export async function POST(req: NextRequest) {
     const { emailId } = await req.json();
     const userId = session.user.id;
 
-    // 🔒 VÉRIFICATION DES LIMITES : Peut-on traiter cet email ?
-    const processLimitCheck = await canProcessEmail(userId);
-    
-    if (!processLimitCheck.allowed) {
-      console.log(`🚫 Limite emails atteinte pour user ${userId}: ${processLimitCheck.reason}`);
-      
-      return NextResponse.json({
-        error: 'Limite atteinte',
-        reason: processLimitCheck.reason,
-        currentUsage: processLimitCheck.currentUsage,
-        limit: processLimitCheck.limit,
-        upgradePlans: processLimitCheck.upgradePlans,
-        skipped: true,
-        limitReached: {
-          feature: 'Emails traités',
-          current: processLimitCheck.currentUsage || 0,
-          max: processLimitCheck.limit || 0,
-        }
-      }, { status: 403 });
-    }
-
     // 🔒 VÉRIFICATION DES LIMITES : Peut-on envoyer une réponse automatique ?
     const autoReplyLimitCheck = await canSendAutoReply(userId);
     
@@ -61,7 +40,8 @@ export async function POST(req: NextRequest) {
         reason: autoReplyLimitCheck.reason,
         currentUsage: autoReplyLimitCheck.currentUsage,
         limit: autoReplyLimitCheck.limit,
-        upgradePlans: autoReplyLimitCheck.upgradePlans,
+        suggestedPlans: autoReplyLimitCheck.suggestedPlans,
+        requiresUpgrade: autoReplyLimitCheck.requiresUpgrade,
         skipped: true,
         limitReached: {
           feature: 'Réponses automatiques',

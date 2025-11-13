@@ -10,16 +10,16 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mailwizard.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://claritysupport.vercel.app'),
   title: {
-    default: 'MailWizard - Génération d\'emails professionnels par IA',
-    template: '%s | MailWizard'
+    default: 'ClaritySupport - Support Client Automatisé par IA',
+    template: '%s | ClaritySupport'
   },
-  description: 'Créez des emails professionnels parfaits en quelques secondes grâce à l\'intelligence artificielle. Candidatures, relances, prospection B2B et plus encore.',
-  keywords: ['email', 'IA', 'génération', 'professionnel', 'candidature', 'prospection', 'GPT', 'intelligence artificielle', 'mailwizard'],
-  authors: [{ name: 'MailWizard', url: 'https://mailwizard.vercel.app' }],
+  description: 'Automatisez votre support client avec l\'IA. ClaritySupport centralise vos emails Gmail et Outlook, génère des réponses intelligentes et optimise votre service client 24/7.',
+  keywords: ['support client', 'IA', 'automatisation', 'service client', 'emails', 'chatbot', 'GPT', 'intelligence artificielle', 'claritysupport', 'mail center'],
+  authors: [{ name: 'ClaritySupport', url: 'https://claritysupport.vercel.app' }],
   creator: 'Laszlo Jean-Pierre',
-  publisher: 'MailWizard',
+  publisher: 'ClaritySupport',
   robots: {
     index: true,
     follow: true,
@@ -39,24 +39,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    url: 'https://mailwizard.vercel.app',
-    title: 'MailWizard - Génération d\'emails professionnels par IA',
-    description: 'Créez des emails professionnels parfaits en quelques secondes grâce à l\'IA',
-    siteName: 'MailWizard',
+    url: 'https://claritysupport.vercel.app',
+    title: 'ClaritySupport - Support Client Automatisé par IA',
+    description: 'Transformez votre support client avec l\'IA. Réponses automatiques, centralisation des emails et analyse intelligente.',
+    siteName: 'ClaritySupport',
     images: [
       {
         url: '/logo.png',
         width: 512,
         height: 512,
-        alt: 'MailWizard Logo',
+        alt: 'ClaritySupport Logo',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MailWizard - Génération d\'emails professionnels par IA',
-    description: 'Créez des emails professionnels parfaits en quelques secondes grâce à l\'IA',
-    creator: '@mailwizard',
+    title: 'ClaritySupport - Support Client Automatisé par IA',
+    description: 'Transformez votre support client avec l\'IA. Réponses automatiques et centralisation des emails.',
+    creator: '@claritysupport',
     images: ['/logo.png'],
   },
   alternates: {
@@ -78,10 +78,10 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'MailWizard',
-              url: 'https://mailwizard.vercel.app',
-              logo: 'https://mailwizard.vercel.app/logo.png',
-              description: 'Génération d\'emails professionnels par IA',
+              name: 'ClaritySupport',
+              url: 'https://claritysupport.vercel.app',
+              logo: 'https://claritysupport.vercel.app/logo.png',
+              description: 'Support client automatisé par IA - Mail Center intelligent',
             }),
           }}
         />

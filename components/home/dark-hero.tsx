@@ -113,8 +113,9 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           transition={{ duration: 0.7, delay: 0.4 }}
           className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-300 sm:text-2xl md:leading-relaxed"
         >
-          Centralisez tous vos emails Gmail et Outlook. Générez des réponses avec l&apos;IA,
-          organisez par statut et automatisez votre support client.
+          La plateforme intelligente qui transforme votre support client.
+          Centralisez Gmail & Outlook, générez des réponses avec l&apos;IA,
+          et délivrez un service exceptionnel 24/7.
         </motion.p>
 
         {/* CTA Button */}
@@ -156,9 +157,9 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           className="mb-20 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400"
         >
           {[
-            { text: 'Gratuit pendant 30 jours', delay: 0 },
+            { text: 'Essai gratuit 14 jours', delay: 0 },
             { text: 'Sans carte bancaire', delay: 0.1 },
-            { text: 'Support 24/7', delay: 0.2 },
+            { text: 'Configuration en 2 min', delay: 0.2 },
           ].map((item) => (
             <motion.div
               key={item.text}

@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/db';
 import { decrypt, encrypt } from '@/lib/security';
 import { sendGmailReply, refreshGmailToken } from '@/lib/gmail-helpers';
+import { canSendAutoReply } from '@/lib/plan-enforcement';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,27 @@ export async function POST(req: NextRequest) {
 
     if (!toEmail || !body) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 });
+    }
+
+    // 🔒 VÉRIFICATION DES LIMITES : Peut-on envoyer une réponse ?
+    const limitCheck = await canSendAutoReply(userId);
+    
+    if (!limitCheck.allowed) {
+      console.log(`🚫 Limite réponses atteinte pour user ${userId}: ${limitCheck.reason}`);
+      
+      return NextResponse.json({
+        error: 'Limite atteinte',
+        reason: limitCheck.reason,
+        currentUsage: limitCheck.currentUsage,
+        limit: limitCheck.limit,
+        suggestedPlans: limitCheck.suggestedPlans,
+        requiresUpgrade: limitCheck.requiresUpgrade,
+        limitReached: {
+          feature: 'Réponses email',
+          current: limitCheck.currentUsage || 0,
+          max: limitCheck.limit || 0,
+        }
+      }, { status: 403 });
     }
 
     console.log(`📧 Envoi réponse à: ${toEmail}`);

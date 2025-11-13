@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exchangeOutlookCode } from '@/lib/outlook-helpers';
 import { supabase } from '@/lib/db';
 import { encrypt } from '@/lib/security';
-import { canAddEmailAccount } from '@/lib/subscription-limits';
+import { canAddEmailAccount } from '@/lib/plan-enforcement';
 
 export async function GET(req: NextRequest) {
   try {

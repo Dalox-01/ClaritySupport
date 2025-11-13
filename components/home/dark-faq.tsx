@@ -8,32 +8,32 @@ const faqs = [
   {
     question: 'Comment fonctionne la synchronisation des emails ?',
     answer:
-      'IA mailcenter se connecte de manière sécurisée à vos comptes Gmail et Outlook via OAuth 2.0. Vos emails sont synchronisés en temps réel et stockés de manière chiffrée. Nous ne conservons jamais vos mots de passe.',
+      'ClaritySupport se connecte de manière sécurisée à vos comptes Gmail et Outlook via OAuth 2.0. Vos emails sont synchronisés en temps réel et stockés de manière chiffrée. Nous ne conservons jamais vos mots de passe et respectons les standards de sécurité les plus élevés.',
   },
   {
-    question: 'L\'IA peut-elle vraiment comprendre le contexte de mes emails ?',
+    question: 'L\'IA peut-elle vraiment comprendre le contexte de mes emails de support ?',
     answer:
-      'Oui ! Notre IA analyse le contexte, le ton et l\'historique de vos conversations pour générer des réponses pertinentes et personnalisées. Elle apprend de votre style d\'écriture pour produire des réponses qui vous ressemblent.',
+      'Absolument ! Notre IA analyse le contexte, l\'historique des conversations et le sentiment du client pour générer des réponses précises et personnalisées. Elle s\'adapte au ton de votre entreprise et apprend de vos corrections pour s\'améliorer continuellement.',
   },
   {
     question: 'Puis-je annuler mon abonnement à tout moment ?',
     answer:
-      'Absolument. Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun frais caché, aucune période d\'engagement. Vos données restent accessibles pendant 30 jours après l\'annulation.',
+      'Oui, sans aucun engagement. Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun frais caché, aucune période d\'engagement minimum. Vos données restent accessibles pendant 30 jours après l\'annulation pour faciliter votre transition.',
   },
   {
-    question: 'Mes données sont-elles sécurisées ?',
+    question: 'Mes données clients sont-elles sécurisées ?',
     answer:
-      'La sécurité est notre priorité absolue. Nous utilisons un chiffrement AES-256 de bout en bout, une authentification à deux facteurs, et sommes conformes au RGPD. Vos données sont hébergées en Europe sur des serveurs certifiés ISO 27001.',
+      'La sécurité est notre priorité absolue. Nous utilisons un chiffrement AES-256 de bout en bout, une authentification à deux facteurs optionnelle, et sommes conformes au RGPD. Vos données sont hébergées en Europe sur des serveurs certifiés ISO 27001. Vos clients sont protégés.',
   },
   {
-    question: 'Combien de comptes email puis-je connecter ?',
+    question: 'Combien de boîtes mail puis-je connecter ?',
     answer:
-      'Le plan FREE permet 1 compte, le plan STARTER permet 3 comptes, et le plan PRO permet un nombre illimité de comptes email. Vous pouvez mélanger Gmail et Outlook sans problème.',
+      'Cela dépend de votre plan : le plan FREE permet 1 compte, le plan STARTER permet 3 comptes, et le plan PRO permet un nombre illimité de comptes email. Vous pouvez librement mélanger Gmail, Outlook et autres fournisseurs.',
   },
   {
-    question: 'Proposez-vous une API pour les développeurs ?',
+    question: 'Proposez-vous une API pour intégrer ClaritySupport à mes outils ?',
     answer:
-      'Oui ! Le plan PRO inclut un accès complet à notre API REST et aux webhooks. Vous pouvez intégrer IA mailcenter à vos outils existants et automatiser vos workflows. Documentation complète disponible.',
+      'Oui ! Le plan PRO inclut un accès complet à notre API REST et aux webhooks. Intégrez ClaritySupport à votre CRM, helpdesk ou outils internes pour automatiser vos workflows. Documentation technique complète et support développeur disponibles.',
   },
 ];
 
@@ -107,7 +107,7 @@ export function DarkFaq() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Tout ce que vous devez savoir sur IA mailcenter
+            Tout ce que vous devez savoir sur ClaritySupport
           </motion.p>
         </div>
 

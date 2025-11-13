@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exchangeGmailCode } from '@/lib/gmail-helpers';
 import { supabase } from '@/lib/db';
 import { encrypt } from '@/lib/security';
-import { canAddEmailAccount } from '@/lib/subscription-limits';
+import { canAddEmailAccount } from '@/lib/plan-enforcement';
 
 export async function GET(req: NextRequest) {
   console.log('🔵 [GMAIL CALLBACK] Début du callback OAuth Gmail');
