@@ -129,6 +129,7 @@ export async function POST(req: NextRequest) {
             replied_at: email.replied_at,
             created_at: email.created_at,
             expires_at: email.expires_at,
+            deleted_at: email.deleted_at,
           },
           tone: 'professionnel',
           language: 'fr',
