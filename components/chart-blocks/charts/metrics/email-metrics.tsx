@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Container from "@/components/container";
 import MetricCard from "./components/metric-card";
 
 type EmailMetrics = {
@@ -93,7 +92,7 @@ export default function EmailMetrics() {
 
   if (isLoading) {
     return (
-      <Container className="grid grid-cols-1 gap-y-6 border-b border-border py-4 phone:grid-cols-2 laptop:grid-cols-4">
+      <div className="grid grid-cols-4 gap-4 mb-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="animate-pulse">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
@@ -101,15 +100,15 @@ export default function EmailMetrics() {
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
           </div>
         ))}
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="grid grid-cols-1 gap-y-6 border-b border-border py-4 phone:grid-cols-2 laptop:grid-cols-4">
+    <div className="grid grid-cols-4 gap-4 mb-4">
       {metricsData.map((metric) => (
         <MetricCard key={metric.title} {...metric} />
       ))}
-    </Container>
+    </div>
   );
 }
