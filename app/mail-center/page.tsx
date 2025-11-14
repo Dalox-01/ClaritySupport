@@ -589,9 +589,9 @@ export default function MailCenterPage() {
       ref={containerRef} 
       className={cn(
         "min-h-screen relative overflow-hidden transition-all duration-700",
-        // Style glassmorphism violet/purple
+        // Style blanc et bleu moderne
         isLightMode 
-          ? "bg-gradient-to-br from-violet-50/40 via-purple-50/30 to-pink-50/20"
+          ? "bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/20"
           : "bg-gradient-to-br from-[#0A0E27] via-[#0d1435] to-[#0A0E27]"
       )}
     >
@@ -623,7 +623,7 @@ export default function MailCenterPage() {
           width: '600px',
           height: '600px',
           background: isLightMode
-            ? 'radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%)'
+            ? 'radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%)'
             : 'radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%)',
           filter: 'blur(60px)',
         }}
@@ -650,7 +650,7 @@ export default function MailCenterPage() {
           width: '500px',
           height: '500px',
           background: isLightMode
-            ? 'radial-gradient(circle, rgba(168, 85, 247, 0.08), transparent 70%)'
+            ? 'radial-gradient(circle, rgba(6, 182, 212, 0.08), transparent 70%)'
             : 'radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent 70%)',
           filter: 'blur(70px)',
         }}
@@ -671,9 +671,9 @@ export default function MailCenterPage() {
       <motion.header 
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-all duration-700",
-          // Glassmorphism violet/purple
+          // Glassmorphism blanc/bleu
           isLightMode
-            ? "bg-white/60 backdrop-blur-3xl border-b border-violet-200/30 shadow-sm shadow-violet-100/20"
+            ? "bg-white/80 backdrop-blur-3xl border-b border-blue-200/30 shadow-sm shadow-blue-100/20"
             : "bg-slate-900/40 backdrop-blur-2xl border-b border-slate-700/30 shadow-lg shadow-black/10"
         )}
         initial={{ y: -100, opacity: 0 }}
@@ -730,7 +730,7 @@ export default function MailCenterPage() {
                 className={cn(
                   "hidden sm:inline bg-gradient-to-r bg-clip-text text-transparent transition-transform duration-200 group-hover:scale-105",
                   isLightMode 
-                    ? "from-violet-600 via-purple-600 to-pink-600" 
+                    ? "from-blue-600 via-cyan-600 to-blue-600" 
                     : "from-white via-blue-300 to-white"
                 )}
               >
@@ -1026,7 +1026,7 @@ export default function MailCenterPage() {
                 
                 <h3 className={cn(
                   "font-semibold mb-4 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
-                  isLightMode ? "text-violet-700" : "text-slate-200"
+                  isLightMode ? "text-blue-700" : "text-slate-200"
                 )}>
                   <Zap className={cn("w-4 h-4", isLightMode ? "text-violet-600" : "text-blue-400")} />
                   Navigation
