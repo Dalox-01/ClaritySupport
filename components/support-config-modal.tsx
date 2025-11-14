@@ -142,21 +142,21 @@ export function SupportConfigModal({
             e.stopPropagation();
             onFocus?.();
           }}
-          className="relative w-full max-w-[1200px] max-h-[92vh] bg-gradient-to-br from-white/95 via-violet-50/40 to-purple-50/30 dark:from-[#1a1f3a]/95 dark:via-[#0f1629] dark:to-[#1a1f3a] border border-violet-200/40 dark:border-violet-500/20 rounded-3xl shadow-2xl shadow-violet-500/10 overflow-hidden backdrop-blur-2xl"
+          className="relative w-full max-w-[1200px] max-h-[92vh] bg-gradient-to-br from-white/95 via-blue-50/40 to-cyan-50/30 dark:from-[#1a1f3a]/95 dark:via-[#0f1629] dark:to-[#1a1f3a] border border-blue-200/40 dark:border-blue-500/20 rounded-3xl shadow-2xl shadow-blue-500/10 overflow-hidden backdrop-blur-2xl"
         >
           {/* Header */}
-          <div className="relative border-b border-violet-200/40 dark:border-violet-500/20 bg-white/90 dark:bg-[#1a1f3a]/90 backdrop-blur-xl">
+          <div className="relative border-b border-blue-200/40 dark:border-blue-500/20 bg-white/90 dark:bg-[#1a1f3a]/90 backdrop-blur-xl">
             {/* Effet de brillance glassmorphism */}
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-cyan-500/5 to-blue-500/5 pointer-events-none" />
             
             <div className="relative flex items-center justify-between p-6">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 shadow-lg shadow-violet-500/20">
-                    <Bot className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-600/20 shadow-lg shadow-blue-500/20">
+                    <Bot className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 dark:from-blue-400 dark:via-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">
                       Configuration IA Avancée
                     </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
@@ -186,7 +186,7 @@ export function SupportConfigModal({
                   variant="outline"
                   size="sm"
                   onClick={handleExport}
-                  className="border-violet-300/50 dark:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-400/60 transition-all"
+                  className="border-blue-300/50 dark:border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-400/60 transition-all"
                 >
                   <FileDown className="w-4 h-4 mr-2" />
                   Exporter
@@ -196,7 +196,7 @@ export function SupportConfigModal({
                   variant="outline"
                   size="sm"
                   onClick={handleImport}
-                  className="border-violet-300/50 dark:border-violet-500/30 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-400/60 transition-all"
+                  className="border-blue-300/50 dark:border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-400/60 transition-all"
                 >
                   <FileUp className="w-4 h-4 mr-2" />
                   Importer
@@ -226,8 +226,8 @@ export function SupportConfigModal({
                     className={cn(
                       'flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg',
                       activeTab === tab.id
-                        ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-violet-500/30'
-                        : 'bg-white/60 dark:bg-slate-800/60 text-gray-600 dark:text-gray-400 hover:bg-violet-50 dark:hover:bg-violet-500/10 border border-violet-200/30 dark:border-violet-500/20'
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-blue-500/30'
+                        : 'bg-white/60 dark:bg-slate-800/60 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 border border-blue-200/30 dark:border-blue-500/20'
                     )}
                   >
                     <tab.icon className="w-4 h-4" />
@@ -239,7 +239,7 @@ export function SupportConfigModal({
           </div>
 
           {/* Content Area - Full height for integrated scrolling */}
-          <div className="h-[calc(92vh-240px)] bg-gradient-to-b from-transparent via-violet-50/20 to-transparent dark:via-violet-900/10">
+          <div className="h-[calc(92vh-240px)] bg-gradient-to-b from-transparent via-blue-50/20 to-transparent dark:via-blue-900/10">
             <AnimatePresence mode="wait">
               {activeTab === 'ai-config' && (
                 <motion.div
@@ -257,9 +257,9 @@ export function SupportConfigModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="border-t border-violet-200/40 dark:border-violet-500/20 bg-white/90 dark:bg-[#1a1f3a]/90 backdrop-blur-xl p-6">
+          <div className="border-t border-blue-200/40 dark:border-blue-500/20 bg-white/90 dark:bg-[#1a1f3a]/90 backdrop-blur-xl p-6">
             {/* Effet de brillance */}
-            <div className="absolute inset-0 bg-gradient-to-t from-violet-500/5 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent pointer-events-none" />
             
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -276,14 +276,14 @@ export function SupportConfigModal({
                   </motion.div>
                 )}
 
-                <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-50/50 dark:bg-violet-500/10 border border-violet-200/30 dark:border-violet-500/20 text-sm text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-violet-100/50 dark:hover:bg-violet-500/20 transition-all">
+                <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50/50 dark:bg-blue-500/10 border border-blue-200/30 dark:border-blue-500/20 text-sm text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-500/20 transition-all">
                   <input
                     type="checkbox"
                     checked={autoSaveEnabled}
                     onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-                    className="rounded border-violet-300 text-violet-600 focus:ring-violet-500"
+                    className="rounded border-blue-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <Clock className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+                  <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span className="font-medium">Auto-save (30s)</span>
                 </label>
               </div>
@@ -302,7 +302,7 @@ export function SupportConfigModal({
                   variant="outline"
                   onClick={handleSaveDraft}
                   disabled={isSaving || !hasChanges}
-                  className="border-violet-300 dark:border-violet-500/50 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:border-violet-400 transition-all"
+                  className="border-blue-300 dark:border-blue-500/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-400 transition-all"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Sauvegarder en brouillon
@@ -311,7 +311,7 @@ export function SupportConfigModal({
                 <Button
                   onClick={handlePublish}
                   disabled={isSaving}
-                  className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-700 hover:via-purple-700 hover:to-pink-700 text-white shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all"
+                  className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 hover:from-blue-700 hover:via-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all"
                 >
                   {isSaving ? (
                     <>
