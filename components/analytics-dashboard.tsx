@@ -9,32 +9,38 @@ import {
 } from "@/components/chart-blocks";
 import Container from "@/components/container";
 import EmailMetrics from "@/components/chart-blocks/charts/metrics/email-metrics";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export function AnalyticsDashboard() {
   return (
-    <div>
-      {/* Métriques des emails au lieu des tickets */}
-      <EmailMetrics />
-      
-      {/* Disposition selon l'image - Ligne 1: Bar Chart | Circle Packing */}
-      <div className="grid grid-cols-1 divide-y border-b border-border laptop:grid-cols-2 laptop:divide-x laptop:divide-y-0 laptop:divide-border">
-        <Container className="py-4 laptop:col-span-1">
-          <AverageTicketsCreated />
-        </Container>
-        <Container className="py-4 laptop:col-span-1">
-          <Conversions />
-        </Container>
-      </div>
-      
-      {/* Ligne 2: Donut Chart | Satisfaction Bars */}
-      <div className="grid grid-cols-1 divide-y border-b border-border laptop:grid-cols-2 laptop:divide-x laptop:divide-y-0 laptop:divide-border">
-        <Container className="py-4 laptop:col-span-1">
-          <TicketByChannels />
-        </Container>
-        <Container className="py-4 laptop:col-span-1">
-          <CustomerSatisfication />
-        </Container>
-      </div>
+    <div className="w-full h-full">
+      <Card className="border shadow-xl backdrop-blur-xl bg-white dark:bg-[#1a1f3a]/70 dark:border-blue-500/20 border-gray-200 dark:shadow-blue-500/10 shadow-gray-100/50">
+        <div className="p-6 space-y-6">
+          {/* Métriques des emails au lieu des tickets */}
+          <EmailMetrics />
+          
+          {/* Disposition selon l'image - Ligne 1: Bar Chart | Circle Packing */}
+          <div className="grid grid-cols-1 gap-6 laptop:grid-cols-2">
+            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
+              <AverageTicketsCreated />
+            </div>
+            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
+              <Conversions />
+            </div>
+          </div>
+          
+          {/* Ligne 2: Donut Chart | Satisfaction Bars */}
+          <div className="grid grid-cols-1 gap-6 laptop:grid-cols-2">
+            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
+              <TicketByChannels />
+            </div>
+            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
+              <CustomerSatisfication />
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
