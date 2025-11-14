@@ -31,10 +31,10 @@ export default function Conversions() {
   }, []);
 
   return (
-    <section className="flex h-full flex-col gap-2">
+    <section className="flex h-full flex-col gap-1">
       <ChartTitle title="Réponses Envoyées" icon={Reply} />
       <Indicator totalReplies={totalReplies} loading={loading} />
-      <div className="relative max-h-80 flex-grow">
+      <div className="relative flex-grow min-h-0">
         <Chart />
       </div>
     </section>
@@ -43,15 +43,15 @@ export default function Conversions() {
 
 function Indicator({ totalReplies, loading }: { totalReplies: number; loading: boolean }) {
   return (
-    <div className="mt-3">
+    <div className="mt-1">
       {loading ? (
-        <div className="h-8 w-24 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-6 w-20 animate-pulse rounded bg-gray-200"></div>
       ) : (
         <>
-          <span className="mr-1 text-2xl font-medium">
+          <span className="mr-1 text-lg font-medium text-white">
             {addThousandsSeparator(totalReplies)}
           </span>
-          <span className="text-muted-foreground/60">Cette semaine</span>
+          <span className="text-xs text-gray-400">Cette semaine</span>
         </>
       )}
     </div>

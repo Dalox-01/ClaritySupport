@@ -14,69 +14,54 @@ import { cn } from "@/lib/utils";
 
 export function AnalyticsDashboard() {
   return (
-    <div className="w-full h-[calc(100vh-12rem)] flex flex-col p-3 overflow-hidden bg-gradient-to-br from-slate-950 to-slate-900">
-      {/* Métriques en haut - 4 cartes compactes */}
-      <div className="mb-3">
-        <EmailMetrics />
+    <div className="relative w-full h-[calc(100vh-12rem)] flex flex-col overflow-hidden rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl">
+      {/* macOS Window Header */}
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-700/30 bg-slate-800/50 shrink-0">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
+          <div className="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+        </div>
+        <div className="flex-1 text-center">
+          <span className="text-xs font-medium text-gray-400">Analytics Dashboard</span>
+        </div>
       </div>
-      
-      {/* Grille principale - 2x2 style fenêtre macOS */}
-      <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
-        {/* Ligne 1 - Gauche: Bar Chart */}
-        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-          {/* macOS Window Header */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
-            </div>
-          </div>
-          {/* Content */}
-          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
-            <AverageTicketsCreated />
-          </div>
+
+      {/* Content Area */}
+      <div className="flex-1 flex flex-col p-3 overflow-hidden bg-gradient-to-br from-slate-950 to-slate-900">
+        {/* Métriques en haut - 4 cartes ultra compactes */}
+        <div className="mb-2.5">
+          <EmailMetrics />
         </div>
         
-        {/* Ligne 1 - Droite: Circle Packing */}
-        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+        {/* Grille principale - 2x2 */}
+        <div className="flex-1 grid grid-cols-2 gap-2.5 min-h-0">
+          {/* Ligne 1 - Gauche: Bar Chart */}
+          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
+            <div className="p-2 h-full overflow-hidden">
+              <AverageTicketsCreated />
             </div>
           </div>
-          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
-            <Conversions />
-          </div>
-        </div>
-        
-        {/* Ligne 2 - Gauche: Donut Chart */}
-        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+          
+          {/* Ligne 1 - Droite: Circle Packing */}
+          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
+            <div className="p-2 h-full overflow-hidden">
+              <Conversions />
             </div>
           </div>
-          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
-            <TicketByChannels />
-          </div>
-        </div>
-        
-        {/* Ligne 2 - Droite: Satisfaction */}
-        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+          
+          {/* Ligne 2 - Gauche: Donut Chart */}
+          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
+            <div className="p-2 h-full overflow-hidden">
+              <TicketByChannels />
             </div>
           </div>
-          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
-            <CustomerSatisfication />
+          
+          {/* Ligne 2 - Droite: Satisfaction */}
+          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
+            <div className="p-2 h-full overflow-hidden">
+              <CustomerSatisfication />
+            </div>
           </div>
         </div>
       </div>

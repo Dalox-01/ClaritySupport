@@ -92,12 +92,12 @@ export default function EmailMetrics() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1.5">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-1"></div>
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-1"></div>
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-12 mb-0.5"></div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
           </div>
         ))}
       </div>
@@ -105,7 +105,7 @@ export default function EmailMetrics() {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-1.5">
       {metricsData.map((metric) => (
         <MetricCard key={metric.title} {...metric} />
       ))}

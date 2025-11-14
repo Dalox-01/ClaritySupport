@@ -73,13 +73,13 @@ export default function AverageTicketsCreated() {
   const avgResolved = calMetricCardValue(emailData, "resolved");
 
   return (
-    <section className="flex h-full flex-col gap-2">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section className="flex h-full flex-col gap-1">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <ChartTitle title="Volume d'Emails" icon={Mail} />
-        <DatePickerWithRange className="" />
+        <DatePickerWithRange className="scale-75 origin-top-right" />
       </div>
-      <div className="flex flex-wrap">
-        <div className="my-4 flex w-52 shrink-0 flex-col justify-center gap-6">
+      <div className="flex flex-wrap flex-1 min-h-0">
+        <div className="flex w-40 shrink-0 flex-col justify-center gap-3">
           <MetricCard
             title="Moy. Emails Reçus"
             value={avgCreated}
@@ -91,7 +91,7 @@ export default function AverageTicketsCreated() {
             color="#3161F8"
           />
         </div>
-        <div className="relative h-96 min-w-[320px] flex-1">
+        <div className="relative flex-1 min-w-0 min-h-0">
           <Chart />
         </div>
       </div>

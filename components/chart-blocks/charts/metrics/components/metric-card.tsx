@@ -15,7 +15,7 @@ export default function MetricCard({
 }) {
   return (
     <section className={cn(
-      "relative group flex flex-col p-2.5 rounded-lg border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 overflow-hidden",
+      "relative group flex flex-col p-2 rounded-md border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 overflow-hidden",
       className
     )}>
       {/* Gradient overlay on hover */}
@@ -23,18 +23,18 @@ export default function MetricCard({
       
       {/* Content */}
       <div className="relative z-10">
-        <h2 className="mb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">
+        <h2 className="mb-0.5 text-[9px] font-medium text-gray-400 uppercase tracking-wide">
           {title}
         </h2>
-        <div className="flex items-baseline gap-1.5 mb-0.5">
-          <span className="text-lg font-bold text-white">{value}</span>
+        <div className="flex items-baseline gap-1 mb-0.5">
+          <span className="text-base font-bold text-white">{value}</span>
           <ChangeIndicator change={change} />
         </div>
-        <div className="text-[9px] text-gray-500">vs last month</div>
+        <div className="text-[8px] text-gray-500">vs last month</div>
       </div>
       
       {/* Decorative corner accent */}
-      <div className="absolute -right-4 -top-4 w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-lg group-hover:scale-150 transition-transform duration-500" />
+      <div className="absolute -right-3 -top-3 w-10 h-10 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-md group-hover:scale-150 transition-transform duration-500" />
     </section>
   );
 }

@@ -62,15 +62,15 @@ export default function CustomerSatisfaction() {
   ];
 
   return (
-    <section className="flex h-full flex-col gap-2">
+    <section className="flex h-full flex-col gap-1">
       <ChartTitle title="Analyse de Sentiment" icon={SmilePlus} />
-      <div className="my-4 flex h-full items-center justify-between">
+      <div className="my-1 flex h-full items-center justify-between min-h-0">
         {loading ? (
           <div className="flex h-full w-full items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
           </div>
         ) : (
-          <div className="mx-auto grid w-full grid-cols-2 gap-6">
+          <div className="mx-auto grid w-full grid-cols-2 gap-3">
             <TotalEmails total={totalEmails} />
             {customerSatisfactionOptions.map((option) => (
               <LinearProgress
@@ -91,8 +91,8 @@ export default function CustomerSatisfaction() {
 function TotalEmails({ total }: { total: number }) {
   return (
     <div className="flex flex-col items-start justify-center">
-      <div className="text-xs text-muted-foreground">Emails Analysés</div>
-      <div className="text-2xl font-medium">{total} Emails</div>
+      <div className="text-[10px] text-gray-400">Emails Analysés</div>
+      <div className="text-lg font-medium text-white">{total} Emails</div>
     </div>
   );
 }
