@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import {
   type IPieChartSpec,
   VChart,
@@ -14,8 +15,10 @@ interface CategoryData {
 }
 
 export default function Chart() {
+  const { theme } = useTheme();
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
+  const isDark = theme === "dark";
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -68,11 +71,22 @@ export default function Chart() {
 
   const spec: IPieChartSpec = {
     type: "pie",
+    background: isDark ? "#0a0a0a" : "#ffffff",
+    color: isDark 
+      ? ["#3b82f6", "#06b6d4", "#8b5cf6", "#ec4899", "#f59e0b"]
+      : ["#2563eb", "#0891b2", "#7c3aed", "#db2777", "#d97706"],
     legends: [
       {
         type: "discrete",
         visible: true,
         orient: "bottom",
+        item: {
+          label: {
+            style: {
+              fill: isDark ? "#d1d5db" : "#4b5563",
+            },
+          },
+        },
       },
     ],
     data: [
@@ -97,6 +111,21 @@ export default function Chart() {
     },
     tooltip: {
       trigger: ["click", "hover"],
+      style: {
+        panel: {
+          backgroundColor: isDark ? "#1f2937" : "#ffffff",
+          border: { color: isDark ? "#374151" : "#e5e7eb", width: 1 },
+        },
+        titleLabel: {
+          fill: isDark ? "#f3f4f6" : "#111827",
+        },
+        keyLabel: {
+          fill: isDark ? "#d1d5db" : "#4b5563",
+        },
+        valueLabel: {
+          fill: isDark ? "#f3f4f6" : "#111827",
+        },
+      },
       mark: {
         title: {
           visible: false,
@@ -117,7 +146,8 @@ export default function Chart() {
           style: {
             text: "Total Emails",
             fontSize: 16,
-            opacity: 0.6,
+            fill: isDark ? "#9ca3af" : "#6b7280",
+            opacity: 0.8,
           },
         },
       },
@@ -128,6 +158,7 @@ export default function Chart() {
           style: {
             text: addThousandsSeparator(totalEmails),
             fontSize: 28,
+            fill: isDark ? "#f3f4f6" : "#111827",
           },
         },
       },

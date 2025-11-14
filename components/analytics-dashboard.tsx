@@ -16,20 +16,20 @@ export function AnalyticsDashboard() {
       {/* Métriques des emails au lieu des tickets */}
       <EmailMetrics />
       
-      {/* Disposition modifiée - 2 colonnes égales */}
+      {/* Disposition selon l'image - Ligne 1: Bar Chart | Circle Packing */}
       <div className="grid grid-cols-1 divide-y border-b border-border laptop:grid-cols-2 laptop:divide-x laptop:divide-y-0 laptop:divide-border">
         <Container className="py-4 laptop:col-span-1">
           <AverageTicketsCreated />
         </Container>
         <Container className="py-4 laptop:col-span-1">
-          <TicketByChannels />
+          <Conversions />
         </Container>
       </div>
       
-      {/* Deuxième rangée - 2 colonnes égales */}
+      {/* Ligne 2: Donut Chart | Satisfaction Bars */}
       <div className="grid grid-cols-1 divide-y border-b border-border laptop:grid-cols-2 laptop:divide-x laptop:divide-y-0 laptop:divide-border">
         <Container className="py-4 laptop:col-span-1">
-          <Conversions />
+          <TicketByChannels />
         </Container>
         <Container className="py-4 laptop:col-span-1">
           <CustomerSatisfication />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { VChart } from "@visactor/react-vchart";
 import type { ICirclePackingChartSpec } from "@visactor/vchart";
 import { addThousandsSeparator } from "@/lib/utils";
@@ -11,8 +12,10 @@ interface ReplyData {
 }
 
 export default function Chart() {
+  const { theme } = useTheme();
   const [replies, setReplies] = useState<ReplyData[]>([]);
   const [loading, setLoading] = useState(true);
+  const isDark = theme === "dark";
 
   useEffect(() => {
     const fetchReplies = async () => {
@@ -54,6 +57,8 @@ export default function Chart() {
       },
     ],
   type: "circlePacking",
+  background: isDark ? "#0a0a0a" : "#ffffff",
+  color: isDark ? ["#3b82f6", "#06b6d4"] : ["#2563eb", "#0891b2"],
   categoryField: "name",
   valueField: "value",
   drill: true,
@@ -75,10 +80,29 @@ export default function Chart() {
       orient: "top",
       position: "start",
       padding: 0,
+      item: {
+        label: {
+          style: {
+            fill: isDark ? "#d1d5db" : "#4b5563",
+          },
+        },
+      },
     },
   ],
   tooltip: {
     trigger: ["click", "hover"],
+    style: {
+      panel: {
+        backgroundColor: isDark ? "#1f2937" : "#ffffff",
+        border: { color: isDark ? "#374151" : "#e5e7eb", width: 1 },
+      },
+      titleLabel: {
+        fill: isDark ? "#f3f4f6" : "#111827",
+      },
+      valueLabel: {
+        fill: isDark ? "#f3f4f6" : "#111827",
+      },
+    },
     mark: {
       content: {
         value: (d) => addThousandsSeparator(d?.value),
