@@ -15,7 +15,7 @@ export default function MetricCard({
 }) {
   return (
     <section className={cn(
-      "relative group flex flex-col p-3 rounded-lg border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 overflow-hidden",
+      "relative group flex flex-col p-2.5 rounded-lg border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 overflow-hidden",
       className
     )}>
       {/* Gradient overlay on hover */}
@@ -23,18 +23,18 @@ export default function MetricCard({
       
       {/* Content */}
       <div className="relative z-10">
-        <h2 className={cn(chartTitle({ color: "mute", size: "sm" }), "mb-1.5 text-xs font-medium text-gray-400")}>
+        <h2 className="mb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">
           {title}
         </h2>
-        <div className="flex items-baseline gap-2 mb-1">
-          <span className="text-xl font-bold text-white">{value}</span>
+        <div className="flex items-baseline gap-1.5 mb-0.5">
+          <span className="text-lg font-bold text-white">{value}</span>
           <ChangeIndicator change={change} />
         </div>
-        <div className="text-[10px] text-gray-500">Compare to last month</div>
+        <div className="text-[9px] text-gray-500">vs last month</div>
       </div>
       
       {/* Decorative corner accent */}
-      <div className="absolute -right-6 -top-6 w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
+      <div className="absolute -right-4 -top-4 w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full blur-lg group-hover:scale-150 transition-transform duration-500" />
     </section>
   );
 }

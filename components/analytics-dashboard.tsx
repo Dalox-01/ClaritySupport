@@ -14,45 +14,71 @@ import { cn } from "@/lib/utils";
 
 export function AnalyticsDashboard() {
   return (
-    <div className="w-full h-[calc(100vh-12rem)] flex flex-col p-4 overflow-hidden bg-gradient-to-br from-slate-950 to-slate-900">
+    <div className="w-full h-[calc(100vh-12rem)] flex flex-col p-3 overflow-hidden bg-gradient-to-br from-slate-950 to-slate-900">
       {/* Métriques en haut - 4 cartes compactes */}
-      <div className="mb-4">
+      <div className="mb-3">
         <EmailMetrics />
       </div>
       
-      {/* Grille principale - 2x2 avec effets visuels */}
-      <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
+      {/* Grille principale - 2x2 style fenêtre macOS */}
+      <div className="flex-1 grid grid-cols-2 gap-3 min-h-0">
         {/* Ligne 1 - Gauche: Bar Chart */}
-        <Card className="relative group border border-blue-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative z-10">
+        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+          {/* macOS Window Header */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+            </div>
+          </div>
+          {/* Content */}
+          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
             <AverageTicketsCreated />
           </div>
-        </Card>
+        </div>
         
         {/* Ligne 1 - Droite: Circle Packing */}
-        <Card className="relative group border border-purple-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative z-10">
+        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+            </div>
+          </div>
+          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
             <Conversions />
           </div>
-        </Card>
+        </div>
         
         {/* Ligne 2 - Gauche: Donut Chart */}
-        <Card className="relative group border border-cyan-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative z-10">
+        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+            </div>
+          </div>
+          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
             <TicketByChannels />
           </div>
-        </Card>
+        </div>
         
         {/* Ligne 2 - Droite: Satisfaction */}
-        <Card className="relative group border border-emerald-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative z-10">
+        <div className="relative rounded-xl border border-slate-700/50 bg-slate-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-700/30 bg-slate-800/50">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors cursor-pointer" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors cursor-pointer" />
+            </div>
+          </div>
+          <div className="p-3 h-[calc(100%-36px)] overflow-hidden">
             <CustomerSatisfication />
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );
