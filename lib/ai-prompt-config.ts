@@ -24,6 +24,10 @@ export interface AIPromptConfig {
   length: ResponseLength;
   language: string;
   
+  // Niveau de créativité (0 = précis/brut, 1 = créatif)
+  // Se traduit en température OpenAI: 0.3 - 1.0
+  creativity?: number; // 0.0 - 1.0
+  
   // Informations entreprise pour le contexte
   companyName: string;
   companyValues?: string[];
@@ -72,6 +76,7 @@ export const DEFAULT_AI_CONFIG: AIPromptConfig = {
   style: 'détaillé',
   length: 'moyen',
   language: 'fr',
+  creativity: 0.5, // Valeur par défaut: équilibre entre précision et créativité
   companyName: 'Mon Entreprise',
   companyValues: [
     'Satisfaction client prioritaire',
