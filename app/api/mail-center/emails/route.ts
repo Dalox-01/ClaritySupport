@@ -31,6 +31,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '50');
 
+    console.log(`📧 [GET /emails] Récupération pour user: ${userId}, limit: ${limit}`);
+
     // Récupérer les emails directement depuis la base
     // Triés par date de réception (plus récent en premier)
     // Exclure les emails supprimés (soft delete)
@@ -43,9 +45,11 @@ export async function GET(req: NextRequest) {
       .limit(limit);
 
     if (error) {
-      console.error('Error fetching emails from DB:', error);
+      console.error('❌ [GET /emails] Error fetching emails:', error);
       return NextResponse.json({ error: 'Erreur récupération emails' }, { status: 500 });
     }
+
+    console.log(`✅ [GET /emails] ${emails?.length || 0} emails trouvés`);
 
     return NextResponse.json({ 
       emails: emails || [],

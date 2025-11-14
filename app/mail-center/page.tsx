@@ -183,16 +183,25 @@ export default function MailCenterPage() {
   // Recharger les emails quand les comptes changent (après connexion d'un nouveau compte)
   useEffect(() => {
     if (status === 'authenticated' && accounts.length > 0) {
+      console.log(`🔄 [useEffect] Rechargement emails - ${accounts.length} compte(s) détecté(s)`);
       const loadEmails = async () => {
         try {
           const response = await fetch('/api/mail-center/emails?limit=100');
           if (response.ok) {
             const data = await response.json();
-            setEmails(data.emails || []);
-            console.log(`📧 Chargé ${data.emails?.length || 0} emails`);
+            const emailsList = data.emails || [];
+            setEmails(emailsList);
+            console.log(`✅ [useEffect] ${emailsList.length} emails chargés et affichés`);
+            if (emailsList.length > 0) {
+              toast.success(`${emailsList.length} email(s) synchronisé(s)`);
+            }
+          } else {
+            console.error(`❌ [useEffect] Erreur HTTP ${response.status}:`, await response.text());
+            toast.error('Erreur lors du chargement des emails');
           }
         } catch (error) {
-          console.error('Erreur chargement emails:', error);
+          console.error('❌ [useEffect] Erreur chargement emails:', error);
+          toast.error('Erreur de connexion');
         }
       };
       loadEmails();
@@ -239,6 +248,7 @@ export default function MailCenterPage() {
 
   // Fonction pour déclencher l'auto-reply en arrière-plan
   const triggerAutoReply = async () => {
+    console.log('🤖 [triggerAutoReply] Démarrage du traitement automatique...');
     try {
       const response = await fetch('/api/mail-center/auto-reply', {
         method: 'POST',
@@ -247,14 +257,28 @@ export default function MailCenterPage() {
 
       if (response.ok) {
         const result = await response.json();
+        console.log('✅ [triggerAutoReply] Résultat:', result);
+        
         if (result.processed > 0) {
-          toast.success(`${result.processed} réponse(s) automatique(s) envoyée(s)`);
+          toast.success(`${result.processed} réponse(s) automatique(s) envoyée(s) 🚀`);
           // Recharger les emails pour voir les réponses envoyées
-          loadInitialData(false);
+          setTimeout(() => loadInitialData(false), 1000);
+        } else {
+          console.log('ℹ️ [triggerAutoReply] Aucun email à traiter');
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('❌ [triggerAutoReply] Erreur:', errorData);
+        
+        if (response.status === 401) {
+          toast.error('Session expirée, veuillez vous reconnecter');
+        } else {
+          toast.error(errorData.error || 'Erreur lors du traitement automatique');
         }
       }
     } catch (error) {
-      console.error('Erreur auto-reply:', error);
+      console.error('❌ [triggerAutoReply] Exception:', error);
+      toast.error('Erreur réseau lors du traitement automatique');
     }
   };
 
@@ -538,9 +562,9 @@ export default function MailCenterPage() {
       ref={containerRef} 
       className={cn(
         "min-h-screen relative overflow-hidden transition-all duration-700",
-        // Style Apple - Vert menthe frais avec transparence
+        // Style glassmorphism violet/purple
         isLightMode 
-          ? "bg-gradient-to-br from-emerald-50/30 via-teal-50/20 to-cyan-50/30"
+          ? "bg-gradient-to-br from-violet-50/40 via-purple-50/30 to-pink-50/20"
           : "bg-gradient-to-br from-[#0A0E27] via-[#0d1435] to-[#0A0E27]"
       )}
     >
@@ -572,7 +596,7 @@ export default function MailCenterPage() {
           width: '600px',
           height: '600px',
           background: isLightMode
-            ? 'radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 70%)'
+            ? 'radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%)'
             : 'radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%)',
           filter: 'blur(60px)',
         }}
@@ -599,7 +623,7 @@ export default function MailCenterPage() {
           width: '500px',
           height: '500px',
           background: isLightMode
-            ? 'radial-gradient(circle, rgba(20, 184, 166, 0.08), transparent 70%)'
+            ? 'radial-gradient(circle, rgba(168, 85, 247, 0.08), transparent 70%)'
             : 'radial-gradient(circle, rgba(99, 102, 241, 0.06), transparent 70%)',
           filter: 'blur(70px)',
         }}
@@ -620,9 +644,9 @@ export default function MailCenterPage() {
       <motion.header 
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-all duration-700",
-          // Glassmorphism Apple - ultra transparent
+          // Glassmorphism violet/purple
           isLightMode
-            ? "bg-white/40 backdrop-blur-3xl border-b border-emerald-200/30 shadow-sm shadow-emerald-100/20"
+            ? "bg-white/60 backdrop-blur-3xl border-b border-violet-200/30 shadow-sm shadow-violet-100/20"
             : "bg-slate-900/40 backdrop-blur-2xl border-b border-slate-700/30 shadow-lg shadow-black/10"
         )}
         initial={{ y: -100, opacity: 0 }}
@@ -679,7 +703,7 @@ export default function MailCenterPage() {
                 className={cn(
                   "hidden sm:inline bg-gradient-to-r bg-clip-text text-transparent transition-transform duration-200 group-hover:scale-105",
                   isLightMode 
-                    ? "from-emerald-600 via-teal-600 to-cyan-600" 
+                    ? "from-violet-600 via-purple-600 to-pink-600" 
                     : "from-white via-blue-300 to-white"
                 )}
               >
@@ -961,7 +985,7 @@ export default function MailCenterPage() {
               <Card className={cn(
                 "p-4 border backdrop-blur-3xl transition-all duration-700 shadow-lg overflow-hidden group",
                 isLightMode 
-                  ? "border-emerald-200/30 bg-white/30 shadow-emerald-100/20 hover:bg-white/40 hover:shadow-emerald-200/30" 
+                  ? "border-violet-200/30 bg-white/50 shadow-violet-100/20 hover:bg-white/60 hover:shadow-violet-200/30" 
                   : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
                 {/* Effet de brillance au survol */}
@@ -969,15 +993,15 @@ export default function MailCenterPage() {
                   "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
                   "bg-gradient-to-br",
                   isLightMode 
-                    ? "from-emerald-50/50 via-transparent to-teal-50/50"
+                    ? "from-violet-50/50 via-transparent to-purple-50/50"
                     : "from-blue-500/5 via-transparent to-indigo-500/5"
                 )} />
                 
                 <h3 className={cn(
                   "font-semibold mb-4 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
-                  isLightMode ? "text-emerald-700" : "text-slate-200"
+                  isLightMode ? "text-violet-700" : "text-slate-200"
                 )}>
-                  <Zap className={cn("w-4 h-4", isLightMode ? "text-emerald-600" : "text-blue-400")} />
+                  <Zap className={cn("w-4 h-4", isLightMode ? "text-violet-600" : "text-blue-400")} />
                   Navigation
                 </h3>
                 <nav className="space-y-2">
@@ -996,8 +1020,8 @@ export default function MailCenterPage() {
                           "w-full justify-start gap-3 transition-all h-11",
                           isLightMode 
                             ? activeTab === tab.id 
-                              ? "bg-emerald-100/60 text-emerald-800 hover:bg-emerald-200/60 shadow-md shadow-emerald-200/30" 
-                              : "text-gray-700 hover:bg-emerald-50/40 hover:text-emerald-700"
+                              ? "bg-violet-100/60 text-violet-800 hover:bg-violet-200/60 shadow-md shadow-violet-200/30" 
+                              : "text-gray-700 hover:bg-violet-50/40 hover:text-violet-700"
                             : activeTab === tab.id 
                               ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 shadow-md" 
                               : "text-gray-300 hover:bg-blue-500/10 hover:text-blue-400"
@@ -1027,22 +1051,22 @@ export default function MailCenterPage() {
               <Card className={cn(
                 "p-4 border backdrop-blur-3xl transition-all duration-700 shadow-lg overflow-hidden group",
                 isLightMode 
-                  ? "border-emerald-200/30 bg-white/30 shadow-emerald-100/20 hover:bg-white/40 hover:shadow-emerald-200/30" 
+                  ? "border-violet-200/30 bg-white/50 shadow-violet-100/20 hover:bg-white/60 hover:shadow-violet-200/30" 
                   : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
                 <div className={cn(
                   "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
                   "bg-gradient-to-br",
                   isLightMode 
-                    ? "from-emerald-50/50 via-transparent to-teal-50/50"
+                    ? "from-violet-50/50 via-transparent to-purple-50/50"
                     : "from-blue-500/5 via-transparent to-indigo-500/5"
                 )} />
                 
                 <h3 className={cn(
                   "font-semibold mb-3 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
-                  isLightMode ? "text-emerald-700" : "text-slate-200"
+                  isLightMode ? "text-violet-700" : "text-slate-200"
                 )}>
-                  <Filter className={cn("w-4 h-4", isLightMode ? "text-emerald-600" : "text-blue-400")} />
+                  <Filter className={cn("w-4 h-4", isLightMode ? "text-violet-600" : "text-blue-400")} />
                   Filtres
                 </h3>
                 <div className="space-y-1.5">
@@ -1070,10 +1094,10 @@ export default function MailCenterPage() {
                             "w-full justify-start text-xs h-9 transition-all",
                             filterCategory === filter.id 
                               ? isLightMode
-                                ? "bg-emerald-100/60 text-emerald-800 hover:bg-emerald-200/60 shadow-sm shadow-emerald-200/30"
+                                ? "bg-violet-100/60 text-violet-800 hover:bg-violet-200/60 shadow-sm shadow-violet-200/30"
                                 : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 shadow-sm"
                               : isLightMode
-                                ? "text-gray-700 hover:bg-emerald-50/40 hover:text-emerald-700"
+                                ? "text-gray-700 hover:bg-violet-50/40 hover:text-violet-700"
                                 : "text-gray-300 hover:bg-blue-500/10 hover:text-blue-400"
                           )}
                           onClick={() => setFilterCategory(filter.id)}
@@ -1083,7 +1107,7 @@ export default function MailCenterPage() {
                             <Badge variant="outline" className={cn(
                               "ml-auto h-5 px-1.5 text-xs font-semibold",
                               isLightMode 
-                                ? "border-emerald-300/50 text-emerald-700 bg-emerald-50" 
+                                ? "border-violet-300/50 text-violet-700 bg-violet-50" 
                                 : "border-blue-500/30 text-blue-400"
                             )}>
                               {count}
@@ -1100,7 +1124,7 @@ export default function MailCenterPage() {
                     className={cn(
                       "w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
                       isLightMode
-                        ? "text-emerald-600 hover:bg-emerald-50/60"
+                        ? "text-violet-600 hover:bg-violet-50/60"
                         : "text-blue-400 hover:bg-blue-500/10"
                     )}
                   >
@@ -1123,29 +1147,29 @@ export default function MailCenterPage() {
               <Card className={cn(
                 "p-4 border backdrop-blur-3xl transition-all duration-700 shadow-lg overflow-hidden group",
                 isLightMode 
-                  ? "border-emerald-200/30 bg-white/30 shadow-emerald-100/20 hover:bg-white/40 hover:shadow-emerald-200/30" 
+                  ? "border-violet-200/30 bg-white/50 shadow-violet-100/20 hover:bg-white/60 hover:shadow-violet-200/30" 
                   : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
                 <div className={cn(
                   "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
                   "bg-gradient-to-br",
                   isLightMode 
-                    ? "from-emerald-50/50 via-transparent to-teal-50/50"
+                    ? "from-violet-50/50 via-transparent to-purple-50/50"
                     : "from-blue-500/5 via-transparent to-indigo-500/5"
                 )} />
                 
                 <h3 className={cn(
                   "font-semibold mb-3 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
-                  isLightMode ? "text-emerald-700" : "text-slate-200"
+                  isLightMode ? "text-violet-700" : "text-slate-200"
                 )}>
-                  <Users className={cn("w-4 h-4", isLightMode ? "text-emerald-600" : "text-blue-400")} />
+                  <Users className={cn("w-4 h-4", isLightMode ? "text-violet-600" : "text-blue-400")} />
                   Comptes
                 </h3>
                 <Select value={selectedAccount} onValueChange={setSelectedAccount}>
                   <SelectTrigger className={cn(
                     "w-full border transition-all",
                     isLightMode 
-                      ? "border-emerald-200/40 bg-emerald-50/30 text-gray-700" 
+                      ? "border-violet-200/40 bg-violet-50/30 text-gray-700" 
                       : "border-blue-500/20 bg-[#0f1320] text-white"
                   )}>
                     <SelectValue placeholder="Tous les comptes" />
@@ -1205,22 +1229,22 @@ export default function MailCenterPage() {
               <Card className={cn(
                 "p-3 border backdrop-blur-3xl transition-all duration-700 shadow-lg overflow-hidden group",
                 isLightMode 
-                  ? "border-emerald-200/30 bg-white/30 shadow-emerald-100/20 hover:bg-white/40 hover:shadow-emerald-200/30" 
+                  ? "border-violet-200/30 bg-white/50 shadow-violet-100/20 hover:bg-white/60 hover:shadow-violet-200/30" 
                   : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
               )}>
                 <div className={cn(
                   "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
                   "bg-gradient-to-br",
                   isLightMode 
-                    ? "from-emerald-50/50 via-transparent to-teal-50/50"
+                    ? "from-violet-50/50 via-transparent to-purple-50/50"
                     : "from-blue-500/5 via-transparent to-indigo-500/5"
                 )} />
                 
                 <h3 className={cn(
                   "text-xs font-semibold mb-2 flex items-center gap-2 relative z-10",
-                  isLightMode ? "text-emerald-700" : "text-slate-200"
+                  isLightMode ? "text-violet-700" : "text-slate-200"
                 )}>
-                  <Sparkles className={cn("w-3 h-3", isLightMode ? "text-emerald-500" : "text-blue-400")} />
+                  <Sparkles className={cn("w-3 h-3", isLightMode ? "text-violet-500" : "text-blue-400")} />
                   Configuration Support
                 </h3>
                 <div className="flex gap-1.5 flex-col">
@@ -1408,14 +1432,14 @@ export default function MailCenterPage() {
                       className={cn(
                         "relative overflow-hidden rounded-lg border p-2 shadow-lg cursor-pointer backdrop-blur-3xl transition-all duration-300 hover:scale-[1.03] hover:shadow-xl group",
                         isLightMode
-                          ? "border-emerald-200/30 bg-white/40 shadow-emerald-100/20 hover:bg-white/50 hover:shadow-emerald-200/30"
+                          ? "border-violet-200/30 bg-white/50 shadow-violet-100/20 hover:bg-white/60 hover:shadow-violet-200/30"
                           : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/50 hover:border-slate-600/60"
                       )}
                     >
                       {/* Effet de brillance au survol */}
                       <div className={cn(
                         "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br pointer-events-none",
-                        stat.color === 'blue' && (isLightMode ? "from-emerald-50/40 to-transparent" : "from-blue-500/10 to-transparent"),
+                        stat.color === 'blue' && (isLightMode ? "from-violet-50/40 to-transparent" : "from-blue-500/10 to-transparent"),
                         stat.color === 'orange' && (isLightMode ? "from-amber-50/40 to-transparent" : "from-orange-500/10 to-transparent"),
                         stat.color === 'yellow' && (isLightMode ? "from-yellow-50/40 to-transparent" : "from-yellow-500/10 to-transparent"),
                         stat.color === 'purple' && (isLightMode ? "from-purple-50/40 to-transparent" : "from-purple-500/10 to-transparent")
@@ -1448,7 +1472,7 @@ export default function MailCenterPage() {
                             {stat.label}
                           </p>
                           <motion.p 
-                            className={cn("text-lg font-bold", isLightMode ? "text-stone-900" : "text-white")}
+                            className={cn("text-lg font-bold", isLightMode ? "text-gray-900" : "text-white")}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ delay: (stat.color === 'blue' ? 0.1 : stat.color === 'orange' ? 0.2 : stat.color === 'yellow' ? 0.3 : 0.4) + 0.2, type: 'spring', stiffness: 200 }}
@@ -1843,10 +1867,10 @@ function EmailCard({
         'relative p-4 rounded-xl border cursor-pointer transition-all duration-300 overflow-hidden group backdrop-blur-3xl shadow-lg',
         'hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl',
         isLightMode
-          ? 'border-emerald-200/30 bg-white/30 hover:border-emerald-300/50 hover:bg-white/40 shadow-emerald-100/20 hover:shadow-emerald-200/30'
+          ? 'border-violet-200/30 bg-white/50 hover:border-violet-300/50 hover:bg-white/60 shadow-violet-100/20 hover:shadow-violet-200/30'
           : 'border-slate-700/40 bg-slate-900/30 hover:border-blue-500/50 hover:bg-slate-900/50 shadow-black/20 hover:shadow-blue-500/20',
         !email.is_read && (isLightMode 
-          ? 'font-semibold ring-2 ring-emerald-400/40 shadow-emerald-200/40' 
+          ? 'font-semibold ring-2 ring-violet-400/40 shadow-violet-200/40' 
           : 'font-semibold ring-2 ring-blue-500/40 shadow-blue-500/30')
       )}
     >
@@ -1854,7 +1878,7 @@ function EmailCard({
       <div className={cn(
         "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br pointer-events-none",
         isLightMode 
-          ? "from-emerald-50/40 via-transparent to-teal-50/40"
+          ? "from-violet-50/40 via-transparent to-purple-50/40"
           : "from-blue-500/10 via-transparent to-indigo-500/10"
       )} />
       {/* Barre latérale pour emails non lus */}
@@ -1863,7 +1887,7 @@ function EmailCard({
           className={cn(
             "absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl shadow-lg",
             isLightMode
-              ? "bg-gradient-to-b from-emerald-500 via-teal-600 to-cyan-500 shadow-emerald-400/50"
+              ? "bg-gradient-to-b from-violet-500 via-purple-600 to-pink-500 shadow-violet-400/50"
               : "bg-gradient-to-b from-blue-400 via-blue-500 to-cyan-400 shadow-blue-500/50"
           )}
           initial={{ scaleY: 0 }}
@@ -1877,12 +1901,12 @@ function EmailCard({
         <div className="relative transition-transform duration-300 hover:scale-110 group-hover:scale-105">
           <Avatar className={cn(
             "w-10 h-10 flex-shrink-0 border-2 shadow-md transition-all duration-300",
-            isLightMode ? "border-emerald-300/50 group-hover:border-emerald-400/70 shadow-emerald-200/25" : "border-blue-500/40 group-hover:border-blue-400/60 shadow-blue-500/20"
+            isLightMode ? "border-violet-300/50 group-hover:border-violet-400/70 shadow-violet-200/25" : "border-blue-500/40 group-hover:border-blue-400/60 shadow-blue-500/20"
           )}>
             <AvatarFallback className={cn(
               "font-bold text-sm",
               isLightMode 
-                ? "bg-gradient-to-br from-emerald-500/35 to-teal-600/25 text-emerald-900"
+                ? "bg-gradient-to-br from-violet-500/35 to-purple-600/25 text-violet-900"
                 : "bg-gradient-to-br from-blue-500/30 to-blue-600/20 text-blue-300"
             )}>
               {initials}
@@ -1893,7 +1917,7 @@ function EmailCard({
               className={cn(
                 "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 shadow-lg",
                 isLightMode
-                  ? "bg-emerald-500 border-white shadow-emerald-400/50"
+                  ? "bg-violet-500 border-white shadow-violet-400/50"
                   : "bg-blue-400 border-slate-900 shadow-blue-500/50"
               )}
               animate={{ scale: [1, 1.3, 1] }}
@@ -1909,7 +1933,7 @@ function EmailCard({
               <p className={cn(
                 "text-sm font-semibold truncate transition-colors",
                 isLightMode
-                  ? "text-gray-900 group-hover:text-emerald-700"
+                  ? "text-gray-900 group-hover:text-violet-700"
                   : "text-white group-hover:text-blue-400"
               )}>
                 {email.from_name || email.from_email}

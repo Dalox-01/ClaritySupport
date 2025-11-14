@@ -29,6 +29,8 @@ export async function POST(req: NextRequest) {
 
     const userId = session.user.id;
 
+    console.log(`🤖 [AUTO-REPLY] Démarrage pour user ${userId}`);
+
     // 1. Vérifier si l'IA est active
     const { data: aiSettings } = await supabase
       .from('ai_settings')
@@ -37,11 +39,29 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!aiSettings || !aiSettings.enabled) {
+      console.log('⚠️ [AUTO-REPLY] IA désactivée, aucune action');
       return NextResponse.json({
         message: 'IA inactive, aucune réponse automatique',
         processed: 0
       });
     }
+
+    console.log(`✅ [AUTO-REPLY] IA activée (auto_reply_urgent: ${aiSettings.auto_reply_urgent})`);
+
+    // Charger la configuration IA de l'utilisateur (créativité, ton, style, etc.)
+    const { data: userData } = await supabase
+      .from('users')
+      .select('ai_prompt_config')
+      .eq('id', userId)
+      .single();
+
+    const aiConfig = userData?.ai_prompt_config || null;
+    console.log(`🎨 [AUTO-REPLY] Config IA:`, {
+      hasConfig: !!aiConfig,
+      creativity: aiConfig?.creativity,
+      tone: aiConfig?.tone,
+      style: aiConfig?.style
+    });
 
     // 2. Récupérer les emails non traités (sans réponse automatique)
     const { data: emails, error: emailsError } = await supabase
@@ -97,7 +117,9 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // Générer la réponse avec l'IA
+        console.log(`📧 [AUTO-REPLY] Traitement email ${email.id}: ${email.subject}`);
+
+        // Générer la réponse avec l'IA + configuration utilisateur
         const aiReplyResult = await generateReplyWithAI({
           email: {
             id: email.id,
@@ -131,14 +153,23 @@ export async function POST(req: NextRequest) {
             expires_at: email.expires_at,
             deleted_at: email.deleted_at,
           },
-          tone: 'professionnel',
-          language: 'fr',
+          tone: aiConfig?.tone || 'professionnel',
+          language: aiConfig?.language || 'fr',
+          user_context: {
+            company_name: aiConfig?.companyName || session.user.name || 'Notre équipe',
+            signature: aiConfig?.signature || '',
+          },
+          aiConfig: aiConfig || undefined, // Passer la config complète (créativité, do/don't lists, etc.)
         });
 
         if (!aiReplyResult || !aiReplyResult.body_text) {
-          errors.push(`Échec génération réponse pour ${email.id}`);
+          const errorMsg = `Échec génération réponse pour ${email.id}`;
+          console.error(`❌ [AUTO-REPLY] ${errorMsg}`);
+          errors.push(errorMsg);
           continue;
         }
+
+        console.log(`✅ [AUTO-REPLY] Réponse générée pour ${email.id}: "${aiReplyResult.subject}"`);
 
         // Envoyer la réponse via l'API Gmail
         const sendResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/mail-center/send-reply`, {
