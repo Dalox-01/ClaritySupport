@@ -283,52 +283,79 @@ export default function MailCenterPage() {
   };
 
   const loadInitialData = async (triggerSync = false) => {
+    console.log('🔄 [loadInitialData] Démarrage - triggerSync:', triggerSync);
     setIsLoading(true);
     try {
+      console.log('📡 [loadInitialData] Chargement des comptes...');
       const accountsRes = await fetch('/api/mail-center/accounts');
       if (accountsRes.ok) {
         const accountsData = await accountsRes.json();
         setAccounts(Array.isArray(accountsData) ? accountsData : []);
+        console.log(`✅ [loadInitialData] ${accountsData?.length || 0} compte(s) chargé(s)`);
       } else {
+        console.error(`❌ [loadInitialData] Erreur comptes - Status: ${accountsRes.status}`);
         setAccounts([]);
       }
 
       // Charger l'état de l'IA
+      console.log('🤖 [loadInitialData] Chargement paramètres IA...');
       const aiSettingsRes = await fetch('/api/mail-center/ai-settings');
       if (aiSettingsRes.ok) {
         const aiSettings = await aiSettingsRes.json();
         setIsAIActive(aiSettings.enabled || false);
+        console.log(`✅ [loadInitialData] IA: ${aiSettings.enabled ? 'ACTIVE' : 'INACTIVE'}`);
         
         // Si l'IA est active, déclencher l'auto-reply pour les nouveaux emails
         if (aiSettings.enabled) {
           triggerAutoReply();
         }
+      } else {
+        console.error(`❌ [loadInitialData] Erreur AI settings - Status: ${aiSettingsRes.status}`);
       }
 
       if (triggerSync) {
+        console.log('🔄 [loadInitialData] Synchronisation forcée...');
         setIsLoading(false);
         await syncEmails();
       } else {
+        console.log('📧 [loadInitialData] Chargement des emails...');
         const res = await fetch('/api/mail-center/emails?limit=50');
-        const data = await res.json();
-        const emailList = Array.isArray(data.emails) ? data.emails : [];
-        setEmails(emailList);
+        
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error(`❌ [loadInitialData] Erreur HTTP ${res.status}:`, errorText);
+          toast.error(`Erreur lors du chargement des emails (${res.status})`);
+          setEmails([]);
+        } else {
+          const data = await res.json();
+          const emailList = Array.isArray(data.emails) ? data.emails : [];
+          setEmails(emailList);
+          console.log(`✅ [loadInitialData] ${emailList.length} email(s) chargé(s)`);
+          
+          if (emailList.length === 0) {
+            toast.info('Aucun email trouvé. Connectez un compte Gmail/Outlook ou cliquez sur Synchroniser.');
+          }
+        }
       }
 
       const pendingRes = await fetch('/api/mail-center/pending-replies');
       if (pendingRes.ok) {
         const pendingData = await pendingRes.json();
         setPendingReplies(Array.isArray(pendingData) ? pendingData : []);
+        console.log(`✅ [loadInitialData] ${pendingData?.length || 0} réponse(s) en attente`);
       } else {
+        console.error(`❌ [loadInitialData] Erreur pending replies - Status: ${pendingRes.status}`);
         setPendingReplies([]);
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('❌ [loadInitialData] Exception:', error);
+      toast.error('Erreur de connexion au serveur');
       setAccounts([]);
       setEmails([]);
       setPendingReplies([]);
     } finally {
       setIsLoading(false);
+      console.log('✅ [loadInitialData] Terminé');
     }
   };
 

@@ -9,11 +9,16 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    console.log('📥 [GET /emails] Requête reçue');
+    
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
+      console.error('❌ [GET /emails] Non authentifié');
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
+
+    console.log(`🔍 [GET /emails] User email: ${session.user.email}`);
 
     // Récupérer l'ID utilisateur depuis Supabase
     const { data: user, error: userError } = await supabase
@@ -23,7 +28,7 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (userError || !user) {
-      console.error('User not found in database:', session.user.email);
+      console.error('❌ [GET /emails] User not found in database:', session.user.email, userError);
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
@@ -57,7 +62,8 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error in emails endpoint:', error);
+    console.error('❌ [GET /emails] Exception globale:', error);
+    console.error('❌ [GET /emails] Stack:', error instanceof Error ? error.stack : 'No stack');
     return NextResponse.json({ 
       error: 'Erreur serveur',
       details: error instanceof Error ? error.message : 'Unknown error'
