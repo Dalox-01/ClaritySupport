@@ -15,32 +15,31 @@ import { cn } from "@/lib/utils";
 export function AnalyticsDashboard() {
   return (
     <div className="w-full h-full">
-      <Card className="border shadow-xl backdrop-blur-xl bg-white dark:bg-[#1a1f3a]/70 dark:border-blue-500/20 border-gray-200 dark:shadow-blue-500/10 shadow-gray-100/50">
-        <div className="p-6 space-y-6">
-          {/* Métriques des emails au lieu des tickets */}
-          <EmailMetrics />
-          
-          {/* Disposition selon l'image - Ligne 1: Bar Chart | Circle Packing */}
-          <div className="grid grid-cols-1 gap-6 laptop:grid-cols-2">
-            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
-              <AverageTicketsCreated />
-            </div>
-            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
-              <Conversions />
-            </div>
-          </div>
-          
-          {/* Ligne 2: Donut Chart | Satisfaction Bars */}
-          <div className="grid grid-cols-1 gap-6 laptop:grid-cols-2">
-            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
-              <TicketByChannels />
-            </div>
-            <div className="border border-gray-200 dark:border-blue-500/20 rounded-lg p-4 bg-white dark:bg-slate-900/30">
-              <CustomerSatisfication />
-            </div>
-          </div>
-        </div>
-      </Card>
+      {/* Métriques en haut - 4 cartes */}
+      <EmailMetrics />
+      
+      {/* Grille principale - 2 lignes x 2 colonnes */}
+      <div className="mt-6 grid grid-cols-1 laptop:grid-cols-2 gap-6">
+        {/* Ligne 1 - Gauche: Bar Chart avec légende */}
+        <Card className="border shadow-lg backdrop-blur-xl bg-white dark:bg-slate-900/30 dark:border-blue-500/20 border-gray-200 p-6">
+          <AverageTicketsCreated />
+        </Card>
+        
+        {/* Ligne 1 - Droite: Circle Packing */}
+        <Card className="border shadow-lg backdrop-blur-xl bg-white dark:bg-slate-900/30 dark:border-blue-500/20 border-gray-200 p-6">
+          <Conversions />
+        </Card>
+        
+        {/* Ligne 2 - Gauche: Donut Chart */}
+        <Card className="border shadow-lg backdrop-blur-xl bg-white dark:bg-slate-900/30 dark:border-blue-500/20 border-gray-200 p-6">
+          <TicketByChannels />
+        </Card>
+        
+        {/* Ligne 2 - Droite: Barres de satisfaction */}
+        <Card className="border shadow-lg backdrop-blur-xl bg-white dark:bg-slate-900/30 dark:border-blue-500/20 border-gray-200 p-6">
+          <CustomerSatisfication />
+        </Card>
+      </div>
     </div>
   );
 }
