@@ -56,11 +56,32 @@ export async function POST(req: NextRequest) {
 
     console.log(`🤖 Génération réponse pour: ${email.subject}`);
 
-    // Générer la réponse avec l'IA
+    // CHARGER LA CONFIGURATION IA DE L'UTILISATEUR
+    const { data: userData } = await supabase
+      .from('users')
+      .select('ai_prompt_config')
+      .eq('id', session.user.id)
+      .single();
+
+    const aiConfig = userData?.ai_prompt_config || null;
+
+    console.log(`🎨 Config IA chargée:`, {
+      hasConfig: !!aiConfig,
+      creativity: aiConfig?.creativity,
+      tone: aiConfig?.tone,
+      style: aiConfig?.style
+    });
+
+    // Générer la réponse avec l'IA + config utilisateur
     const reply = await generateReplyWithAI({
       email,
-      tone: 'professionnel',
-      language: 'fr',
+      tone: aiConfig?.tone || 'professionnel',
+      language: aiConfig?.language || 'fr',
+      user_context: {
+        company_name: aiConfig?.companyName || '',
+        signature: aiConfig?.signature || '',
+      },
+      aiConfig: aiConfig || undefined, // Passer config complète (créativité, do/don't lists, etc.)
     });
 
     console.log(`✅ Réponse générée: ${reply.subject}`);

@@ -3,7 +3,7 @@
 import OpenAI from 'openai';
 import { EmailCategory, EmailSentiment, type EmailCache } from './mail-center-types';
 import { SupportCategory } from './support-categories';
-import { DEFAULT_AI_CONFIG } from './ai-prompt-config';
+import { AIPromptConfig, AIPromptBuilder, DEFAULT_AI_CONFIG } from './ai-prompt-config';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -39,6 +39,7 @@ export type ReplyGenerationOptions = {
     [key: string]: any;
   };
   tone?: 'professionnel' | 'amical' | 'formel';
+  aiConfig?: AIPromptConfig; // Configuration du prompt IA (créativité, style, etc.)
   language?: 'fr' | 'en';
 };
 
@@ -311,6 +312,7 @@ export async function generateReplyWithAI(
     user_context = {},
     tone = 'professionnel',
     language = 'fr',
+    aiConfig, // Configuration IA de l'utilisateur
   } = options;
 
   const startTime = Date.now();
@@ -320,13 +322,35 @@ export async function generateReplyWithAI(
     const senderName = email.from_name || email.from_email.split('@')[0];
     const senderFirstName = senderName.split(' ')[0];
 
-    // Construction du contexte
-    const contextStr = Object.entries(user_context)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join('\n');
+    // INTÉGRATION DU SYSTÈME AIPromptBuilder
+    let systemPrompt: string;
+    
+    if (aiConfig) {
+      // Utiliser AIPromptBuilder avec la config utilisateur
+      const builder = new AIPromptBuilder(aiConfig);
+      const category = email.category || 'support_ticket';
+      
+      // Générer le prompt système avec la config complète
+      systemPrompt = builder.generateSystemPrompt(
+        category as any,
+        Object.entries(user_context)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n')
+      );
+      
+      // Ajouter instructions anti-emojis
+      systemPrompt += `\n\nFORMATAGE:
+- N'utilise AUCUN emoji ou caractère spécial (✓, ✗, •, →, etc.)
+- Utilise uniquement des lettres, chiffres, ponctuation standard (. , ! ? : ; - " ')
+- Évite les symboles Unicode et les caractères de formatage spéciaux`;
 
-    // Prompt de base
-    let systemPrompt = `Tu es un assistant IA spécialisé dans la rédaction de réponses professionnelles aux emails.
+    } else {
+      // Fallback: prompt manuel (legacy)
+      const contextStr = Object.entries(user_context)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+
+      systemPrompt = `Tu es un assistant IA spécialisé dans la rédaction de réponses professionnelles aux emails.
 
 CONTEXTE UTILISATEUR:
 ${contextStr || 'Entreprise professionnelle'}
@@ -341,6 +365,7 @@ INSTRUCTIONS:
 - Utilise uniquement des lettres, chiffres, ponctuation standard (. , ! ? : ; - " ')
 - Évite les symboles Unicode et les caractères de formatage spéciaux
 ${custom_prompt ? `\nINSTRUCTIONS PERSONNALISÉES:\n${custom_prompt}` : ''}`;
+    }
 
     let userPrompt = `EMAIL REÇU:
 De: ${email.from_name || email.from_email}
@@ -357,13 +382,21 @@ Génère une réponse appropriée. Réponds UNIQUEMENT avec un JSON valide:
   "body_html": "Corps de l'email en HTML simple (avec <p>, <br>, <strong> uniquement)"
 }`;
 
+    // MAPPING CRÉATIVITÉ → TEMPERATURE OPENAI
+    // creativity: 0 (précis/brut) → temp: 0.3
+    // creativity: 1 (créatif) → temp: 1.0
+    const creativity = aiConfig?.creativity ?? 0.7;
+    const temperature = 0.3 + (creativity * 0.7); // Range: 0.3 - 1.0
+
+    console.log(`🎨 AI Config - Creativity: ${creativity} → Temperature: ${temperature.toFixed(2)}`);
+
     const response = await openai.chat.completions.create({
       model: 'gpt-4o', // Modèle plus puissant pour la génération
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.7,
+      temperature, // TEMPÉRATURE DYNAMIQUE basée sur la créativité
       response_format: { type: 'json_object' },
     });
 
