@@ -68,7 +68,6 @@ export async function GET(req: NextRequest) {
       .from('emails_cache')
       .select('id, subject, from_email, received_at')
       .eq('user_id', user.id)
-      .is('deleted_at', null)
       .order('received_at', { ascending: false })
       .limit(10);
     

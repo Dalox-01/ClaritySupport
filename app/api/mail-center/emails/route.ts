@@ -22,7 +22,6 @@ export async function GET() {
     const { data, error } = await supabase
       .from('emails_cache')
       .select('*')
-      .is('deleted_at', null)
       .order('received_at', { ascending: false })
       .limit(50);
     

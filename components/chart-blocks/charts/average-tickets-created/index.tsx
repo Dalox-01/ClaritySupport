@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtomValue } from "jotai";
-import { FilePlus2 } from "lucide-react";
+import { Mail } from "lucide-react";
 import { ticketChartDataAtom } from "@/lib/atoms";
 import type { TicketMetric } from "@/types/types";
 import ChartTitle from "../../components/chart-title";
@@ -28,18 +28,18 @@ export default function AverageTicketsCreated() {
   return (
     <section className="flex h-full flex-col gap-2">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <ChartTitle title="Average Tickets Created" icon={FilePlus2} />
+        <ChartTitle title="Volume d'Emails" icon={Mail} />
         <DatePickerWithRange className="" />
       </div>
       <div className="flex flex-wrap">
         <div className="my-4 flex w-52 shrink-0 flex-col justify-center gap-6">
           <MetricCard
-            title="Avg. Tickets Created"
+            title="Moy. Emails Reçus"
             value={avgCreated}
             color="#60C2FB"
           />
           <MetricCard
-            title="Avg. Tickets Resolved"
+            title="Moy. Emails Traités"
             value={avgResolved}
             color="#3161F8"
           />
