@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS ai_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   enabled BOOLEAN DEFAULT false,
-  auto_reply_urgent BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id)
@@ -17,8 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_settings_enabled ON ai_settings(enabled) WHERE
 
 -- Commentaires
 COMMENT ON TABLE ai_settings IS 'Configuration globale IA pour chaque utilisateur';
-COMMENT ON COLUMN ai_settings.enabled IS 'Si true, IA répond automatiquement aux emails';
-COMMENT ON COLUMN ai_settings.auto_reply_urgent IS 'Si true, IA répond même aux emails urgents (dangereux)';
+COMMENT ON COLUMN ai_settings.enabled IS 'Si true, IA répond automatiquement aux emails (sauf urgent/autre)';
 
 -- Activer RLS (Row Level Security)
 ALTER TABLE ai_settings ENABLE ROW LEVEL SECURITY;
@@ -30,8 +28,8 @@ CREATE POLICY ai_settings_user_policy ON ai_settings
   WITH CHECK (auth.uid() = user_id);
 
 -- Insérer des paramètres par défaut pour les utilisateurs existants (IA désactivée)
-INSERT INTO ai_settings (user_id, enabled, auto_reply_urgent)
-SELECT id, false, false
+INSERT INTO ai_settings (user_id, enabled)
+SELECT id, false
 FROM users
 WHERE id NOT IN (SELECT user_id FROM ai_settings)
 ON CONFLICT (user_id) DO NOTHING;

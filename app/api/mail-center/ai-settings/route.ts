@@ -39,7 +39,6 @@ export async function GET(req: NextRequest) {
     if (!data) {
       return NextResponse.json({
         enabled: false,
-        auto_reply_urgent: false,
         updated_at: new Date().toISOString()
       });
     }
@@ -68,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { enabled, auto_reply_urgent } = body;
+    const { enabled } = body;
 
     // Vérifier si l'utilisateur a déjà des paramètres
     const { data: existing } = await supabase
@@ -85,7 +84,6 @@ export async function POST(req: NextRequest) {
         .from('ai_settings')
         .update({
           enabled: enabled ?? false,
-          auto_reply_urgent: auto_reply_urgent ?? false,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', session.user.id)
@@ -98,7 +96,6 @@ export async function POST(req: NextRequest) {
         .insert({
           user_id: session.user.id,
           enabled: enabled ?? false,
-          auto_reply_urgent: auto_reply_urgent ?? false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })

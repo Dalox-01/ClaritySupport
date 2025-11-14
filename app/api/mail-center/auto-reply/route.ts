@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     // 1. Vérifier si l'IA est active
     const { data: aiSettings } = await supabase
       .from('ai_settings')
-      .select('enabled, auto_reply_urgent')
+      .select('enabled')
       .eq('user_id', userId)
       .single();
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    console.log(`✅ [AUTO-REPLY] IA activée (auto_reply_urgent: ${aiSettings.auto_reply_urgent})`);
+    console.log(`✅ [AUTO-REPLY] IA activée`);
 
     // Charger la configuration IA de l'utilisateur (créativité, ton, style, etc.)
     const { data: userData } = await supabase
