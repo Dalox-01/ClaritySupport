@@ -105,7 +105,7 @@ export default function EmailMetrics() {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-6">
+    <div className="grid grid-cols-4 gap-3">
       {metricsData.map((metric) => (
         <MetricCard key={metric.title} {...metric} />
       ))}

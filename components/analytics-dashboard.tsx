@@ -14,41 +14,41 @@ import { cn } from "@/lib/utils";
 
 export function AnalyticsDashboard() {
   return (
-    <div className="w-full h-[calc(100vh-12rem)] flex flex-col p-6 overflow-hidden bg-gradient-to-br from-gray-50 to-white dark:from-slate-900/50 dark:to-slate-800/30">
-      {/* Métriques en haut - 4 cartes avec design amélioré */}
-      <div className="mb-6">
+    <div className="w-full h-[calc(100vh-12rem)] flex flex-col p-4 overflow-hidden bg-gradient-to-br from-slate-950 to-slate-900">
+      {/* Métriques en haut - 4 cartes compactes */}
+      <div className="mb-4">
         <EmailMetrics />
       </div>
       
       {/* Grille principale - 2x2 avec effets visuels */}
-      <div className="flex-1 grid grid-cols-2 gap-6 min-h-0">
+      <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
         {/* Ligne 1 - Gauche: Bar Chart */}
-        <Card className="relative group border border-gray-200/50 dark:border-blue-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-white/80 dark:bg-slate-900/50 p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 dark:from-blue-500/10 dark:to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card className="relative group border border-blue-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative z-10">
             <AverageTicketsCreated />
           </div>
         </Card>
         
         {/* Ligne 1 - Droite: Circle Packing */}
-        <Card className="relative group border border-gray-200/50 dark:border-purple-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-white/80 dark:bg-slate-900/50 p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 dark:from-purple-500/10 dark:to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card className="relative group border border-purple-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative z-10">
             <Conversions />
           </div>
         </Card>
         
         {/* Ligne 2 - Gauche: Donut Chart */}
-        <Card className="relative group border border-gray-200/50 dark:border-cyan-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-white/80 dark:bg-slate-900/50 p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 dark:from-cyan-500/10 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card className="relative group border border-cyan-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative z-10">
             <TicketByChannels />
           </div>
         </Card>
         
         {/* Ligne 2 - Droite: Satisfaction */}
-        <Card className="relative group border border-gray-200/50 dark:border-emerald-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-white/80 dark:bg-slate-900/50 p-6 overflow-hidden transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 dark:from-emerald-500/10 dark:to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <Card className="relative group border border-emerald-500/20 shadow-xl hover:shadow-2xl backdrop-blur-xl bg-slate-900/50 p-4 overflow-hidden transition-all duration-300 hover:-translate-y-0.5">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="relative z-10">
             <CustomerSatisfication />
           </div>
