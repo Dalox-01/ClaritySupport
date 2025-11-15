@@ -80,7 +80,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0A0E27]">
-        <header className="fixed inset-x-0 top-0 z-50 border-b border-blue-500/10 bg-[#0A0E27]/95 backdrop-blur-sm">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-blue-500/10 bg-[#0A0E27]/95 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div>
             <Link href="/" className="flex items-center gap-2 font-bold text-white transition-opacity hover:opacity-80">
