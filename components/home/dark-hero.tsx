@@ -1,192 +1,71 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Sparkles, Zap, Check } from 'lucide-react';
-import { useRef } from 'react';
+import { ArrowRight, Sparkles, Check } from 'lucide-react';
+import { useState } from 'react';
 
 interface DarkHeroProps {
   onGetStarted: () => void;
 }
 
 export function DarkHero({ onGetStarted }: DarkHeroProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start'],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <section
-      ref={containerRef}
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0F1629] to-[#0A0E27] pt-24 pb-16"
-    >
-      {/* Subtle animated grid background */}
-      <div className="absolute inset-0 opacity-10">
-        <motion.div
-          className="h-full w-full"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59, 130, 246, 0.15) 1px, transparent 1px)
-            `,
-            backgroundSize: '60px 60px',
-          }}
-          animate={{
-            backgroundPosition: ['0px 0px', '60px 60px'],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
-      </div>
-
-      {/* Subtle gradient orbs */}
-      <motion.div
-        className="pointer-events-none absolute left-1/3 top-1/4 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]"
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.3, 0.4, 0.3],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-
-      <motion.div
-        className="pointer-events-none absolute bottom-1/4 right-1/3 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]"
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.3, 0.4, 0.3],
-        }}
-        transition={{
-          duration: 12,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: 1.5,
-        }}
-      />
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0F1629] to-[#0A0E27] pt-24 pb-16">
+      {/* Static gradient orbs */}
+      <div className="pointer-events-none absolute left-1/3 top-1/4 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px] opacity-30" />
+      <div className="pointer-events-none absolute bottom-1/4 right-1/3 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px] opacity-30" />
 
       {/* Main content - perfectly centered */}
-      <motion.div
-        className="relative z-10 mx-auto w-full max-w-7xl px-6 text-center sm:px-8 lg:px-12"
-        style={{ y, scale }}
-      >
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 text-center sm:px-8 lg:px-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 backdrop-blur-sm"
-        >
+        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 backdrop-blur-sm">
           <Sparkles className="h-4 w-4" />
           <span>Support client automatisé par IA</span>
-        </motion.div>
+        </div>
 
         {/* Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="mb-6 text-5xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-        >
-          <span
-            className="inline-block bg-gradient-to-r from-[#0EA5E9] to-[#3B82F6] bg-clip-text text-transparent"
-            style={{ 
-              letterSpacing: '-0.02em',
-            }}
-          >
+        <h1 className="mb-6 text-5xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+          <span className="inline-block bg-gradient-to-r from-[#0EA5E9] to-[#3B82F6] bg-clip-text text-transparent" style={{ letterSpacing: '-0.02em' }}>
             ClaritySupport
           </span>
-        </motion.h1>
+        </h1>
 
         {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-300 sm:text-2xl md:leading-relaxed"
-        >
+        <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-300 sm:text-2xl md:leading-relaxed">
           La plateforme intelligente qui transforme votre support client.
           Centralisez Gmail & Outlook, générez des réponses avec l&apos;IA,
           et délivrez un service exceptionnel 24/7.
-        </motion.p>
+        </p>
 
         {/* CTA Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="mb-10 flex justify-center"
-        >
-          <motion.button
+        <div className="mb-10 flex justify-center">
+          <button
             onClick={onGetStarted}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-10 py-5 text-lg font-bold text-white shadow-xl shadow-blue-500/30 transition-shadow hover:shadow-2xl hover:shadow-blue-500/40"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-10 py-5 text-lg font-bold text-white shadow-xl shadow-blue-500/30 transition-all hover:shadow-2xl hover:shadow-blue-500/40 active:scale-95"
           >
             <span className="relative z-10 flex items-center gap-3">
               Essayer gratuitement
-              <motion.div
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <ArrowRight className="h-5 w-5" />
-              </motion.div>
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </span>
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600"
-              initial={{ x: '-100%' }}
-              whileHover={{ x: 0 }}
-              transition={{ duration: 0.4 }}
-            />
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
         {/* Trust badges */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.8 }}
-          className="mb-20 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400"
-        >
-          {[
-            { text: 'Essai gratuit 14 jours', delay: 0 },
-            { text: 'Sans carte bancaire', delay: 0.1 },
-            { text: 'Configuration en 2 min', delay: 0.2 },
-          ].map((item) => (
-            <motion.div
-              key={item.text}
-              className="flex items-center gap-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9 + item.delay, duration: 0.5 }}
-            >
+        <div className="mb-20 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400">
+          {['Essai gratuit 14 jours', 'Sans carte bancaire', 'Configuration en 2 min'].map((text) => (
+            <div key={text} className="flex items-center gap-2">
               <Check className="h-5 w-5 flex-shrink-0 text-cyan-400" />
-              <span className="whitespace-nowrap">{item.text}</span>
-            </motion.div>
+              <span className="whitespace-nowrap">{text}</span>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Mockup - clean and professional */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1 }}
-          className="relative mx-auto max-w-6xl"
-          style={{
-            y: useTransform(scrollYProgress, [0, 1], ['0%', '12%']),
-          }}
-        >
-          <motion.div
-            className="relative overflow-hidden rounded-2xl border border-blue-500/20 bg-gradient-to-br from-[#1a1f3a]/90 to-[#0f1320]/90 shadow-2xl shadow-blue-500/10 backdrop-blur-sm"
-          >
+        <div className="relative mx-auto max-w-6xl">
+          <div className="relative overflow-hidden rounded-2xl border border-blue-500/20 bg-gradient-to-br from-[#1a1f3a]/90 to-[#0f1320]/90 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
             {/* Window controls */}
             <div className="flex items-center gap-3 border-b border-blue-500/10 bg-gradient-to-r from-[#0f1320]/80 to-[#1a1f3a]/80 px-6 py-4 backdrop-blur-md">
               <div className="flex gap-2">
@@ -202,34 +81,22 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
             {/* Screenshot content */}
             <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27]">
               {/* Real MailCenter Screenshot */}
-              <motion.img
+              <img
                 src="/screenshots/mailcenter-interface.png"
                 alt="Interface ClaritySupport Mail Center"
                 className="h-full w-full object-cover object-top"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.2, delay: 1.2 }}
+                loading="lazy"
               />
 
               {/* Subtle overlay gradient for depth */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0E27]/20 via-transparent to-transparent" />
             </div>
-          </motion.div>
+          </div>
 
-          {/* Subtle glow */}
-          <motion.div
-            className="pointer-events-none absolute inset-0 -z-10 rounded-2xl blur-3xl"
-            animate={{
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-            style={{
-              background:
-                'radial-gradient(ellipse, rgba(59, 130, 246, 0.25), rgba(6, 182, 212, 0.15) 50%, transparent 70%)',
-            }}
-          />
-        </motion.div>
-      </motion.div>
+          {/* Static glow */}
+          <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-gradient-radial from-blue-500/20 via-cyan-500/10 to-transparent blur-3xl opacity-40" />
+        </div>
+      </div>
     </section>
   );
 }
