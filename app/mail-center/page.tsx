@@ -35,12 +35,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { EmailCache, MailAccount, PendingReply } from '@/lib/mail-center-types';
-import { AnalyticsDashboard } from '@/components/analytics-dashboard';
 import { PendingRepliesPanel } from '@/components/pending-replies-panel';
 import { ReplyEmailDialog } from '@/components/reply-email-dialog';
 import { EmailDetailWindow } from '@/components/email-detail-window';
 import { ReplyGeneratorWindow } from '@/components/reply-generator-window';
 import { QuotaDisplay } from '@/components/quota-display';
+import StatsTab from '@/components/mail-dashboard/stats-tab';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -1575,7 +1575,7 @@ export default function MailCenterPage() {
             className="lg:col-span-9 w-full"
           >
             {activeTab === 'analytics' ? (
-              <AnalyticsDashboard />
+              <StatsTab isLightMode={isLightMode} />
             ) : activeTab === 'pending' ? (
               <PendingRepliesPanel 
                 pendingReplies={pendingReplies as any} 
