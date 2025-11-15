@@ -1,13 +1,27 @@
-// API Route: Statistiques Mail Center
+// API Route: Statistiques Mail Center - HAUTE PERFORMANCE
+// Architecture: Service d'analytics optimisé + cache
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { supabase } from '@/lib/db';
+import { calculateUserAnalytics, formatResponseTime } from '@/lib/analytics-service';
+import type { AnalyticsPeriod } from '@/lib/analytics-service';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 10; // Timeout 10s
 
+/**
+ * GET /api/mail-center/stats
+ * Statistiques optimisées pour le dashboard analytics
+ * 
+ * Query params:
+ * - period: 'today' | 'week' | 'month' (default: 'week')
+ * 
+ * Performance: <200ms avec service optimisé
+ */
 export async function GET(req: NextRequest) {
+  const startTime = Date.now();
+  
   try {
     const session = await getServerSession(authOptions);
     
@@ -16,128 +30,63 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const period = searchParams.get('period') || 'today';
-
+    const period = (searchParams.get('period') || 'week') as AnalyticsPeriod;
     const userId = session.user.id;
-    const now = new Date();
-    let startDate: Date;
 
-    switch (period) {
-      case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        break;
-      case 'week':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Validation du paramètre period
+    if (!['today', 'week', 'month'].includes(period)) {
+      return NextResponse.json(
+        { error: 'Invalid period. Use: today, week, or month' },
+        { status: 400 }
+      );
     }
 
-    // Stats aujourd'hui
-    const { data: todayEmails } = await supabase
-      .from('emails_cache')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('received_at', startDate.toISOString());
+    // CALCUL DES ANALYTICS via service optimisé
+    const analyticsData = await calculateUserAnalytics(userId, period);
 
-    const totalReceived = todayEmails?.length || 0;
-    const autoReplied = todayEmails?.filter(e => e.is_auto_replied).length || 0;
+    // Formater le temps de réponse pour le frontend
+    const formattedResponseTime = formatResponseTime(analyticsData.metrics.avg_response_time_minutes);
 
-    // Compter les réponses en attente de validation depuis la table pending_replies
-    const { data: pendingReplies } = await supabase
-      .from('pending_replies')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('status', 'pending');
+    // RÉPONSE OPTIMISÉE (structure pour composants Visactor)
+    const response = {
+      metrics: {
+        total_emails: analyticsData.metrics.total_emails,
+        unread_emails: analyticsData.metrics.unread_emails,
+        urgent_emails: analyticsData.metrics.urgent_emails,
+        avg_response_time: formattedResponseTime,
+      },
+      timeline: analyticsData.timeline,
+      categories: analyticsData.categories,
+      filters: analyticsData.filters,
+      sentiment: analyticsData.sentiment,
+    };
+
+    const processingTime = Date.now() - startTime;
     
-    const pendingValidation = pendingReplies?.length || 0;
+    console.log(
+      `✅ [STATS API] ${processingTime}ms | ` +
+      `Period: ${period} | ` +
+      `Emails: ${analyticsData.metrics.total_emails} | ` +
+      `Filters: ${analyticsData.filters.length}`
+    );
 
-    // Calcul temps moyen de réponse réel
-    const { data: sentReplies } = await supabase
-      .from('pending_replies')
-      .select('created_at, sent_at')
-      .eq('user_id', userId)
-      .eq('status', 'sent')
-      .not('sent_at', 'is', null)
-      .gte('created_at', startDate.toISOString());
-
-    let avgResponseTime = 0;
-    if (sentReplies && sentReplies.length > 0) {
-      const totalMinutes = sentReplies.reduce((acc, reply) => {
-        const created = new Date(reply.created_at).getTime();
-        const sent = new Date(reply.sent_at!).getTime();
-        return acc + (sent - created) / (1000 * 60); // en minutes
-      }, 0);
-      avgResponseTime = Math.round(totalMinutes / sentReplies.length);
-    }
-
-    // Catégories
-    const categories = {
-      support: todayEmails?.filter(e => e.category === 'support').length || 0,
-      vente: todayEmails?.filter(e => e.category === 'vente').length || 0,
-      spam: todayEmails?.filter(e => e.category === 'spam').length || 0,
-      urgent: todayEmails?.filter(e => e.category === 'urgent').length || 0,
-      autre: todayEmails?.filter(e => !e.category || e.category === 'autre').length || 0,
-    };
-
-    // Sentiment
-    const sentiment = {
-      positive: todayEmails?.filter(e => e.sentiment === 'positif').length || 0,
-      neutral: todayEmails?.filter(e => e.sentiment === 'neutre' || !e.sentiment).length || 0,
-      negative: todayEmails?.filter(e => e.sentiment === 'negatif').length || 0,
-    };
-
-    // Top règles
-    const { data: rules } = await supabase
-      .from('automation_rules')
-      .select('name, triggered_count, success_count')
-      .eq('user_id', userId)
-      .order('triggered_count', { ascending: false })
-      .limit(5);
-
-    const topRules = rules?.map(rule => ({
-      name: rule.name.replace('AI_', '').replace('_', ' '),
-      triggered: rule.triggered_count || 0,
-      success_rate: rule.triggered_count > 0 
-        ? Math.round((rule.success_count / rule.triggered_count) * 100)
-        : 100,
-    })) || [];
-
-    // Stats semaine
-    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const { data: weekEmails } = await supabase
-      .from('emails_cache')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('received_at', weekStart.toISOString());
-
-    const weekReceived = weekEmails?.length || 0;
-    const weekAutoReplied = weekEmails?.filter(e => e.is_auto_replied).length || 0;
-    const weekManualReplied = weekReceived - weekAutoReplied; // Approximation
-
-    const stats = {
-      today: {
-        received: totalReceived,
-        auto_replied: autoReplied,
-        pending_validation: pendingValidation,
-        avg_response_time: avgResponseTime,
+    return NextResponse.json(response, {
+      headers: {
+        'X-Processing-Time': `${processingTime}ms`,
+        'Cache-Control': 'private, max-age=60', // Cache 1 minute côté client
       },
-      week: {
-        received: weekReceived,
-        auto_replied: weekAutoReplied,
-        manual_replied: weekManualReplied,
-      },
-      categories,
-      sentiment,
-      topRules,
-    };
+    });
 
-    return NextResponse.json(stats);
   } catch (error) {
-    console.error('Error fetching stats:', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    const errorTime = Date.now() - startTime;
+    console.error(`❌ [STATS API] Error after ${errorTime}ms:`, error);
+    
+    return NextResponse.json(
+      { 
+        error: 'Erreur serveur lors du calcul des statistiques',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }

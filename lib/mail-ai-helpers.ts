@@ -195,6 +195,10 @@ export function classifyEmailByHashtags(
 
 /**
  * Analyse un email avec l'IA pour détecter catégorie, sentiment, urgence
+ * OPTIMISATION: Analyse complète avec détection de sentiment émotionnel avancée
+ * 
+ * Performance: ~800-1200ms (OpenAI API latency)
+ * Tokens: ~500-800 tokens par analyse
  */
 export async function analyzeEmailWithAI(
   from: string,
@@ -204,7 +208,7 @@ export async function analyzeEmailWithAI(
   const startTime = Date.now();
 
   try {
-    const prompt = `Tu es un assistant IA spécialisé dans l'analyse d'emails professionnels.
+    const prompt = `Tu es un assistant IA spécialisé dans l'analyse d'emails professionnels de support client.
 
 Analyse cet email et fournis une évaluation structurée :
 
@@ -215,7 +219,7 @@ ${body.substring(0, 2000)} ${body.length > 2000 ? '...' : ''}
 
 Tu dois répondre UNIQUEMENT avec un JSON valide contenant :
 {
-  "category": "support|vente|client|interne|partenaire|urgent|spam|autre",
+  "category": "support|vente|spam|urgent|partenariat|autre",
   "sentiment": "positif|neutre|negatif|urgent",
   "urgency_score": 0-10,
   "requires_validation": true/false,
@@ -226,43 +230,73 @@ Tu dois répondre UNIQUEMENT avec un JSON valide contenant :
     "contact_info": "info de contact importante",
     "price_mentioned": "prix mentionné si applicable"
   },
-  "suggested_template_category": "support|vente|client|interne|partenaire|urgent|autre",
-  "reasoning": "brève explication de ton analyse"
+  "suggested_template_category": "support|vente|spam|urgent|partenariat|autre",
+  "reasoning": "brève explication de ton analyse",
+  "support_category": "FACTURATION|TECHNIQUE|COMMERCIAL|REMBOURSEMENT|COMMANDE|LIVRAISON|RENSEIGNEMENT|PRODUIT|SERVICE_CLIENT|autre",
+  "sentiment_score": 0-100
 }
 
 CATÉGORIES D'EMAILS:
 - "support": Demande d'assistance technique, problème, bug, dysfonctionnement
 - "vente": Demande de devis, prix, intérêt commercial, achat
-- "client": Communication avec un client existant (commande, facture, livraison, satisfaction)
-- "interne": Email entre collègues, équipe, communication interne à l'entreprise
-- "partenaire": Communication avec partenaires, fournisseurs, prestataires
-- "urgent": Email nécessitant une attention immédiate (peut se combiner avec d'autres catégories)
+- "urgent": Email nécessitant une attention immédiate (délai < 24h)
 - "spam": Publicité non sollicitée, email indésirable
+- "partenariat": Communication avec partenaires, fournisseurs, prestataires
 - "autre": Ne correspond à aucune catégorie ci-dessus
 
-RÈGLES:
-- "category": Catégorise selon le type de demande et la relation avec l'expéditeur
-- "sentiment": Analyse le ton et l'urgence
-- "urgency_score": 0 (pas urgent) à 10 (très urgent, requiert attention immédiate)
-- "requires_validation": true si l'email concerne quelque chose d'important (rendez-vous, contrat, plainte grave, opportunité business)
-- Détecte les entités clés dans le contenu
-- "suggested_template_category": Suggère le type de template à utiliser pour répondre
+ANALYSE DU SENTIMENT (CRITIQUE pour les statistiques):
+- "positif": Client satisfait, remerciement, compliment, ton amical (score: 70-100)
+- "neutre": Demande neutre, ton professionnel sans émotion (score: 40-69)
+- "negatif": Plainte, insatisfaction, frustration, ton agressif (score: 0-39)
+- "urgent": Urgence critique, problème bloquant, délai court (score basé sur urgence)
 
-Exemples de validation obligatoire:
-- Demande de rendez-vous/entretien
-- Plainte grave client
-- Opportunité commerciale importante
-- Question juridique/contractuelle
-- Urgence technique critique`;
+Le "sentiment_score" (0-100) mesure la satisfaction client:
+- 80-100: Très satisfait (compliments, remerciements)
+- 60-79: Satisfait (neutre positif)
+- 40-59: Neutre (demande standard)
+- 20-39: Insatisfait (plainte modérée)
+- 0-19: Très insatisfait (colère, menace de partir)
+
+CATÉGORIES DE SUPPORT (support_category):
+- "FACTURATION": Problème de facture, paiement, prix, remboursement bancaire
+- "TECHNIQUE": Bug, erreur technique, problème d'accès, dysfonctionnement
+- "COMMERCIAL": Devis, tarif, offre commerciale, négociation
+- "REMBOURSEMENT": Demande de remboursement, retour produit
+- "COMMANDE": Problème de commande, modification, annulation
+- "LIVRAISON": Suivi colis, retard de livraison, transporteur
+- "RENSEIGNEMENT": Question générale, information produit
+- "PRODUIT": Question sur un produit, caractéristiques, disponibilité
+- "SERVICE_CLIENT": Réclamation, insatisfaction, demande de contact humain
+
+RÈGLES D'ANALYSE:
+1. Détecter le ton émotionnel (mots clés: "urgent", "rapidement", "!!!", "déçu", "content", etc.)
+2. Évaluer l'urgency_score selon les délais mentionnés et le ton
+3. requires_validation = true si:
+   - Plainte grave (sentiment_score < 30)
+   - Demande de remboursement > 100€
+   - Menace légale ou de partir
+   - Opportunité commerciale importante
+   - Urgence critique (urgency_score >= 9)
+4. Si spam détecté: category="spam", sentiment="neutre", urgency_score=0
+
+Exemples:
+- "Votre service est excellent, merci !" → positif, score: 95
+- "Ma commande n'est toujours pas arrivée" → negatif, score: 25, LIVRAISON
+- "Bonjour, je voudrais des infos sur votre produit X" → neutre, score: 50, RENSEIGNEMENT
+- "C'est URGENT !!! Mon site est DOWN depuis 2h !!!" → urgent, score: 15, TECHNIQUE`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Plus économique pour l'analyse
+      model: 'gpt-4o-mini', // Optimal price/performance (0.15$/1M tokens input)
       messages: [
-        { role: 'system', content: 'Tu es un expert en analyse d\'emails professionnels. Réponds toujours en JSON valide.' },
+        { 
+          role: 'system', 
+          content: 'Tu es un expert en analyse émotionnelle et catégorisation d\'emails support client. Réponds toujours en JSON valide strictement conforme au schéma.' 
+        },
         { role: 'user', content: prompt }
       ],
-      temperature: 0.3,
+      temperature: 0.2, // Bas pour cohérence et reproductibilité
       response_format: { type: 'json_object' },
+      max_tokens: 500, // Limite pour économiser les coûts
     });
 
     const content = response.choices[0]?.message?.content;
@@ -270,31 +304,62 @@ Exemples de validation obligatoire:
       throw new Error('No response from AI');
     }
 
-    const analysis = JSON.parse(content) as EmailAnalysisResult;
+    const analysis = JSON.parse(content) as EmailAnalysisResult & { sentiment_score?: number };
 
-    // Validation et normalisation
-    if (!['support', 'vente', 'spam', 'urgent', 'partenariat', 'autre'].includes(analysis.category)) {
+    // VALIDATION STRICTE (sécurité backend)
+    const validCategories = ['support', 'vente', 'spam', 'urgent', 'partenariat', 'autre'];
+    if (!validCategories.includes(analysis.category)) {
       analysis.category = 'autre';
     }
-    if (!['positif', 'neutre', 'negatif', 'urgent'].includes(analysis.sentiment)) {
+
+    const validSentiments = ['positif', 'neutre', 'negatif', 'urgent'];
+    if (!validSentiments.includes(analysis.sentiment)) {
       analysis.sentiment = 'neutre';
     }
-    analysis.urgency_score = Math.max(0, Math.min(10, analysis.urgency_score));
+
+    const validSupportCategories = [
+      'FACTURATION', 'TECHNIQUE', 'COMMERCIAL', 'REMBOURSEMENT',
+      'COMMANDE', 'LIVRAISON', 'RENSEIGNEMENT', 'PRODUIT', 'SERVICE_CLIENT', 'autre'
+    ];
+    if (analysis.support_category && !validSupportCategories.includes(analysis.support_category)) {
+      analysis.support_category = 'autre';
+    }
+
+    // Normalisation des scores
+    analysis.urgency_score = Math.max(0, Math.min(10, analysis.urgency_score || 0));
+    
+    // Calculer sentiment_score si non fourni (fallback basé sur sentiment)
+    if (!analysis.sentiment_score) {
+      analysis.sentiment_score = 
+        analysis.sentiment === 'positif' ? 80 :
+        analysis.sentiment === 'negatif' ? 20 :
+        analysis.sentiment === 'urgent' ? 30 : 50;
+    }
 
     const processingTime = Date.now() - startTime;
-    console.log(`✅ Email analyzed in ${processingTime}ms - Category: ${analysis.category}, Urgency: ${analysis.urgency_score}/10`);
+    console.log(
+      `✅ [AI ANALYSIS] ${processingTime}ms | ` +
+      `Category: ${analysis.category} | ` +
+      `Sentiment: ${analysis.sentiment} (${analysis.sentiment_score}/100) | ` +
+      `Urgency: ${analysis.urgency_score}/10 | ` +
+      `Support: ${analysis.support_category || 'N/A'}`
+    );
 
     return analysis;
+
   } catch (error) {
-    console.error('❌ Error analyzing email:', error);
-    // Fallback par défaut en cas d'erreur
+    const errorTime = Date.now() - startTime;
+    console.error(`❌ [AI ANALYSIS] Error after ${errorTime}ms:`, error);
+    
+    // FALLBACK SÉCURISÉ (garantir qu'aucune erreur ne bloque le système)
     return {
       category: 'autre',
       sentiment: 'neutre',
       urgency_score: 5,
-      requires_validation: true, // Par sécurité, demander validation si erreur
+      requires_validation: true, // Sécurité: forcer validation si échec IA
       detected_entities: {},
-      reasoning: 'Erreur lors de l\'analyse IA, validation manuelle recommandée',
+      reasoning: `Erreur lors de l'analyse IA (${error instanceof Error ? error.message : 'unknown'}). Validation manuelle recommandée.`,
+      support_category: 'autre',
     };
   }
 }
