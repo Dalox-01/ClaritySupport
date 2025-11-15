@@ -18,21 +18,22 @@ export default function Chart() {
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const response = await fetch('/api/mail-center/stats?period=today');
+        const response = await fetch('/api/mail-center/stats?period=week');
         const data = await response.json();
         
-        if (data.categories) {
-          const filterData: FilterData[] = [
-            { name: "Commandes", count: data.categories.commande || 0, color: "#3b82f6" },
-            { name: "Support", count: data.categories.support || 0, color: "#10b981" },
-            { name: "Facturation", count: data.categories.facturation || 0, color: "#ef4444" },
-            { name: "Vente", count: data.categories.vente || 0, color: "#f59e0b" },
-            { name: "Urgent", count: data.categories.urgent || 0, color: "#ec4899" },
-            { name: "Spam", count: data.categories.spam || 0, color: "#6b7280" },
-            { name: "Autre", count: data.categories.autre || 0, color: "#8b5cf6" },
-          ].filter(filter => filter.count > 0);
+        if (data.filters && data.filters.length > 0) {
+          // Utiliser directement les filtres du backend
+          const filterData: FilterData[] = data.filters
+            .filter((f: any) => f.count > 0)
+            .map((f: any) => ({
+              name: f.label,
+              count: f.count,
+              color: f.color
+            }));
           
           setFilters(filterData);
+        } else {
+          setFilters([]);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des filtres:', error);

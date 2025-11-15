@@ -30,34 +30,27 @@ export default function AverageTicketsCreated() {
         const response = await fetch('/api/mail-center/stats?period=week');
         const data = await response.json();
         
-        if (data.week) {
-          // Generate last 7 days of data starting from Monday
+        if (data.timeline && data.timeline.length > 0) {
+          // Convertir les données timeline en format TicketMetric
           const chartData: TicketMetric[] = [];
-          const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-          const today = new Date();
+          const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
           
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            // Adjust day index to start from Monday (0 = Monday)
-            const dayIndex = (date.getDay() + 6) % 7;
-            const dayName = daysOfWeek[dayIndex];
-            
-            // Simulate distribution across week (in production, this should come from API)
-            const received = Math.floor((data.week.received || 0) / 7);
-            const replied = Math.floor((data.week.auto_replied + data.week.manual_replied || 0) / 7);
+          data.timeline.forEach((day: any) => {
+            // Extraire le jour de la semaine depuis la date
+            const dateObj = new Date(day.date);
+            const dayName = daysOfWeek[dateObj.getDay()];
             
             chartData.push({
               date: dayName,
-              count: received,
+              count: day.received || 0,
               type: "created",
             });
             chartData.push({
               date: dayName,
-              count: replied,
+              count: day.sent || 0,
               type: "resolved",
             });
-          }
+          });
           
           setEmailData(chartData);
         }

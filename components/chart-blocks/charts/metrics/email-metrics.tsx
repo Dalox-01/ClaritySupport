@@ -38,23 +38,21 @@ export default function EmailMetrics() {
   const loadMetrics = async () => {
     try {
       // Récupérer les stats du backend
-      const response = await fetch("/api/mail-center/stats?period=today");
+      const response = await fetch("/api/mail-center/stats?period=week");
       
       if (response.ok) {
         const data = await response.json();
         
         setMetrics({
-          totalEmails: data.today?.received || 0,
-          unreadEmails: data.today?.pending_validation || 0,
-          urgentEmails: data.categories?.urgent || 0,
-          avgResponseTime: data.today?.avg_response_time > 0 
-            ? `${data.today.avg_response_time} min`
-            : "N/A",
+          totalEmails: data.metrics?.total_emails || 0,
+          unreadEmails: data.metrics?.unread_emails || 0,
+          urgentEmails: data.metrics?.urgent_emails || 0,
+          avgResponseTime: data.metrics?.avg_response_time || "N/A",
           changes: {
-            totalChange: 0.12, // TODO: Calculer depuis les données historiques
-            unreadChange: -0.08,
-            urgentChange: 0.03,
-            responseTimeChange: -0.15,
+            totalChange: 0,
+            unreadChange: 0,
+            urgentChange: 0,
+            responseTimeChange: 0,
           },
         });
       } else {
@@ -71,22 +69,18 @@ export default function EmailMetrics() {
     {
       title: "Total Emails",
       value: metrics.totalEmails.toString(),
-      change: metrics.changes.totalChange,
     },
     {
       title: "Non Lus",
       value: metrics.unreadEmails.toString(),
-      change: metrics.changes.unreadChange,
     },
     {
       title: "Emails Urgents",
       value: metrics.urgentEmails.toString(),
-      change: metrics.changes.urgentChange,
     },
     {
       title: "Temps de Réponse Moyen",
       value: metrics.avgResponseTime,
-      change: metrics.changes.responseTimeChange,
     },
   ];
 
