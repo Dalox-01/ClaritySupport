@@ -31,15 +31,17 @@ export default function AverageTicketsCreated() {
         const data = await response.json();
         
         if (data.week) {
-          // Generate last 7 days of data
+          // Generate last 7 days of data starting from Monday
           const chartData: TicketMetric[] = [];
-          const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+          const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
           const today = new Date();
           
           for (let i = 6; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
-            const dayName = daysOfWeek[date.getDay()];
+            // Adjust day index to start from Monday (0 = Monday)
+            const dayIndex = (date.getDay() + 6) % 7;
+            const dayName = daysOfWeek[dayIndex];
             
             // Simulate distribution across week (in production, this should come from API)
             const received = Math.floor((data.week.received || 0) / 7);
@@ -78,22 +80,8 @@ export default function AverageTicketsCreated() {
         <ChartTitle title="Volume d'Emails" icon={Mail} />
         <DatePickerWithRange className="scale-75 origin-top-right" />
       </div>
-      <div className="flex flex-wrap flex-1 min-h-0">
-        <div className="flex w-40 shrink-0 flex-col justify-center gap-3">
-          <MetricCard
-            title="Moy. Emails Reçus"
-            value={avgCreated}
-            color="#60C2FB"
-          />
-          <MetricCard
-            title="Moy. Emails Traités"
-            value={avgResolved}
-            color="#3161F8"
-          />
-        </div>
-        <div className="relative flex-1 min-w-0 min-h-0">
-          <Chart />
-        </div>
+      <div className="relative flex-1 min-h-0">
+        <Chart />
       </div>
     </section>
   );

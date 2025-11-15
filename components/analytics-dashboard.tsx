@@ -5,10 +5,10 @@ import {
   AverageTicketsCreated,
   Conversions,
   CustomerSatisfication,
-  TicketByChannels,
 } from "@/components/chart-blocks";
 import Container from "@/components/container";
 import EmailMetrics from "@/components/chart-blocks/charts/metrics/email-metrics";
+import SimpleMetrics from "@/components/chart-blocks/charts/simple-metrics";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -50,10 +50,10 @@ export function AnalyticsDashboard() {
             </div>
           </div>
           
-          {/* Ligne 2 - Gauche: Donut Chart */}
+          {/* Ligne 2 - Gauche: Métriques Clés */}
           <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
             <div className="p-2 h-full overflow-hidden">
-              <TicketByChannels />
+              <SimpleMetrics />
             </div>
           </div>
           

@@ -2,43 +2,46 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { VChart } from "@visactor/react-vchart";
-import type { ICirclePackingChartSpec } from "@visactor/vchart";
-import { addThousandsSeparator } from "@/lib/utils";
 
-interface ReplyData {
+interface FilterData {
   name: string;
-  value: number;
+  count: number;
+  color: string;
 }
 
 export default function Chart() {
   const { theme } = useTheme();
-  const [replies, setReplies] = useState<ReplyData[]>([]);
+  const [filters, setFilters] = useState<FilterData[]>([]);
   const [loading, setLoading] = useState(true);
   const isDark = theme === "dark";
 
   useEffect(() => {
-    const fetchReplies = async () => {
+    const fetchFilters = async () => {
       try {
-        const response = await fetch('/api/mail-center/stats?period=week');
+        const response = await fetch('/api/mail-center/stats?period=today');
         const data = await response.json();
         
-        if (data.week) {
-          const replyData: ReplyData[] = [
-            { name: "Réponses Auto", value: data.week.auto_replied || 0 },
-            { name: "Réponses Manuelles", value: data.week.manual_replied || 0 },
-          ].filter(reply => reply.value > 0);
+        if (data.categories) {
+          const filterData: FilterData[] = [
+            { name: "Commandes", count: data.categories.commande || 0, color: "#3b82f6" },
+            { name: "Support", count: data.categories.support || 0, color: "#10b981" },
+            { name: "Facturation", count: data.categories.facturation || 0, color: "#ef4444" },
+            { name: "Vente", count: data.categories.vente || 0, color: "#f59e0b" },
+            { name: "Urgent", count: data.categories.urgent || 0, color: "#ec4899" },
+            { name: "Spam", count: data.categories.spam || 0, color: "#6b7280" },
+            { name: "Autre", count: data.categories.autre || 0, color: "#8b5cf6" },
+          ].filter(filter => filter.count > 0);
           
-          setReplies(replyData);
+          setFilters(filterData);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des réponses:', error);
+        console.error('Erreur lors du chargement des filtres:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchReplies();
+    fetchFilters();
   }, []);
 
   if (loading) {
@@ -49,76 +52,49 @@ export default function Chart() {
     );
   }
 
-  const spec: ICirclePackingChartSpec = {
-    data: [
-      {
-        id: "data",
-        values: replies,
-      },
-    ],
-  type: "circlePacking",
-  background: isDark ? "#0a0a0a" : "#ffffff",
-  color: isDark ? ["#3b82f6", "#06b6d4"] : ["#2563eb", "#0891b2"],
-  categoryField: "name",
-  valueField: "value",
-  drill: true,
-  padding: 0,
-  layoutPadding: 5,
-  label: {
-    style: {
-      fill: "white",
-      stroke: false,
-      visible: (d) => d.depth === 0,
-      text: (d) => addThousandsSeparator(d.value),
-      fontSize: (d) => d.radius / 2,
-      dy: (d) => d.radius / 8,
-    },
-  },
-  legends: [
-    {
-      visible: true,
-      orient: "top",
-      position: "start",
-      padding: 0,
-      item: {
-        label: {
-          style: {
-            fill: isDark ? "#d1d5db" : "#4b5563",
-          },
-        },
-      },
-    },
-  ],
-  tooltip: {
-    trigger: ["click", "hover"],
-    style: {
-      panel: {
-        backgroundColor: isDark ? "#1f2937" : "#ffffff",
-        border: { color: isDark ? "#374151" : "#e5e7eb", width: 1 },
-      },
-      titleLabel: {
-        fill: isDark ? "#f3f4f6" : "#111827",
-      },
-      valueLabel: {
-        fill: isDark ? "#f3f4f6" : "#111827",
-      },
-    },
-    mark: {
-      content: {
-        value: (d) => addThousandsSeparator(d?.value),
-      },
-    },
-  },
-  animationEnter: {
-    easing: "cubicInOut",
-  },
-  animationExit: {
-    easing: "cubicInOut",
-  },
-  animationUpdate: {
-    easing: "cubicInOut",
-  },
-};
+  if (filters.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+        Aucun filtre actif
+      </div>
+    );
+  }
 
-  return <VChart spec={spec} />;
+  // Calculate circle sizes based on count
+  const maxCount = Math.max(...filters.map(f => f.count));
+  const minSize = 60;
+  const maxSize = 120;
+
+  return (
+    <div className="flex h-full items-center justify-center p-4">
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        {filters.map((filter) => {
+          const size = minSize + ((filter.count / maxCount) * (maxSize - minSize));
+          
+          return (
+            <div
+              key={filter.name}
+              className="group relative transition-transform hover:scale-110"
+              style={{ width: size, height: size }}
+            >
+              <div
+                className="flex h-full w-full items-center justify-center rounded-full shadow-lg transition-shadow hover:shadow-xl"
+                style={{ backgroundColor: filter.color }}
+              >
+                <span className="text-2xl font-bold text-white">{filter.count}</span>
+              </div>
+              
+              {/* Tooltip */}
+              <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                {filter.name}
+                <div className="absolute left-1/2 top-full -translate-x-1/2">
+                  <div className="border-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
