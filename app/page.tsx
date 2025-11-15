@@ -13,6 +13,7 @@ import { DarkBentoFeatures } from '@/components/home/dark-bento-features';
 import { ProofSection } from '@/components/home/ProofSection';
 import { DarkPricing } from '@/components/home/dark-pricing';
 import { DarkFaq } from '@/components/home/dark-faq';
+
 export default function HomePage() {
   const router = useRouter();
   const { data: session } = useSession();
