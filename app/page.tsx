@@ -211,7 +211,7 @@ export default function HomePage() {
             <p>© {new Date().getFullYear()} ClaritySupport. Tous droits réservés.</p>
           </div>
         </div>
-      </motion.footer>
+      </footer>
     </div>
   );
 }
