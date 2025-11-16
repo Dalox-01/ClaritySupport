@@ -2,22 +2,29 @@
  * API Route: Connexion Shopify
  * Permet aux utilisateurs e-commerce de connecter leur boutique Shopify
  * 
- * Restrictions:
- * - Accessible uniquement aux utilisateurs avec segment "shopify"
- * - Nécessite un abonnement actif (STARTER, PRO ou SCALE)
+ * Restrictions par plan:
+ * - Starter: 1 boutique
+ * - Pro: 3 boutiques
+ * - Enterprise: illimité
+ * - Freelance: aucun accès (403)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getUserPlanInfo } from '@/lib/plan-enforcement';
+import {
+  checkShopifyAccess,
+  getUserShops,
+  generateShopifyAuthUrl,
+  disconnectShop,
+} from '@/lib/shopify-service';
 import { supabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/shopify/connect
- * Récupère les boutiques Shopify connectées de l'utilisateur
+ * Récupère les boutiques Shopify connectées de l'utilisateur + limites du plan
  */
 export async function GET(req: NextRequest) {
   try {
@@ -29,36 +36,27 @@ export async function GET(req: NextRequest) {
 
     const userId = session.user.id;
 
-    // Vérifier que l'utilisateur a un plan e-commerce
-    const planInfo = await getUserPlanInfo(userId);
-    
-    if (planInfo.segment !== 'shopify') {
+    // Vérifier l'accès Shopify selon le plan
+    const limits = await checkShopifyAccess(userId);
+
+    // Si l'utilisateur n'a pas accès (plan freelance ou free)
+    if (!limits.hasAccess) {
       return NextResponse.json(
         { 
-          error: 'Accès refusé',
-          message: 'Cette fonctionnalité est réservée aux abonnements E-commerce. Veuillez mettre à niveau votre plan.',
+          error: 'Accès Shopify non disponible',
+          message: 'Les intégrations Shopify sont réservées aux plans E-commerce (Starter, Pro, Enterprise)',
+          planLimits: limits,
         },
         { status: 403 }
       );
     }
 
-    // Récupérer les boutiques connectées
-    const { data: shops, error } = await supabase
-      .from('shopify_connections')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('❌ [SHOPIFY] Error fetching shops:', error);
-      throw error;
-    }
+    // Récupérer les boutiques de l'utilisateur
+    const shops = await getUserShops(userId);
 
     return NextResponse.json({
-      shops: shops || [],
-      planLimits: {
-        maxShops: planInfo.plan.includes('STARTER') ? 1 : planInfo.plan.includes('PRO') ? 3 : 999,
-        currentShops: shops?.length || 0,
-      },
+      shops,
+      planLimits: limits,
     });
 
   } catch (error) {
@@ -72,9 +70,10 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/shopify/connect
- * Connecte une nouvelle boutique Shopify
+ * Initie la connexion OAuth avec une boutique Shopify
  * 
- * Body: { shopDomain: string }
+ * Body: { shopDomain: "example.myshopify.com" }
+ * Returns: { authUrl: "https://example.myshopify.com/admin/oauth/authorize?..." }
  */
 export async function POST(req: NextRequest) {
   try {
@@ -91,32 +90,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'shopDomain requis' }, { status: 400 });
     }
 
-    // Vérifier que l'utilisateur a un plan e-commerce
-    const planInfo = await getUserPlanInfo(userId);
-    
-    if (planInfo.segment !== 'shopify') {
+    // Vérifier les limites du plan
+    const limits = await checkShopifyAccess(userId);
+
+    if (!limits.hasAccess) {
       return NextResponse.json(
         { 
           error: 'Accès refusé',
-          message: 'Cette fonctionnalité est réservée aux abonnements E-commerce.',
+          message: 'Les intégrations Shopify nécessitent un plan E-commerce (Starter, Pro ou Enterprise).',
         },
         { status: 403 }
       );
     }
 
-    // Vérifier la limite de boutiques selon le plan
-    const { data: existingShops } = await supabase
-      .from('shopify_connections')
-      .select('id')
-      .eq('user_id', userId);
-
-    const maxShops = planInfo.plan.includes('STARTER') ? 1 : planInfo.plan.includes('PRO') ? 3 : 999;
-    
-    if (existingShops && existingShops.length >= maxShops) {
+    // Vérifier si la limite de boutiques est atteinte
+    if (!limits.canAddMore) {
       return NextResponse.json(
-        { 
+        {
           error: 'Limite atteinte',
-          message: `Votre plan ${planInfo.plan} permet ${maxShops} boutique${maxShops > 1 ? 's' : ''}. Mettez à niveau pour en ajouter plus.`,
+          message: `Votre plan ${limits.plan.toUpperCase()} permet ${limits.maxShops} boutique${limits.maxShops > 1 ? 's' : ''}. Vous avez déjà ${limits.currentShops} boutique${limits.currentShops > 1 ? 's' : ''} connectée${limits.currentShops > 1 ? 's' : ''}.`,
+          planLimits: limits,
         },
         { status: 403 }
       );
@@ -124,55 +117,79 @@ export async function POST(req: NextRequest) {
 
     // Valider le format du domaine Shopify
     const cleanDomain = shopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    
+    // Détecter les domaines personnalisés (pas .myshopify.com)
     if (!cleanDomain.includes('.myshopify.com')) {
+      // Vérifier si c'est un domaine personnalisé valide
+      const isCustomDomain = /^[a-z0-9-]+\.(com|shop|store|fr|eu|net|org)$/i.test(cleanDomain);
+      
+      if (isCustomDomain) {
+        return NextResponse.json(
+          { 
+            error: 'Domaine personnalisé détecté',
+            customDomain: cleanDomain,
+            message: `Pour ${cleanDomain}, veuillez entrer votre domaine Shopify principal (format: votre-boutique.myshopify.com).\n\n📍 Comment le trouver ?\nShopify Admin → Paramètres → Domaines → Recherchez le domaine se terminant par .myshopify.com`,
+            helpUrl: 'https://help.shopify.com/fr/manual/domains',
+          },
+          { status: 400 }
+        );
+      }
+      
+      // Sinon, format invalide
       return NextResponse.json(
-        { error: 'Domaine invalide. Format attendu: votre-boutique.myshopify.com' },
+        { 
+          error: 'Format invalide',
+          message: 'Format attendu: votre-boutique.myshopify.com',
+        },
         { status: 400 }
       );
     }
 
-    // Vérifier si la boutique n'est pas déjà connectée
+    // Vérifier si cette boutique n'est pas déjà connectée
     const { data: existingShop } = await supabase
-      .from('shopify_connections')
-      .select('id')
-      .eq('shop_domain', cleanDomain)
+      .from('shopify_shops')
+      .select('id, status')
       .eq('user_id', userId)
+      .eq('shop_domain', cleanDomain)
       .single();
 
     if (existingShop) {
       return NextResponse.json(
-        { error: 'Cette boutique est déjà connectée' },
+        { 
+          error: 'Boutique déjà connectée',
+          message: `La boutique ${cleanDomain} est déjà liée à votre compte.`,
+          status: existingShop.status,
+        },
         { status: 409 }
       );
     }
 
-    // Créer la connexion Shopify (à ce stade, juste enregistrer le domaine)
-    // Dans une implémentation réelle, vous feriez l'OAuth Shopify ici
-    const { data: newShop, error: insertError } = await supabase
-      .from('shopify_connections')
-      .insert({
-        user_id: userId,
-        shop_domain: cleanDomain,
-        access_token: null, // Sera rempli après OAuth
-        status: 'pending', // pending, active, inactive
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('❌ [SHOPIFY] Insert error:', insertError);
-      throw insertError;
+    // Générer l'URL d'autorisation OAuth Shopify
+    let authUrl: string;
+    try {
+      authUrl = generateShopifyAuthUrl(cleanDomain, userId);
+    } catch (error) {
+      // Si c'est un domaine personnalisé, retourner un message d'aide
+      if (error instanceof Error && error.message.startsWith('DOMAINE_PERSONNALISE:')) {
+        const helpMessage = error.message.replace('DOMAINE_PERSONNALISE:', '');
+        return NextResponse.json(
+          { 
+            error: 'Domaine personnalisé détecté',
+            message: helpMessage,
+            helpUrl: 'https://help.shopify.com/fr/manual/domains',
+          },
+          { status: 400 }
+        );
+      }
+      throw error;
     }
 
-    console.log(`✅ [SHOPIFY] Shop ${cleanDomain} connected for user ${userId}`);
+    console.log(`✅ [SHOPIFY] OAuth URL generated for ${cleanDomain}`);
 
     return NextResponse.json({
       success: true,
-      shop: newShop,
-      message: 'Boutique connectée avec succès !',
-      // Dans une vraie implémentation, retourner l'URL OAuth Shopify
-      nextStep: 'oauth_required',
+      authUrl,
+      message: `Redirection vers ${cleanDomain} pour autorisation...`,
     });
 
   } catch (error) {
@@ -205,23 +222,14 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'shopId requis' }, { status: 400 });
     }
 
-    // Supprimer la boutique (seulement si elle appartient à l'utilisateur)
-    const { error } = await supabase
-      .from('shopify_connections')
-      .delete()
-      .eq('id', shopId)
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('❌ [SHOPIFY] Delete error:', error);
-      throw error;
-    }
+    // Déconnexion avec vérification de propriété (RLS)
+    await disconnectShop(shopId, userId);
 
     console.log(`✅ [SHOPIFY] Shop ${shopId} disconnected for user ${userId}`);
 
     return NextResponse.json({
       success: true,
-      message: 'Boutique déconnectée',
+      message: 'Boutique déconnectée avec succès',
     });
 
   } catch (error) {
