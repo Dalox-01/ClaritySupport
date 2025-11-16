@@ -125,10 +125,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Valider le format du domaine Shopify
-    const cleanDomain = shopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    let cleanDomain = shopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '').trim().toLowerCase();
+    
+    // Si c'est juste le nom (ex: "hk610k-6m"), ajouter .myshopify.com
+    if (!cleanDomain.includes('.')) {
+      cleanDomain = `${cleanDomain}.myshopify.com`;
+      console.log('✅ [SHOPIFY] Auto-added .myshopify.com:', cleanDomain);
+    }
     
     // Détecter les domaines personnalisés (pas .myshopify.com)
-    if (!cleanDomain.includes('.myshopify.com')) {
+    if (!cleanDomain.endsWith('.myshopify.com')) {
       // Vérifier si c'est un domaine personnalisé valide
       const isCustomDomain = /^[a-z0-9-]+\.(com|shop|store|fr|eu|net|org)$/i.test(cleanDomain);
       
@@ -148,7 +154,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Format invalide',
-          message: 'Format attendu: votre-boutique.myshopify.com',
+          message: 'Format attendu: votre-boutique.myshopify.com ou juste votre-boutique',
         },
         { status: 400 }
       );
