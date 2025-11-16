@@ -4,8 +4,9 @@
 -- ============================================================
 
 -- ÉTAPE 1: Ajouter la colonne segment
+-- Par défaut NULL, sera défini selon le plan
 ALTER TABLE public.subscriptions 
-ADD COLUMN IF NOT EXISTS segment TEXT DEFAULT 'shopify' CHECK (segment IN ('shopify', 'freelance'));
+ADD COLUMN IF NOT EXISTS segment TEXT CHECK (segment IN ('shopify', 'freelance'));
 
 -- ÉTAPE 2: Créer la table shopify_connections
 CREATE TABLE IF NOT EXISTS public.shopify_connections (
@@ -75,20 +76,23 @@ CREATE TRIGGER update_shopify_connections_timestamp
   EXECUTE FUNCTION public.update_shopify_connections_updated_at();
 
 -- ÉTAPE 7: Assigner les segments aux abonnements existants
--- E-commerce (Shopify)
+-- E-commerce (Shopify) - SEULEMENT ces plans ont accès à Shopify
 UPDATE public.subscriptions 
 SET segment = 'shopify' 
 WHERE plan IN ('STARTER', 'PRO', 'SCALE');
 
--- Freelance
+-- Freelance - N'ONT PAS accès à Shopify
 UPDATE public.subscriptions 
 SET segment = 'freelance' 
 WHERE plan IN ('SOLO', 'UNLIMITED');
 
--- Plans PRO ambigus : par défaut shopify si pas déjà défini
+-- Plans FREE : freelance par défaut (pas d'accès Shopify)
 UPDATE public.subscriptions 
-SET segment = 'shopify' 
-WHERE plan = 'PRO' AND segment IS NULL;
+SET segment = 'freelance' 
+WHERE plan = 'FREE' AND segment IS NULL;
+
+-- IMPORTANT: Seuls les utilisateurs avec segment = 'shopify' verront le bouton
+-- Les utilisateurs freelance ne verront JAMAIS le bouton Shopify
 
 -- VÉRIFICATION FINALE
 SELECT 
