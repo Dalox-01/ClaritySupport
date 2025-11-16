@@ -20,6 +20,11 @@ import {
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  console.log('🟢 [SHOPIFY CALLBACK] ==================== START ====================');
+  console.log('🟢 [SHOPIFY CALLBACK] Full URL:', req.url);
+  console.log('🟢 [SHOPIFY CALLBACK] Method:', req.method);
+  console.log('🟢 [SHOPIFY CALLBACK] Headers:', Object.fromEntries(req.headers.entries()));
+  
   try {
     const { searchParams } = new URL(req.url);
     
