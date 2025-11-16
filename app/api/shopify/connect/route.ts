@@ -77,21 +77,30 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    console.log('🔵 [SHOPIFY] POST /api/shopify/connect - Start');
+    
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
+      console.log('❌ [SHOPIFY] No session found');
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
     const userId = session.user.id;
+    console.log('✅ [SHOPIFY] User authenticated:', userId);
+    
     const { shopDomain } = await req.json();
+    console.log('🔵 [SHOPIFY] Received shopDomain:', shopDomain);
 
     if (!shopDomain || typeof shopDomain !== 'string') {
+      console.log('❌ [SHOPIFY] Invalid shopDomain');
       return NextResponse.json({ error: 'shopDomain requis' }, { status: 400 });
     }
 
     // Vérifier les limites du plan
+    console.log('🔵 [SHOPIFY] Checking plan access...');
     const limits = await checkShopifyAccess(userId);
+    console.log('✅ [SHOPIFY] Plan limits:', limits);
 
     if (!limits.hasAccess) {
       return NextResponse.json(
@@ -167,8 +176,14 @@ export async function POST(req: NextRequest) {
     // Générer l'URL d'autorisation OAuth Shopify
     let authUrl: string;
     try {
+      console.log('🔵 [SHOPIFY] Generating OAuth URL for:', cleanDomain);
+      console.log('🔵 [SHOPIFY] SHOPIFY_API_KEY exists:', !!process.env.SHOPIFY_API_KEY);
+      console.log('🔵 [SHOPIFY] NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL);
+      
       authUrl = generateShopifyAuthUrl(cleanDomain, userId);
+      console.log('✅ [SHOPIFY] OAuth URL generated successfully');
     } catch (error) {
+      console.error('❌ [SHOPIFY] Error generating OAuth URL:', error);
       // Si c'est un domaine personnalisé, retourner un message d'aide
       if (error instanceof Error && error.message.startsWith('DOMAINE_PERSONNALISE:')) {
         const helpMessage = error.message.replace('DOMAINE_PERSONNALISE:', '');
@@ -194,8 +209,15 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('❌ [SHOPIFY] POST Error:', error);
+    console.error('❌ [SHOPIFY] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('❌ [SHOPIFY] Error message:', error instanceof Error ? error.message : String(error));
+    
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Erreur serveur', 
+        details: error instanceof Error ? error.message : 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
+      },
       { status: 500 }
     );
   }
