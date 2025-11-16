@@ -50,13 +50,23 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Optionnel: Vérifier le HMAC pour sécurité supplémentaire
-    // TODO: Implémenter la vérification HMAC si SHOPIFY_API_SECRET est disponible
-    if (process.env.NODE_ENV === 'production' && !hmac) {
-      console.warn('⚠️ [SHOPIFY CALLBACK] HMAC verification skipped (not implemented)');
+    // Décoder le state pour extraire le userId
+    let userId: string;
+    try {
+      const stateData = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
+      userId = stateData.userId;
+      console.log('✅ [SHOPIFY CALLBACK] State decoded, userId:', userId);
+      
+      if (!userId) {
+        throw new Error('userId not found in state');
+      }
+    } catch (error) {
+      console.error('❌ [SHOPIFY CALLBACK] Failed to decode state:', error);
+      console.error('❌ [SHOPIFY CALLBACK] Raw state:', state);
+      return NextResponse.redirect(
+        new URL('/mail-center?shopify_error=invalid_state', req.url)
+      );
     }
-
-    const userId = state;
 
     console.log(`🔄 [SHOPIFY CALLBACK] Processing OAuth for shop: ${shopDomain}, user: ${userId}`);
 
