@@ -85,13 +85,21 @@ export async function GET(req: NextRequest) {
     // Étape 2: Sauvegarder la boutique en base de données
     let savedShop: { id: string; domain: string };
     try {
+      console.log('🔵 [SHOPIFY CALLBACK] Calling saveShopToDatabase with:', { userId, shopDomain });
       const shopData = await saveShopToDatabase(userId, shopDomain, accessToken);
+      console.log('✅ [SHOPIFY CALLBACK] saveShopToDatabase returned:', shopData);
       savedShop = { id: shopData.id, domain: shopData.shop_domain };
       console.log(`✅ [SHOPIFY CALLBACK] Shop saved to database: ${savedShop.id}`);
     } catch (error) {
       console.error('❌ [SHOPIFY CALLBACK] Failed to save shop:', error);
+      console.error('❌ [SHOPIFY CALLBACK] Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        shopDomain,
+      });
       return NextResponse.redirect(
-        new URL('/mail-center?shopify_error=save_failed', req.url)
+        new URL('/mail-center?shopify_error=save_failed&details=' + encodeURIComponent(error instanceof Error ? error.message : 'unknown'), req.url)
       );
     }
 
