@@ -49,6 +49,7 @@ import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/li
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
+import { ShopifyConnectButton } from '@/components/shopify-connect-button';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -1249,6 +1250,15 @@ export default function MailCenterPage() {
                   </SelectContent>
                 </Select>
               </Card>
+            </motion.div>
+
+            {/* Shopify - Visible uniquement pour les utilisateurs e-commerce */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+            >
+              <ShopifyConnectButton isLightMode={isLightMode} />
             </motion.div>
 
             {/* Outils */}
