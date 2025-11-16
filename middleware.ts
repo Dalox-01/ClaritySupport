@@ -87,18 +87,20 @@ export function middleware(request: NextRequest) {
   
   // Headers de sécurité supplémentaires
   response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
   
-  // Permettre l'iframe uniquement pour les domaines Shopify
-  const referer = request.headers.get('referer') || '';
-  if (referer.includes('myshopify.com') || referer.includes('shopify.com')) {
-    // Autoriser Shopify à afficher dans iframe
-    response.headers.set('X-Frame-Options', 'ALLOW-FROM https://admin.shopify.com');
+  // Autoriser Shopify à afficher l'app dans iframe
+  // Ne pas utiliser X-Frame-Options avec CSP frame-ancestors (conflit)
+  const url = request.nextUrl.pathname;
+  
+  // Pour les routes Shopify, autoriser l'embedding
+  if (url.startsWith('/api/shopify') || url.startsWith('/mail-center')) {
     response.headers.set('Content-Security-Policy', "frame-ancestors https://*.myshopify.com https://admin.shopify.com");
   } else {
+    // Pour les autres routes, bloquer l'embedding
     response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Content-Security-Policy', "frame-ancestors 'none'");
   }
-  
-  response.headers.set('X-XSS-Protection', '1; mode=block');
   
   // Permettre les requêtes depuis l'extension Chrome (avec validation)
   if (origin && (origin.startsWith('chrome-extension://') || origin.includes('localhost'))) {
