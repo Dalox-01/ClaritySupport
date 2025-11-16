@@ -120,32 +120,36 @@ export default function Chart() {
         const response = await fetch('/api/mail-center/stats?period=week');
         const data = await response.json();
         
-        if (data.week) {
-          // Generate last 7 days of data
+        if (data.timeline && data.timeline.length > 0) {
+          // Utiliser les vraies données de la timeline (7 derniers jours)
           const chartData: TicketMetric[] = [];
-          const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-          const today = new Date();
           
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const dayName = daysOfWeek[date.getDay()];
-            
-            // Simulate distribution across week (in production, this should come from API)
-            const received = Math.floor((data.week.received || 0) / 7);
-            const replied = Math.floor((data.week.auto_replied + data.week.manual_replied || 0) / 7);
-            
+          data.timeline.forEach((day: { date: string; received: number; sent: number }) => {
+            // Email reçus
             chartData.push({
-              date: dayName,
-              count: received,
+              date: day.date,
+              count: day.received,
               type: "created",
             });
+            
+            // Email traités (réponses envoyées)
             chartData.push({
-              date: dayName,
-              count: replied,
+              date: day.date,
+              count: day.sent,
               type: "resolved",
             });
-          }
+          });
+          
+          setEmailData(chartData);
+        } else {
+          // Fallback: afficher des jours vides si pas de données
+          const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+          const chartData: TicketMetric[] = [];
+          
+          daysOfWeek.forEach(day => {
+            chartData.push({ date: day, count: 0, type: "created" });
+            chartData.push({ date: day, count: 0, type: "resolved" });
+          });
           
           setEmailData(chartData);
         }

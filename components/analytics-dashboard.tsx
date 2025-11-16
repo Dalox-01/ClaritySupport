@@ -8,7 +8,6 @@ import {
 } from "@/components/chart-blocks";
 import Container from "@/components/container";
 import EmailMetrics from "@/components/chart-blocks/charts/metrics/email-metrics";
-import SimpleMetrics from "@/components/chart-blocks/charts/simple-metrics";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -34,30 +33,24 @@ export function AnalyticsDashboard() {
           <EmailMetrics />
         </div>
         
-        {/* Grille principale - 2x2 */}
-        <div className="flex-1 grid grid-cols-2 gap-2.5 min-h-0">
-          {/* Ligne 1 - Gauche: Bar Chart */}
-          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
-            <div className="p-2 h-full overflow-hidden">
-              <AverageTicketsCreated />
+        {/* Grille principale */}
+        <div className="flex-1 flex flex-col gap-2.5 min-h-0">
+          {/* Ligne 1 - Volume Email et Répartition Filtres (2 colonnes) */}
+          <div className="flex-1 grid grid-cols-2 gap-2.5 min-h-0">
+            <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
+              <div className="p-2 h-full overflow-hidden">
+                <AverageTicketsCreated />
+              </div>
+            </div>
+            
+            <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
+              <div className="p-2 h-full overflow-hidden">
+                <Conversions />
+              </div>
             </div>
           </div>
           
-          {/* Ligne 1 - Droite: Circle Packing */}
-          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
-            <div className="p-2 h-full overflow-hidden">
-              <Conversions />
-            </div>
-          </div>
-          
-          {/* Ligne 2 - Gauche: Métriques Clés */}
-          <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
-            <div className="p-2 h-full overflow-hidden">
-              <SimpleMetrics />
-            </div>
-          </div>
-          
-          {/* Ligne 2 - Droite: Satisfaction */}
+          {/* Ligne 2 - Analyse des Sentiments (pleine largeur) */}
           <div className="relative rounded-lg border border-slate-700/30 bg-slate-900/30 backdrop-blur-sm shadow-lg overflow-hidden">
             <div className="p-2 h-full overflow-hidden">
               <CustomerSatisfication />

@@ -22,14 +22,15 @@ export default function Chart() {
         const data = await response.json();
         
         if (data.filters && data.filters.length > 0) {
-          // Utiliser directement les filtres du backend
+          // Utiliser directement les filtres du backend et trier du plus grand au plus petit
           const filterData: FilterData[] = data.filters
             .filter((f: any) => f.count > 0)
             .map((f: any) => ({
               name: f.label,
               count: f.count,
               color: f.color
-            }));
+            }))
+            .sort((a: FilterData, b: FilterData) => b.count - a.count);
           
           setFilters(filterData);
         } else {
@@ -67,35 +68,70 @@ export default function Chart() {
   const maxSize = 120;
 
   return (
-    <div className="flex h-full items-center justify-center p-4">
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        {filters.map((filter) => {
-          const size = minSize + ((filter.count / maxCount) * (maxSize - minSize));
-          
-          return (
+    <div className="relative flex h-full w-full items-center justify-center p-4">
+      {filters.length === 0 ? (
+        <div className="text-sm text-slate-400">Aucun filtre détecté</div>
+      ) : (
+        <div className="relative h-full w-full">
+          {/* Plus grand filtre au centre */}
+          {filters[0] && (
             <div
-              key={filter.name}
-              className="group relative transition-transform hover:scale-110"
-              style={{ width: size, height: size }}
+              className="absolute z-10 flex flex-col items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
+              style={{
+                width: '120px',
+                height: '120px',
+                backgroundColor: filters[0].color || '#3b82f6',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)'
+              }}
             >
-              <div
-                className="flex h-full w-full items-center justify-center rounded-full shadow-lg transition-shadow hover:shadow-xl"
-                style={{ backgroundColor: filter.color }}
-              >
-                <span className="text-2xl font-bold text-white">{filter.count}</span>
-              </div>
+              <div className="text-3xl font-bold text-white">{filters[0].count}</div>
+              <div className="mt-1 px-2 text-center text-xs font-medium text-white/90">{filters[0].name}</div>
               
               {/* Tooltip */}
-              <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                {filter.name}
-                <div className="absolute left-1/2 top-full -translate-x-1/2">
-                  <div className="border-4 border-transparent border-t-gray-900"></div>
-                </div>
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                {filters[0].name}: {filters[0].count} email{filters[0].count > 1 ? 's' : ''}
               </div>
             </div>
-          );
-        })}
-      </div>
+          )}
+
+          {/* Filtres satellites autour */}
+          {filters.slice(1).map((filter, index) => {
+            const totalSatellites = filters.length - 1;
+            const angle = (index * 360) / totalSatellites - 90;
+            const radian = (angle * Math.PI) / 180;
+            const radius = 140;
+            const x = Math.cos(radian) * radius;
+            const y = Math.sin(radian) * radius;
+            
+            const size = Math.min(90, Math.max(60, 60 + (filter.count / filters[0].count) * 30));
+
+            return (
+              <div
+                key={filter.name}
+                className="absolute flex flex-col items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
+                style={{
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  backgroundColor: filter.color || '#64748b',
+                  top: '50%',
+                  left: '50%',
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`
+                }}
+              >
+                <div className="text-xl font-bold text-white">{filter.count}</div>
+                <div className="mt-0.5 px-1 text-center text-xs font-medium leading-tight text-white/90">{filter.name}</div>
+                
+                {/* Tooltip */}
+                <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                  {filter.name}: {filter.count} email{filter.count > 1 ? 's' : ''}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
-}
+};
