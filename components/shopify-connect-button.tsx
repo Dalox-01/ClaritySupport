@@ -66,6 +66,8 @@ export function ShopifyConnectButton({ className, isLightMode = false }: Shopify
   }, []);
 
   const handleConnect = async () => {
+    console.log('🟢 [FRONTEND] handleConnect called with shopDomain:', shopDomain);
+    
     if (!shopDomain.trim()) {
       toast.error('Veuillez entrer le domaine de votre boutique');
       return;
@@ -75,13 +77,16 @@ export function ShopifyConnectButton({ className, isLightMode = false }: Shopify
     setCustomDomainError(null);
 
     try {
+      console.log('🟢 [FRONTEND] Sending POST to /api/shopify/connect');
       const res = await fetch('/api/shopify/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ shopDomain: shopDomain.trim() }),
       });
 
+      console.log('🟢 [FRONTEND] Response status:', res.status);
       const data = await res.json();
+      console.log('🟢 [FRONTEND] Response data:', data);
 
       if (!res.ok) {
         // Gérer l'erreur de domaine personnalisé
@@ -95,12 +100,15 @@ export function ShopifyConnectButton({ className, isLightMode = false }: Shopify
 
       // ✅ CRITIQUE: Rediriger vers l'URL OAuth Shopify
       if (data.authUrl) {
+        console.log('🔵 [FRONTEND] authUrl received:', data.authUrl);
         toast.success(data.message || 'Redirection vers Shopify...');
-        console.log('🔵 [SHOPIFY] Redirecting to:', data.authUrl);
         
         // Redirection vers Shopify pour autorisation
+        console.log('🔵 [FRONTEND] Executing window.location.href redirect NOW');
         window.location.href = data.authUrl;
         return; // Important: arrêter l'exécution après redirection
+      } else {
+        console.error('❌ [FRONTEND] No authUrl in response!');
       }
 
       toast.success(data.message || 'Boutique connectée !');
