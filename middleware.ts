@@ -87,7 +87,17 @@ export function middleware(request: NextRequest) {
   
   // Headers de sécurité supplémentaires
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
+  
+  // Permettre l'iframe uniquement pour les domaines Shopify
+  const referer = request.headers.get('referer') || '';
+  if (referer.includes('myshopify.com') || referer.includes('shopify.com')) {
+    // Autoriser Shopify à afficher dans iframe
+    response.headers.set('X-Frame-Options', 'ALLOW-FROM https://admin.shopify.com');
+    response.headers.set('Content-Security-Policy', "frame-ancestors https://*.myshopify.com https://admin.shopify.com");
+  } else {
+    response.headers.set('X-Frame-Options', 'DENY');
+  }
+  
   response.headers.set('X-XSS-Protection', '1; mode=block');
   
   // Permettre les requêtes depuis l'extension Chrome (avec validation)
