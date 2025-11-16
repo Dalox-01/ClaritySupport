@@ -91,10 +91,10 @@ export function middleware(request: NextRequest) {
   
   // Autoriser Shopify à afficher l'app dans iframe
   // Ne pas utiliser X-Frame-Options avec CSP frame-ancestors (conflit)
-  const url = request.nextUrl.pathname;
+  const pathname = request.nextUrl.pathname;
   
   // Pour les routes Shopify, autoriser l'embedding
-  if (url.startsWith('/api/shopify') || url.startsWith('/mail-center')) {
+  if (pathname.startsWith('/api/shopify') || pathname.startsWith('/mail-center')) {
     response.headers.set('Content-Security-Policy', "frame-ancestors https://*.myshopify.com https://admin.shopify.com");
   } else {
     // Pour les autres routes, bloquer l'embedding
