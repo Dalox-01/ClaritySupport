@@ -19,16 +19,25 @@ export default function CustomerSatisfaction() {
   useEffect(() => {
     const fetchSentiment = async () => {
       try {
-        const response = await fetch('/api/mail-center/stats?period=today');
+        const response = await fetch('/api/mail-center/stats?period=week');
         const data = await response.json();
         
-        if (data.sentiment) {
+        if (data.sentiment && Array.isArray(data.sentiment)) {
+          // Le backend retourne : [{ category: 'Positif', score: 45 }, ...]
+          const positifData = data.sentiment.find((s: any) => s.category === 'Positif');
+          const neutreData = data.sentiment.find((s: any) => s.category === 'Neutre');
+          const negatifData = data.sentiment.find((s: any) => s.category === 'Négatif');
+          
           setSentiment({
-            positive: data.sentiment.positive || 0,
-            neutral: data.sentiment.neutral || 0,
-            negative: data.sentiment.negative || 0,
+            positive: positifData?.score || 0,
+            neutral: neutreData?.score || 0,
+            negative: negatifData?.score || 0,
           });
-          setTotalEmails((data.sentiment.positive || 0) + (data.sentiment.neutral || 0) + (data.sentiment.negative || 0));
+          
+          // Calculer le total basé sur les métriques
+          if (data.metrics?.total_emails) {
+            setTotalEmails(data.metrics.total_emails);
+          }
         }
       } catch (error) {
         console.error('Erreur lors du chargement du sentiment:', error);

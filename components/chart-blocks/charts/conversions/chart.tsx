@@ -68,64 +68,83 @@ export default function Chart() {
   const maxSize = 120;
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center p-4">
+    <div className="relative flex h-full w-full items-center justify-center overflow-visible p-4">
       {filters.length === 0 ? (
         <div className="text-sm text-slate-400">Aucun filtre détecté</div>
       ) : (
-        <div className="relative h-full w-full">
-          {/* Plus grand filtre au centre */}
+        <div className="relative h-full w-full overflow-visible">
+          {/* Cercle principal au centre - Le plus gros filtre */}
           {filters[0] && (
             <div
-              className="absolute z-10 flex flex-col items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
+              className="absolute z-10 flex flex-col items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:z-30 group cursor-pointer border-4 border-white/20"
               style={{
-                width: '120px',
-                height: '120px',
-                backgroundColor: filters[0].color || '#3b82f6',
+                width: '140px',
+                height: '140px',
+                background: `linear-gradient(135deg, ${filters[0].color} 0%, ${filters[0].color}dd 100%)`,
+                boxShadow: `0 8px 32px ${filters[0].color}66, 0 0 0 4px ${filters[0].color}22`,
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <div className="text-3xl font-bold text-white">{filters[0].count}</div>
-              <div className="mt-1 px-2 text-center text-xs font-medium text-white/90">{filters[0].name}</div>
+              <div className="text-4xl font-bold text-white drop-shadow-lg">{filters[0].count}</div>
+              <div className="mt-1.5 px-3 text-center text-xs font-semibold uppercase tracking-wider text-white/95 drop-shadow-md">
+                {filters[0].name}
+              </div>
               
               {/* Tooltip */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900/95 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white opacity-0 shadow-2xl transition-opacity group-hover:opacity-100 border border-white/10">
                 {filters[0].name}: {filters[0].count} email{filters[0].count > 1 ? 's' : ''}
+                <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-900/95"></div>
               </div>
             </div>
           )}
 
-          {/* Filtres satellites autour */}
+          {/* Cercles satellites - Positionnés autour et se chevauchant légèrement */}
           {filters.slice(1).map((filter, index) => {
             const totalSatellites = filters.length - 1;
-            const angle = (index * 360) / totalSatellites - 90;
+            // Angles variés pour un placement plus organique
+            const baseAngle = (index * 360) / totalSatellites;
+            const angleVariation = (Math.sin(index * 2.3) * 15); // Variation naturelle
+            const angle = baseAngle + angleVariation - 90;
             const radian = (angle * Math.PI) / 180;
-            const radius = 140;
+            
+            // Distance plus proche pour créer le chevauchement
+            const radius = 85 + (Math.cos(index * 1.7) * 15); // Variation de distance
             const x = Math.cos(radian) * radius;
             const y = Math.sin(radian) * radius;
             
-            const size = Math.min(90, Math.max(60, 60 + (filter.count / filters[0].count) * 30));
+            // Taille dynamique basée sur le ratio avec le principal
+            const sizeRatio = filter.count / filters[0].count;
+            const size = Math.max(75, Math.min(110, 75 + sizeRatio * 45));
+            
+            // Z-index alterné pour effet de profondeur
+            const zIndex = 5 + (index % 3);
 
             return (
               <div
                 key={filter.name}
-                className="absolute flex flex-col items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 group cursor-pointer"
+                className="absolute flex flex-col items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:scale-110 hover:z-30 group cursor-pointer border-3 border-white/30"
                 style={{
                   width: `${size}px`,
                   height: `${size}px`,
-                  backgroundColor: filter.color || '#64748b',
+                  background: `linear-gradient(135deg, ${filter.color} 0%, ${filter.color}dd 100%)`,
+                  boxShadow: `0 8px 24px ${filter.color}55, 0 0 0 3px ${filter.color}33, inset 0 2px 8px rgba(255,255,255,0.2)`,
                   top: '50%',
                   left: '50%',
-                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                  zIndex: zIndex
                 }}
               >
-                <div className="text-xl font-bold text-white">{filter.count}</div>
-                <div className="mt-0.5 px-1 text-center text-xs font-medium leading-tight text-white/90">{filter.name}</div>
+                <div className="text-2xl font-bold text-white drop-shadow-lg">{filter.count}</div>
+                <div className="mt-0.5 px-2 text-center text-xs font-semibold uppercase tracking-wide leading-tight text-white/95 drop-shadow-md">
+                  {filter.name}
+                </div>
                 
                 {/* Tooltip */}
-                <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                <div className="absolute -top-12 left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900/95 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white opacity-0 shadow-2xl transition-opacity group-hover:opacity-100 border border-white/10">
                   {filter.name}: {filter.count} email{filter.count > 1 ? 's' : ''}
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-900/95"></div>
                 </div>
               </div>
             );
