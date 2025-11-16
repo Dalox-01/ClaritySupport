@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
   console.log('🟢 [SHOPIFY CALLBACK] Full URL:', req.url);
   console.log('🟢 [SHOPIFY CALLBACK] Method:', req.method);
   console.log('🟢 [SHOPIFY CALLBACK] Headers:', Object.fromEntries(req.headers.entries()));
+  console.log('🟢 [SHOPIFY CALLBACK] ENV Check - SHOPIFY_API_SECRET exists:', !!process.env.SHOPIFY_API_SECRET);
+  console.log('🟢 [SHOPIFY CALLBACK] ENV Check - SHOPIFY_API_KEY exists:', !!process.env.SHOPIFY_API_KEY);
   
   try {
     const { searchParams } = new URL(req.url);
@@ -32,6 +34,13 @@ export async function GET(req: NextRequest) {
     const shopDomain = searchParams.get('shop');
     const state = searchParams.get('state'); // Contains userId
     const hmac = searchParams.get('hmac');
+
+    console.log('🟢 [SHOPIFY CALLBACK] Query params:', { 
+      code: code?.substring(0, 20) + '...', 
+      shop: shopDomain, 
+      state: state?.substring(0, 20) + '...',
+      hmac: hmac?.substring(0, 20) + '...' 
+    });
 
     // Validation des paramètres OAuth
     if (!code || !shopDomain || !state) {
