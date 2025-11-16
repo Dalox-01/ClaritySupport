@@ -93,6 +93,16 @@ export function ShopifyConnectButton({ className, isLightMode = false }: Shopify
         throw new Error(data.message || data.error || 'Erreur de connexion');
       }
 
+      // ✅ CRITIQUE: Rediriger vers l'URL OAuth Shopify
+      if (data.authUrl) {
+        toast.success(data.message || 'Redirection vers Shopify...');
+        console.log('🔵 [SHOPIFY] Redirecting to:', data.authUrl);
+        
+        // Redirection vers Shopify pour autorisation
+        window.location.href = data.authUrl;
+        return; // Important: arrêter l'exécution après redirection
+      }
+
       toast.success(data.message || 'Boutique connectée !');
       setShopDomain('');
       setShowDialog(false);
