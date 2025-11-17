@@ -28,6 +28,13 @@ const supabase = createClient(
   }
 );
 
+interface LimitCheckResult {
+  can_create: boolean;
+  current_count: number;
+  max_allowed: number;
+  plan: string;
+}
+
 /**
  * GET - Récupérer les limites et statistiques d'utilisation
  */
@@ -45,7 +52,7 @@ export async function GET(req: NextRequest) {
     // Vérifier les limites via RPC
     const { data: limitCheck, error: limitError } = await supabase
       .rpc('check_custom_filter_limit', { p_user_id: userId })
-      .single();
+      .single() as { data: LimitCheckResult | null; error: any };
 
     if (limitError) {
       console.error('❌ Error checking limits:', limitError);
