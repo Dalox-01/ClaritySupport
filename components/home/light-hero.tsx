@@ -38,11 +38,11 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-6 text-6xl font-extrabold leading-[1.05] tracking-tight text-gray-900 sm:text-7xl lg:text-8xl"
           >
-            Transformez votre support client
+            Support client intelligent
             <br />
             <span className="relative inline-block">
               <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 bg-clip-text text-transparent">
-                avec l'intelligence artificielle
+                disponible 24/7
               </span>
               {/* Soulignement animé */}
               <motion.div
@@ -61,10 +61,9 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-700 sm:text-2xl"
           >
-            <span className="font-bold text-gray-900">Automatisation intelligente 24/7.</span>{' '}
-            Réponses instantanées, satisfaction client maximale, croissance accélérée.{' '}
+            L'IA qui automatise vos emails, satisfait vos clients et libère votre temps.{' '}
             <span className="font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              L'excellence opérationnelle réinventée.
+              Simple. Efficace. Puissant.
             </span>
           </motion.p>
 
