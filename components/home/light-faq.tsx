@@ -1,39 +1,39 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
 const faqs = [
   {
-    question: 'Setup en 2 minutes ? Vous rigolez ?',
+    question: 'Comment fonctionne l\'intégration avec mes comptes email ?',
     answer:
-      'Zéro blague. Connectez Gmail ou Outlook en 3 clics via OAuth 2.0. Pas de config technique. Pas de migration. L\'IA démarre instantanément. Promis.',
+      'ClaritySupport se connecte de manière sécurisée via OAuth 2.0 à vos comptes Gmail et Outlook. La configuration prend moins de 2 minutes et ne nécessite aucune compétence technique. Vos identifiants ne sont jamais stockés.',
   },
   {
-    question: 'L\'IA va vraiment comprendre MES clients ?',
+    question: 'L\'IA peut-elle vraiment comprendre le contexte de mes emails ?',
     answer:
-      'Elle ne devine pas, elle APPREND. Historique, sentiment, contexte, urgence... L\'IA analyse tout et répond exactement comme vous le feriez. Mais en 8 secondes.',
+      'Notre intelligence artificielle analyse l\'historique des conversations, le sentiment du client et le contexte métier pour générer des réponses précises et personnalisées. Elle s\'adapte progressivement au ton de votre entreprise.',
   },
   {
-    question: 'Et si je veux arrêter demain matin ?',
+    question: 'Puis-je annuler mon abonnement à tout moment ?',
     answer:
-      '1 clic, c\'est terminé. Pas de période d\'engagement. Pas de pénalités. Pas de rétention de données. Vous partez quand vous voulez. On reste amis.',
+      'Absolument. Aucun engagement de durée. Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord, sans frais de résiliation ni période minimale.',
   },
   {
-    question: 'Mes données sont-elles vraiment protégées ?',
+    question: 'Comment sont sécurisées les données de mes clients ?',
     answer:
-      'Chiffrement militaire AES-256. Serveurs européens ISO 27001. RGPD total. Vos données sont plus sécurisées chez nous que dans votre propre ordinateur.',
+      'Nous appliquons les plus hauts standards de sécurité : chiffrement AES-256 de bout en bout, conformité RGPD totale, hébergement sur serveurs européens certifiés ISO 27001. Vos données sont protégées avec le même niveau de sécurité que les institutions bancaires.',
   },
   {
-    question: 'Combien d\'emails puis-je gérer par mois ?',
+    question: 'Combien de comptes email puis-je connecter ?',
     answer:
-      'Plan STARTER : 5000 emails. PRO : 20 000. SCALE : 50 000+. Au-delà ? Upgrade automatique sans coupure. Vous ne perdez jamais un client.',
+      'Le nombre de comptes dépend de votre forfait : 3 comptes pour le plan STARTER, 10 pour le PRO, et illimité pour le SCALE. Vous pouvez librement combiner Gmail et Outlook.',
   },
   {
-    question: 'C\'est compatible avec Shopify/WooCommerce ?',
+    question: 'Proposez-vous une intégration API ?',
     answer:
-      'Totalement. Tracking de commandes automatique, updates de livraison, upsells intelligents. L\'IA gère tout. Vos clients adorent.',
+      'Oui. Les plans PRO et SCALE incluent un accès complet à notre API REST et système de webhooks, avec documentation technique détaillée et support développeur dédié.',
   },
 ];
 
@@ -43,7 +43,7 @@ export function LightFaq() {
   return (
     <section className="relative overflow-hidden bg-white py-24 sm:py-32">
       <div className="relative mx-auto max-w-4xl px-6 sm:px-8 lg:px-12">
-        {/* Header conversationnel */}
+        {/* Header professionnel */}
         <div className="mb-16 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -52,16 +52,16 @@ export function LightFaq() {
             transition={{ duration: 0.6 }}
           >
             <p className="mb-4 text-sm font-bold uppercase tracking-wider text-blue-600">
-              🤔 Les vraies questions
+              Questions Fréquentes
             </p>
             <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl">
-              Vous vous demandez si
+              Tout Ce Que Vous
               <span className="block bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                ça marche vraiment ?
+                Devez Savoir
               </span>
             </h2>
             <p className="text-xl leading-relaxed text-gray-700">
-              <span className="font-bold text-gray-900">Réponse honnête :</span> Oui. Voici pourquoi.
+              Des réponses claires à vos questions
             </p>
           </motion.div>
         </div>
@@ -137,7 +137,7 @@ export function LightFaq() {
           })}
         </div>
 
-        {/* Contact CTA magnétique */}
+        {/* Contact CTA professionnel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -152,14 +152,14 @@ export function LightFaq() {
             </div>
             
             <h3 className="relative mb-4 text-3xl font-extrabold text-gray-900">
-              Pas convaincu(e) ? 🤷‍♂️
+              Vous avez d'autres questions ?
             </h3>
             <p className="relative mb-8 text-lg leading-relaxed text-gray-700">
-              Parlez à un humain (oui, on existe encore). <span className="font-bold text-blue-600">Réponse garantie en moins de 2h.</span>
+              Notre équipe est disponible pour vous accompagner. <span className="font-bold text-blue-600">Réponse sous 2 heures</span> en moyenne.
             </p>
             <button className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 px-10 py-4 text-lg font-bold text-white shadow-xl shadow-blue-600/30 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-600/40 active:scale-100">
-              <span className="relative z-10">Discutons ensemble</span>
-              <span className="relative z-10 transition-transform group-hover/btn:translate-x-1">💬</span>
+              <span className="relative z-10">Contactez notre équipe</span>
+              <ArrowRight className="relative z-10 h-5 w-5 transition-transform group-hover/btn:translate-x-1" />
               {/* Effet de brillance */}
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
             </button>

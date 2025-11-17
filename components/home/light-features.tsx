@@ -19,49 +19,49 @@ import {
 const features = [
   {
     icon: Bot,
-    title: 'IA qui lit entre les lignes',
-    description: 'Ne devine pas. Comprend. Répond avec empathie et précision comme votre meilleur agent.',
+    title: 'Intelligence Artificielle Avancée',
+    description: 'Analyse contextuelle approfondie pour des réponses précises et personnalisées, adaptées à votre marque.',
     color: 'blue',
   },
   {
     icon: Mail,
-    title: 'Toutes vos boîtes. Un seul endroit.',
-    description: 'Gmail, Outlook, Yahoo. Fini le jonglage. Tout centralisé. Vous gagnez 3h par jour.',
+    title: 'Centralisation Multi-Comptes',
+    description: 'Unification de vos boîtes Gmail, Outlook et autres en une interface unique et performante.',
     color: 'cyan',
   },
   {
     icon: Zap,
-    title: 'Réponse en 8 secondes. Toujours.',
-    description: 'Vos clients n\'attendent plus. L\'IA répond instantanément, de jour comme de nuit.',
+    title: 'Automatisation Continue',
+    description: 'Réponses instantanées 24h/24, 7j/7. Votre support client ne dort jamais.',
     color: 'indigo',
   },
   {
     icon: BarChart3,
-    title: 'Chaque chiffre raconte une histoire',
-    description: 'Satisfaction client, temps de réponse, taux de résolution. Visualisez votre succès.',
+    title: 'Analytique en Temps Réel',
+    description: 'Tableaux de bord détaillés : satisfaction client, temps de réponse, taux de résolution.',
     color: 'violet',
   },
   {
     icon: Shield,
-    title: 'Sécurité blindée. Promis.',
-    description: 'Chiffrement militaire, serveurs EU, conformité RGPD totale. Vos données sont intouchables.',
+    title: 'Sécurité de Niveau Entreprise',
+    description: 'Chiffrement AES-256, conformité RGPD complète, hébergement européen certifié.',
     color: 'emerald',
   },
   {
     icon: Clock,
-    title: 'Reprenez 85% de votre temps',
-    description: 'Fini les emails répétitifs. Concentrez-vous sur ce qui compte vraiment : votre business.',
+    title: 'Gain de Productivité',
+    description: 'Réduction jusqu\'à 85% du temps consacré au support client. Focalisez-vous sur l\'essentiel.',
     color: 'amber',
   },
 ];
 
 const additionalFeatures = [
-  { icon: Inbox, title: 'Inbox Zero automatique', description: 'L\'IA trie, classe, archive. Vous respirez.' },
-  { icon: Brain, title: 'Elle apprend de vous', description: 'Plus vous l\'utilisez, plus elle devient vous.' },
-  { icon: Target, title: 'Détecte la colère avant vous', description: 'Clients mécontents ? Alerte prioritaire instantanée.' },
-  { icon: Users, title: 'Votre équipe, synchronisée', description: 'Qui fait quoi ? Zéro doublon, 100% efficacité.' },
-  { icon: Globe, title: '47 langues parlées couramment', description: 'Client chinois ? Client espagnol ? Pas de souci.' },
-  { icon: Workflow, title: 'Vos réponses, en 1 clic', description: 'Créez des templates magiques réutilisables.' },
+  { icon: Inbox, title: 'Classification Automatique', description: 'Tri intelligent et catégorisation de vos emails' },
+  { icon: Brain, title: 'Apprentissage Continu', description: 'L\'IA s\'améliore avec chaque interaction' },
+  { icon: Target, title: 'Détection de Priorités', description: 'Identification automatique des demandes urgentes' },
+  { icon: Users, title: 'Collaboration d\'Équipe', description: 'Gestion des rôles et permissions avancée' },
+  { icon: Globe, title: 'Support Multilingue', description: 'Réponses dans 47 langues automatiquement' },
+  { icon: Workflow, title: 'Templates Personnalisés', description: 'Bibliothèque de réponses réutilisables' },
 ];
 
 const colorVariants: Record<string, { bg: string; icon: string; border: string }> = {
@@ -80,7 +80,7 @@ export function LightFeatures() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent" />
 
       <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        {/* Header magnétique */}
+        {/* Header professionnel */}
         <div className="mx-auto max-w-3xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -89,16 +89,16 @@ export function LightFeatures() {
             transition={{ duration: 0.6 }}
           >
             <p className="mb-4 text-sm font-bold uppercase tracking-wider text-blue-600">
-              🚀 Superpuissances incluses
+              Fonctionnalités Avancées
             </p>
             <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Votre support client
+              Une Suite Complète
               <span className="block bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                devient inarrêtable
+                Pour Votre Réussite
               </span>
             </h2>
             <p className="text-xl leading-relaxed text-gray-700">
-              Pas d'options inutiles. Que des fonctionnalités qui <span className="font-bold text-gray-900">changent la donne.</span>
+              Des outils professionnels pour <span className="font-bold text-gray-900">transformer votre support client</span>
             </p>
           </motion.div>
         </div>

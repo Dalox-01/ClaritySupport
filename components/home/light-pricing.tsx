@@ -15,7 +15,7 @@ export function LightPricing() {
   return (
     <section id="pricing" className="relative overflow-hidden bg-gray-50 py-24 sm:py-32">
       <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        {/* Header magnétique */}
+        {/* Header professionnel */}
         <div className="mx-auto max-w-3xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -24,17 +24,17 @@ export function LightPricing() {
             transition={{ duration: 0.6 }}
           >
             <p className="mb-4 text-sm font-bold uppercase tracking-wider text-blue-600">
-              💰 Investissement qui se rembourse en 1 semaine
+              Tarification Transparente
             </p>
             <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Un prix.<br />
-              <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                Une révolution.
+              Des Plans Adaptés
+              <span className="block bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                À Votre Croissance
               </span>
             </h2>
             <p className="text-xl leading-relaxed text-gray-700">
-              <span className="font-bold text-gray-900">Pas de frais cachés.</span> Pas de pièges.{' '}
-              Juste un ROI qui fait rêver vos concurrents.
+              <span className="font-bold text-gray-900">Sans frais cachés.</span> Sans engagement.{' '}
+              Investissement rentabilisé dès la première semaine.
             </p>
           </motion.div>
         </div>
@@ -65,7 +65,7 @@ export function LightPricing() {
           </div>
         </div>
 
-        {/* Description persuasive */}
+        {/* Description professionnelle */}
         <AnimatePresence mode="wait">
           <motion.p
             key={`desc-${activeSegment}`}
@@ -76,8 +76,8 @@ export function LightPricing() {
             className="mt-6 text-center text-lg font-semibold text-gray-700"
           >
             {activeSegment === 'shopify' 
-              ? '🛒 Shopify, WooCommerce, Prestashop : votre boutique mérite le meilleur support' 
-              : '💼 Freelances & Pros : reprenez le contrôle de votre inbox'}
+              ? 'Solutions professionnelles pour boutiques e-commerce et marketplaces' 
+              : 'Outils optimisés pour indépendants et professionnels du service'}
           </motion.p>
         </AnimatePresence>
 
