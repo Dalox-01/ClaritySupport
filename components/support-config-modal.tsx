@@ -128,7 +128,6 @@ export function SupportConfigModal({
 
   const tabs = [
     { id: 'ai-config', label: 'Configuration IA', icon: Bot },
-    { id: 'filters', label: 'Filtres', icon: Filter },
   ];
 
   if (!isOpen) return null;
@@ -261,18 +260,6 @@ export function SupportConfigModal({
                   className="h-full"
                 >
                   <TabAIConfigAdvanced userPlan={userPlan} initialSection={initialSection} />
-                </motion.div>
-              )}
-              {activeTab === 'filters' && (
-                <motion.div
-                  key="filters"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
-                  className="h-full"
-                >
-                  <TabAIConfigAdvanced userPlan={userPlan} initialSection="filters" />
                 </motion.div>
               )}
             </AnimatePresence>
