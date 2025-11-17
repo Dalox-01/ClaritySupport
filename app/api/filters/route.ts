@@ -32,6 +32,13 @@ const supabase = createClient(
   }
 );
 
+interface LimitCheckResult {
+  can_create: boolean;
+  current_count: number;
+  max_allowed: number;
+  plan: string;
+}
+
 export interface UserFilter {
   id: string;
   user_id: string;
@@ -174,7 +181,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Vérifier la limite de filtres personnalisés pour le plan
-    const { data: limitCheck, error: limitError } = await supabase
+    const { data, error: limitError } = await supabase
       .rpc('check_custom_filter_limit', { p_user_id: userId })
       .single();
 
@@ -182,6 +189,13 @@ export async function POST(req: NextRequest) {
       console.error('❌ Error checking limit:', limitError);
       throw limitError;
     }
+
+    if (!data) {
+      throw new Error('Failed to check filter limits');
+    }
+
+    // Type assertion après vérification null
+    const limitCheck = data as LimitCheckResult;
 
     if (!limitCheck.can_create) {
       return NextResponse.json({
