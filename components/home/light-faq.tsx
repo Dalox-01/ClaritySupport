@@ -6,34 +6,34 @@ import { useState } from 'react';
 
 const faqs = [
   {
-    question: 'Comment fonctionne la synchronisation des emails ?',
+    question: 'Setup en 2 minutes ? Vous rigolez ?',
     answer:
-      'ClaritySupport se connecte de manière sécurisée à vos comptes Gmail et Outlook via OAuth 2.0. Vos emails sont synchronisés en temps réel et stockés de manière chiffrée. Nous ne conservons jamais vos mots de passe.',
+      'Zéro blague. Connectez Gmail ou Outlook en 3 clics via OAuth 2.0. Pas de config technique. Pas de migration. L\'IA démarre instantanément. Promis.',
   },
   {
-    question: 'L\'IA peut-elle vraiment comprendre le contexte de mes emails ?',
+    question: 'L\'IA va vraiment comprendre MES clients ?',
     answer:
-      'Absolument ! Notre IA analyse le contexte, l\'historique des conversations et le sentiment du client pour générer des réponses précises et personnalisées. Elle s\'adapte au ton de votre entreprise.',
+      'Elle ne devine pas, elle APPREND. Historique, sentiment, contexte, urgence... L\'IA analyse tout et répond exactement comme vous le feriez. Mais en 8 secondes.',
   },
   {
-    question: 'Puis-je annuler mon abonnement à tout moment ?',
+    question: 'Et si je veux arrêter demain matin ?',
     answer:
-      'Oui, sans aucun engagement. Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun frais caché, aucune période d\'engagement minimum.',
+      '1 clic, c\'est terminé. Pas de période d\'engagement. Pas de pénalités. Pas de rétention de données. Vous partez quand vous voulez. On reste amis.',
   },
   {
-    question: 'Mes données clients sont-elles sécurisées ?',
+    question: 'Mes données sont-elles vraiment protégées ?',
     answer:
-      'La sécurité est notre priorité absolue. Nous utilisons un chiffrement AES-256 de bout en bout, et sommes conformes au RGPD. Vos données sont hébergées en Europe sur des serveurs certifiés ISO 27001.',
+      'Chiffrement militaire AES-256. Serveurs européens ISO 27001. RGPD total. Vos données sont plus sécurisées chez nous que dans votre propre ordinateur.',
   },
   {
-    question: 'Combien de boîtes mail puis-je connecter ?',
+    question: 'Combien d\'emails puis-je gérer par mois ?',
     answer:
-      'Cela dépend de votre plan : le plan STARTER permet 3 comptes, le plan PRO permet 10 comptes, et le plan SCALE permet un nombre illimité. Vous pouvez librement mélanger Gmail et Outlook.',
+      'Plan STARTER : 5000 emails. PRO : 20 000. SCALE : 50 000+. Au-delà ? Upgrade automatique sans coupure. Vous ne perdez jamais un client.',
   },
   {
-    question: 'Proposez-vous une API pour intégrer ClaritySupport ?',
+    question: 'C\'est compatible avec Shopify/WooCommerce ?',
     answer:
-      'Oui ! Les plans PRO et SCALE incluent un accès complet à notre API REST et aux webhooks. Documentation technique complète et support développeur disponibles.',
+      'Totalement. Tracking de commandes automatique, updates de livraison, upsells intelligents. L\'IA gère tout. Vos clients adorent.',
   },
 ];
 
@@ -43,7 +43,7 @@ export function LightFaq() {
   return (
     <section className="relative overflow-hidden bg-white py-24 sm:py-32">
       <div className="relative mx-auto max-w-4xl px-6 sm:px-8 lg:px-12">
-        {/* Header */}
+        {/* Header conversationnel */}
         <div className="mb-16 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -51,14 +51,17 @@ export function LightFaq() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-blue-600">
-              FAQ
+            <p className="mb-4 text-sm font-bold uppercase tracking-wider text-blue-600">
+              🤔 Les vraies questions
             </p>
-            <h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Questions fréquentes
+            <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl">
+              Vous vous demandez si
+              <span className="block bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                ça marche vraiment ?
+              </span>
             </h2>
-            <p className="text-xl text-gray-600">
-              Tout ce que vous devez savoir sur ClaritySupport
+            <p className="text-xl leading-relaxed text-gray-700">
+              <span className="font-bold text-gray-900">Réponse honnête :</span> Oui. Voici pourquoi.
             </p>
           </motion.div>
         </div>
@@ -134,7 +137,7 @@ export function LightFaq() {
           })}
         </div>
 
-        {/* Contact CTA */}
+        {/* Contact CTA magnétique */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -142,15 +145,23 @@ export function LightFaq() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-16 text-center"
         >
-          <div className="rounded-3xl border border-gray-200 bg-gradient-to-br from-blue-50 to-transparent p-12">
-            <h3 className="mb-4 text-2xl font-bold text-gray-900">
-              Vous avez encore des questions ?
+          <div className="group relative overflow-hidden rounded-3xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50 p-12 shadow-xl transition-all hover:scale-[1.02] hover:border-blue-300 hover:shadow-2xl">
+            {/* Effet de brillance */}
+            <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+              <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-white/20 to-transparent" />
+            </div>
+            
+            <h3 className="relative mb-4 text-3xl font-extrabold text-gray-900">
+              Pas convaincu(e) ? 🤷‍♂️
             </h3>
-            <p className="mb-6 text-gray-600">
-              Notre équipe est là pour vous aider. Contactez-nous et obtenez une réponse en moins de 24h.
+            <p className="relative mb-8 text-lg leading-relaxed text-gray-700">
+              Parlez à un humain (oui, on existe encore). <span className="font-bold text-blue-600">Réponse garantie en moins de 2h.</span>
             </p>
-            <button className="inline-flex items-center gap-2 rounded-full border-2 border-blue-600 bg-white px-8 py-4 text-base font-semibold text-blue-600 transition-all hover:bg-blue-600 hover:text-white active:scale-[0.98]">
-              Contactez le support
+            <button className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 px-10 py-4 text-lg font-bold text-white shadow-xl shadow-blue-600/30 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-600/40 active:scale-100">
+              <span className="relative z-10">Discutons ensemble</span>
+              <span className="relative z-10 transition-transform group-hover/btn:translate-x-1">💬</span>
+              {/* Effet de brillance */}
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
             </button>
           </div>
         </motion.div>

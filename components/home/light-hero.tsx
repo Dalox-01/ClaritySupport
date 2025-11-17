@@ -20,43 +20,55 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
       {/* Main content */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-4xl text-center">
-          {/* Badge minimaliste */}
+          {/* Badge magnétique */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600"
+            className="group mb-8 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-5 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition-all hover:scale-105 hover:shadow-md"
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Support client automatisé par IA</span>
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            <span>+10 000 emails traités cette semaine</span>
           </motion.div>
 
-          {/* Title - typographie Apple style */}
+          {/* Title - copywriting magnétique */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-6 text-6xl font-bold leading-[1.1] tracking-tight text-gray-900 sm:text-7xl lg:text-8xl"
+            className="mb-6 text-6xl font-extrabold leading-[1.05] tracking-tight text-gray-900 sm:text-7xl lg:text-8xl"
           >
-            Support client
+            Arrêtez de perdre des clients
             <br />
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-              réinventé
+            <span className="relative inline-block">
+              <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 bg-clip-text text-transparent">
+                pendant que vous dormez
+              </span>
+              {/* Soulignement animé */}
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="absolute -bottom-3 left-0 h-1 w-full origin-left rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"
+              />
             </span>
           </motion.h1>
 
-          {/* Subtitle épuré */}
+          {/* Subtitle persuasif */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mx-auto mb-12 max-w-2xl text-xl leading-relaxed text-gray-600 sm:text-2xl"
+            className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-700 sm:text-2xl"
           >
-            Centralisez vos emails, automatisez les réponses avec l'IA,
-            et offrez un service client exceptionnel 24/7.
+            <span className="font-bold text-gray-900">Votre IA travaille 24/7.</span>{' '}
+            Réponses instantanées, clients ravis, chiffre d'affaires qui explose.{' '}
+            <span className="font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              Sans lever le petit doigt.
+            </span>
           </motion.p>
 
-          {/* CTA minimaliste */}
+          {/* CTA irrésistible */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -65,34 +77,43 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
           >
             <button
               onClick={onGetStarted}
-              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-blue-600 px-8 py-4 text-base font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 active:scale-[0.98]"
+              className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 px-10 py-5 text-lg font-bold text-white shadow-2xl shadow-blue-600/40 transition-all hover:scale-105 hover:shadow-blue-600/50 active:scale-100"
             >
-              <span>Essayer gratuitement</span>
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <span className="relative z-10">Démarrer gratuitement</span>
+              <ArrowRight className="relative z-10 h-5 w-5 transition-transform group-hover:translate-x-2" />
+              {/* Effet de brillance */}
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
             </button>
             
             <a
               href="#pricing"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-gray-200 bg-white px-8 py-4 text-base font-semibold text-gray-900 transition-all hover:border-gray-300 hover:bg-gray-50 active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 rounded-full border-2 border-gray-300 bg-white px-10 py-5 text-lg font-bold text-gray-900 shadow-lg transition-all hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 active:scale-95"
             >
-              Voir les tarifs
+              Voir la magie en action
+              <span className="transition-transform group-hover:rotate-90">✨</span>
             </a>
           </motion.div>
 
-          {/* Trust badges épurés */}
+          {/* Trust badges puissants */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mb-16 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500"
+            className="mb-16 flex flex-wrap items-center justify-center gap-8 text-sm"
           >
-            {['Essai gratuit 14 jours', 'Sans carte bancaire', 'Configuration en 2 min'].map((text) => (
-              <div key={text} className="flex items-center gap-2">
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100">
-                  <Check className="h-3 w-3 text-blue-600" strokeWidth={3} />
-                </div>
-                <span className="whitespace-nowrap font-medium">{text}</span>
-              </div>
+            {[
+              { text: 'Gratuit 14 jours', emoji: '🎁' },
+              { text: 'Zéro CB nécessaire', emoji: '🚫💳' },
+              { text: 'Setup en 120 secondes', emoji: '⚡' }
+            ].map((item) => (
+              <motion.div 
+                key={item.text} 
+                className="group flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-sm transition-all hover:scale-105 hover:border-blue-300 hover:shadow-md"
+                whileHover={{ y: -2 }}
+              >
+                <span className="text-lg transition-transform group-hover:scale-110">{item.emoji}</span>
+                <span className="whitespace-nowrap font-semibold text-gray-700">{item.text}</span>
+              </motion.div>
             ))}
           </motion.div>
         </div>
@@ -135,27 +156,61 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
             </div>
           </div>
 
-          {/* Floating badge - style Apple */}
+          {/* Floating badge addictif avec animation pulse */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+            }}
             transition={{ duration: 0.6, delay: 1 }}
             className="absolute -bottom-6 left-1/2 -translate-x-1/2"
           >
-            <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-white px-6 py-3 shadow-lg">
+            <motion.div 
+              animate={{ 
+                y: [0, -8, 0],
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="group flex items-center gap-3 rounded-full border-2 border-blue-200 bg-white px-6 py-3 shadow-2xl shadow-blue-500/20 transition-all hover:scale-105 hover:shadow-blue-500/30"
+            >
+              {/* Avatars animés */}
               <div className="flex -space-x-2">
                 {[1, 2, 3].map((i) => (
-                  <div
+                  <motion.div
                     key={i}
-                    className="h-8 w-8 rounded-full border-2 border-white bg-gradient-to-br from-blue-400 to-cyan-400"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 1 + i * 0.1 }}
+                    whileHover={{ scale: 1.2, zIndex: 10 }}
+                    className="h-8 w-8 rounded-full border-2 border-white bg-gradient-to-br from-blue-400 to-cyan-400 transition-transform"
                   />
                 ))}
               </div>
-              <div className="border-l border-gray-200 pl-3">
-                <p className="text-sm font-semibold text-gray-900">+10,000 emails traités</p>
-                <p className="text-xs text-gray-500">Ce mois-ci</p>
+              
+              {/* Stats avec compteur animé */}
+              <div className="border-l-2 border-gray-200 pl-3">
+                <p className="text-sm font-bold text-gray-900">
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.3 }}
+                  >
+                    +10,247
+                  </motion.span> emails traités 
+                  <motion.span
+                    animate={{ opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="ml-1 inline-block h-2 w-2 rounded-full bg-green-500"
+                  />
+                </p>
+                <p className="text-xs font-medium text-gray-500">Cette semaine • En direct</p>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>

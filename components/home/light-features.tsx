@@ -19,49 +19,49 @@ import {
 const features = [
   {
     icon: Bot,
-    title: 'IA Avancée',
-    description: 'Réponses automatiques contextuelles qui comprennent l\'intent du client.',
+    title: 'IA qui lit entre les lignes',
+    description: 'Ne devine pas. Comprend. Répond avec empathie et précision comme votre meilleur agent.',
     color: 'blue',
   },
   {
     icon: Mail,
-    title: 'Centralisation',
-    description: 'Unifiez Gmail, Outlook et autres boîtes mail en une seule interface.',
+    title: 'Toutes vos boîtes. Un seul endroit.',
+    description: 'Gmail, Outlook, Yahoo. Fini le jonglage. Tout centralisé. Vous gagnez 3h par jour.',
     color: 'cyan',
   },
   {
     icon: Zap,
-    title: 'Automatisation 24/7',
-    description: 'Réponses instantanées jour et nuit, même pendant que vous dormez.',
+    title: 'Réponse en 8 secondes. Toujours.',
+    description: 'Vos clients n\'attendent plus. L\'IA répond instantanément, de jour comme de nuit.',
     color: 'indigo',
   },
   {
     icon: BarChart3,
-    title: 'Analytics',
-    description: 'Tableaux de bord en temps réel : satisfaction, volume, tendances.',
+    title: 'Chaque chiffre raconte une histoire',
+    description: 'Satisfaction client, temps de réponse, taux de résolution. Visualisez votre succès.',
     color: 'violet',
   },
   {
     icon: Shield,
-    title: 'Sécurité RGPD',
-    description: 'Chiffrement AES-256, conformité RGPD, hébergement EU.',
+    title: 'Sécurité blindée. Promis.',
+    description: 'Chiffrement militaire, serveurs EU, conformité RGPD totale. Vos données sont intouchables.',
     color: 'emerald',
   },
   {
     icon: Clock,
-    title: 'Gain de Temps',
-    description: 'Économisez jusqu\'à 85% de temps sur le support client.',
+    title: 'Reprenez 85% de votre temps',
+    description: 'Fini les emails répétitifs. Concentrez-vous sur ce qui compte vraiment : votre business.',
     color: 'amber',
   },
 ];
 
 const additionalFeatures = [
-  { icon: Inbox, title: 'Classification Auto', description: 'Catégorisation intelligente de vos emails' },
-  { icon: Brain, title: 'Base de Connaissances', description: 'Alimentez l\'IA avec vos FAQs' },
-  { icon: Target, title: 'Détection de Sentiment', description: 'Identification des emails urgents' },
-  { icon: Users, title: 'Collaboration', description: 'Travail d\'équipe avec rôles et permissions' },
-  { icon: Globe, title: 'Multi-langues', description: 'Répondez dans la langue de vos clients' },
-  { icon: Workflow, title: 'Templates', description: 'Modèles de réponses personnalisés' },
+  { icon: Inbox, title: 'Inbox Zero automatique', description: 'L\'IA trie, classe, archive. Vous respirez.' },
+  { icon: Brain, title: 'Elle apprend de vous', description: 'Plus vous l\'utilisez, plus elle devient vous.' },
+  { icon: Target, title: 'Détecte la colère avant vous', description: 'Clients mécontents ? Alerte prioritaire instantanée.' },
+  { icon: Users, title: 'Votre équipe, synchronisée', description: 'Qui fait quoi ? Zéro doublon, 100% efficacité.' },
+  { icon: Globe, title: '47 langues parlées couramment', description: 'Client chinois ? Client espagnol ? Pas de souci.' },
+  { icon: Workflow, title: 'Vos réponses, en 1 clic', description: 'Créez des templates magiques réutilisables.' },
 ];
 
 const colorVariants: Record<string, { bg: string; icon: string; border: string }> = {
@@ -80,22 +80,25 @@ export function LightFeatures() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent" />
 
       <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        {/* Header */}
-        <div className="mx-auto max-w-2xl text-center">
+        {/* Header magnétique */}
+        <div className="mx-auto max-w-3xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-blue-600">
-              Fonctionnalités
+            <p className="mb-4 text-sm font-bold uppercase tracking-wider text-blue-600">
+              🚀 Superpuissances incluses
             </p>
-            <h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Tout ce dont vous avez besoin
+            <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+              Votre support client
+              <span className="block bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                devient inarrêtable
+              </span>
             </h2>
-            <p className="text-xl text-gray-600">
-              Une suite complète d'outils pour transformer votre support client
+            <p className="text-xl leading-relaxed text-gray-700">
+              Pas d'options inutiles. Que des fonctionnalités qui <span className="font-bold text-gray-900">changent la donne.</span>
             </p>
           </motion.div>
         </div>
@@ -115,23 +118,37 @@ export function LightFeatures() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group relative"
               >
-                <div className="relative h-full overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-200/50">
-                  {/* Icon */}
-                  <div className={`mb-6 inline-flex rounded-xl ${colors.bg} p-3 transition-transform duration-300 group-hover:scale-110`}>
-                    <Icon className={`h-6 w-6 ${colors.icon}`} strokeWidth={2} />
-                  </div>
+                <motion.div 
+                  whileHover={{ y: -8 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="relative h-full overflow-hidden rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-md transition-all duration-300 hover:border-gray-300 hover:shadow-2xl"
+                >
+                  {/* Icon avec animation */}
+                  <motion.div 
+                    className={`mb-6 inline-flex rounded-xl ${colors.bg} p-3 transition-all`}
+                    whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Icon className={`h-6 w-6 ${colors.icon}`} strokeWidth={2.5} />
+                  </motion.div>
 
                   {/* Content */}
-                  <h3 className="mb-3 text-xl font-semibold text-gray-900">
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">
                     {feature.title}
                   </h3>
-                  <p className="text-base leading-relaxed text-gray-600">
+                  <p className="text-base leading-relaxed text-gray-700">
                     {feature.description}
                   </p>
 
-                  {/* Hover effect border */}
-                  <div className={`absolute inset-0 rounded-2xl border-2 ${colors.border} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
-                </div>
+                  {/* Effet de brillance au hover */}
+                  <motion.div 
+                    className={`absolute inset-0 rounded-2xl border-2 ${colors.border} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+                    initial={false}
+                  />
+                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                    <div className={`absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l ${colors.bg} to-transparent opacity-30`} />
+                  </div>
+                </motion.div>
               </motion.div>
             );
           })}
