@@ -49,7 +49,7 @@ import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/li
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
-import { ShopifyConnectSimple } from '@/components/shopify-connect-simple';
+import { ShopifyOneClick } from '@/components/shopify-one-click';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -1258,7 +1258,7 @@ export default function MailCenterPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 }}
             >
-              <ShopifyConnectSimple isLightMode={isLightMode} />
+              <ShopifyOneClick isLightMode={isLightMode} />
             </motion.div>
 
             {/* Outils */}
