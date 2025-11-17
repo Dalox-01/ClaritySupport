@@ -1252,15 +1252,6 @@ export default function MailCenterPage() {
               </Card>
             </motion.div>
 
-            {/* Shopify - Visible uniquement pour les utilisateurs e-commerce */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.55 }}
-            >
-              <ShopifyOneClick isLightMode={isLightMode} />
-            </motion.div>
-
             {/* Outils */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
