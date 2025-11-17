@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY!;
 const SHOPIFY_SCOPES = 'read_orders,read_customers,read_products,read_inventory';
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL}/api/shopify/oauth/callback`;
+const REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL}/api/shopify/callback`; // Utiliser l'ancienne URL qui fonctionne
 
 /**
  * POST - Démarrer OAuth (1 clic)
