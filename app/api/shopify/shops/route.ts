@@ -22,9 +22,19 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 
 // Client Supabase avec SERVICE_ROLE_KEY pour bypass RLS
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Missing Supabase credentials:', {
+    hasUrl: !!supabaseUrl,
+    hasServiceKey: !!supabaseServiceKey,
+  });
+}
+
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  supabaseUrl!,
+  supabaseServiceKey!,
   {
     auth: {
       autoRefreshToken: false,
@@ -37,30 +47,41 @@ const supabase = createClient(
  * GET - Récupérer les boutiques de l'utilisateur
  */
 export async function GET(req: NextRequest) {
+  console.log('🟢 [SHOPIFY SHOPS] GET request started');
+  
   try {
     const session = await getServerSession(authOptions);
+    console.log('🔵 Session:', { hasSession: !!session, userId: session?.user?.id });
+    
     if (!session?.user?.id) {
+      console.error('❌ No session');
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
     // Récupérer les boutiques
+    console.log('🔵 Fetching shops for user:', session.user.id);
     const { data: shops, error } = await supabase
       .from('shopify_shops')
       .select('id, shop_domain, shop_name, status, created_at, last_sync_at')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Database error:', error);
+      throw error;
+    }
 
+    console.log(`✅ Found ${shops?.length || 0} shops`);
     return NextResponse.json({ 
       success: true, 
       shops: shops || [] 
     });
 
   } catch (error) {
-    console.error('[SHOPIFY API] GET error:', error);
+    console.error('❌ [SHOPIFY API] GET error:', error);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
     return NextResponse.json({ 
-      error: 'Erreur serveur' 
+      error: error instanceof Error ? error.message : 'Erreur serveur' 
     }, { status: 500 });
   }
 }
