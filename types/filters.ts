@@ -1,5 +1,23 @@
 // Types pour le système de filtres personnalisés
 
+export type FilterPlan = 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+
+export interface DetectionRules {
+  matchMode: 'any' | 'all';
+  caseSensitive: boolean;
+  regexPatterns?: string[];
+  excludeKeywords?: string[];
+}
+
+export interface ResponseConfig {
+  tone?: 'pro' | 'cordial' | 'empathique' | 'technique';
+  language?: 'fr' | 'en';
+  customInstructions?: string;
+  responseTemplate?: string;
+  autoReplyEnabled?: boolean;
+  priorityLevel?: 'high' | 'normal' | 'low';
+}
+
 export interface UserFilter {
   id: string;
   user_id: string;
@@ -10,27 +28,8 @@ export interface UserFilter {
   is_default: boolean;
   filter_key: string;
   keywords: string[];
-  sender_patterns: string[];
-  subject_patterns: string[];
-  auto_reply_enabled: boolean;
-  reply_template: string | null;
-  tone: 'pro' | 'cordial' | 'empathique' | 'technique';
-  language: 'fr' | 'en';
-  priority: 'high' | 'normal' | 'low';
-  detection_rules: {
-    matchMode: 'any' | 'all';
-    caseSensitive: boolean;
-    regexPatterns?: string[];
-    excludeKeywords?: string[];
-  };
-  response_config: {
-    tone: 'pro' | 'cordial' | 'empathique' | 'technique';
-    language: 'fr' | 'en';
-    customInstructions?: string;
-    responseTemplate?: string;
-    autoReplyEnabled?: boolean;
-    priorityLevel: 'high' | 'normal' | 'low';
-  };
+  detection_rules: DetectionRules | null;
+  response_config: ResponseConfig | null;
   usage_count: number;
   last_used_at: string | null;
   is_active: boolean;
@@ -38,20 +37,29 @@ export interface UserFilter {
   updated_at: string;
 }
 
+export interface FilterUpsertPayload {
+  id?: string;
+  filter_key?: string;
+  name: string;
+  description?: string | null;
+  color: string;
+  icon: string;
+  keywords: string[];
+  detection_rules: DetectionRules;
+  response_config: ResponseConfig;
+  is_active: boolean;
+}
+
 export interface FilterLimits {
   canCreate: boolean;
   current: number;
   max: number;
-  max_custom_filters: number;
   remaining: number;
-  plan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  plan: FilterPlan;
 }
 
 export interface FilterUsage {
   totalClassifications: number;
-  total_active_filters: number;
-  total_emails_processed: number;
-  successful_matches: number;
   filtersCount: number;
   defaultFiltersCount: number;
   customFiltersCount: number;
@@ -60,14 +68,6 @@ export interface FilterUsage {
     key: string;
     count: number;
   } | null;
-}
-
-export interface FilterUsageStat {
-  id: string;
-  name: string;
-  key: string;
-  count: number;
-  lastUsed: string | null;
 }
 
 export interface FilterColor {

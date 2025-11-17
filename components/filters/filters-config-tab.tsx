@@ -3,10 +3,18 @@
 import { useState, useEffect } from 'react';
 import { Plus, TrendingUp, Zap, Filter as FilterIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { UserFilter, FilterLimits, FilterUsage } from '@/types/filters';
+import { UserFilter, FilterLimits, FilterUsage, FilterUpsertPayload, FilterPlan } from '@/types/filters';
 import { FilterCard } from './filter-card';
 import { FilterConfigModal } from './filter-config-modal';
 import { toast } from 'sonner';
+
+const slugifyFilterKey = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '') || `filter_${Date.now()}`;
 
 interface FiltersConfigTabProps {
   userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
@@ -22,6 +30,11 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  const effectivePlan: FilterPlan = (limits?.plan as FilterPlan) || userPlan;
+  const customFiltersLimit = limits?.max ?? (effectivePlan === 'PRO' ? 5 : effectivePlan === 'ENTERPRISE' ? 999999 : 0);
+  const hasUnlimitedCustomFilters = customFiltersLimit >= 999999;
+  const canManageDefaultFilters = effectivePlan === 'PRO' || effectivePlan === 'ENTERPRISE';
+
   // Fetch filters + usage + limits
   useEffect(() => {
     fetchFilters();
@@ -30,25 +43,23 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const fetchFilters = async () => {
     setIsLoading(true);
     try {
-      const [filtersRes, usageRes, limitsRes] = await Promise.all([
+      const [filtersRes, limitsRes] = await Promise.all([
         fetch('/api/filters'),
-        fetch('/api/filters/usage'),
         fetch('/api/filters/limits'),
       ]);
 
       if (filtersRes.ok) {
         const data = await filtersRes.json();
         setFilters(data.filters || []);
-      }
-
-      if (usageRes.ok) {
-        const data = await usageRes.json();
-        setUsage(data);
+      } else {
+        console.error('Erreur chargement filtres', await filtersRes.text());
+        toast.error('Impossible de charger les filtres');
       }
 
       if (limitsRes.ok) {
         const data = await limitsRes.json();
-        setLimits(data);
+        setLimits(data.limits || null);
+        setUsage(data.usage || null);
       }
     } catch (error) {
       toast.error('Erreur lors du chargement des filtres');
@@ -58,13 +69,11 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   };
 
   const handleCreateFilter = () => {
-    if (!limits) return;
-
     const customFiltersCount = filters.filter((f) => !f.is_default).length;
 
-    if (limits.max_custom_filters !== -1 && customFiltersCount >= limits.max_custom_filters) {
+    if (!hasUnlimitedCustomFilters && customFiltersCount >= customFiltersLimit) {
       toast.error('Limite de filtres atteinte', {
-        description: `Votre plan ${userPlan} autorise ${limits.max_custom_filters} filtre(s) personnalisé(s). Passez à un plan supérieur.`,
+        description: `Votre plan ${effectivePlan} autorise ${customFiltersLimit} filtre(s) personnalisé(s). Passez à un plan supérieur.`,
       });
       return;
     }
@@ -77,6 +86,10 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const handleConfigureFilter = (filterId: string) => {
     const filter = filters.find((f) => f.id === filterId);
     if (filter) {
+      if (filter.is_default && !canManageDefaultFilters) {
+        toast.info('Les filtres de base sont modifiables à partir du plan PRO');
+        return;
+      }
       setIsCreating(false);
       setSelectedFilter(filter);
       setIsModalOpen(true);
@@ -86,11 +99,17 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const handleDeleteFilter = async (filterId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce filtre ?')) return;
 
+    const filter = filters.find((f) => f.id === filterId);
+    if (!filter) return;
+
+    if (filter.is_default && !canManageDefaultFilters) {
+      toast.info('Les filtres de base ne peuvent être retirés qu’avec le plan PRO/Ultimate.');
+      return;
+    }
+
     try {
-      const res = await fetch('/api/filters', {
+      const res = await fetch(`/api/filters/${filterId}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filterId }),
       });
 
       if (res.ok) {
@@ -105,23 +124,41 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
     }
   };
 
-  const handleSaveFilter = async (data: Partial<UserFilter>) => {
+  const handleSaveFilter = async (data: FilterUpsertPayload) => {
     try {
-      const method = isCreating ? 'POST' : 'PATCH';
-      const res = await fetch('/api/filters', {
+      const isEditing = Boolean(data.id);
+      const endpoint = isEditing ? `/api/filters/${data.id}` : '/api/filters';
+      const method = isEditing ? 'PATCH' : 'POST';
+      const payload: Record<string, any> = {
+        name: data.name,
+        description: data.description,
+        color: data.color,
+        icon: data.icon,
+        keywords: data.keywords,
+        detection_rules: data.detection_rules,
+        response_config: data.response_config,
+        is_active: data.is_active,
+      };
+
+      if (!isEditing) {
+        payload.filter_key = data.filter_key || slugifyFilterKey(data.name);
+      }
+
+      const res = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        await fetchFilters();
-        setIsModalOpen(false);
-      } else {
-        const error = await res.json();
-        throw new Error(error.error);
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
+        throw new Error(error.error || 'Erreur lors de la sauvegarde');
       }
+
+      await fetchFilters();
+      setIsModalOpen(false);
     } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de la sauvegarde');
       throw error;
     }
   };
@@ -133,21 +170,21 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
     {
       icon: FilterIcon,
       label: 'Filtres actifs',
-      value: usage?.total_active_filters || 0,
+      value: filters.length,
       color: '#3B82F6',
     },
     {
       icon: Zap,
-      label: 'Emails traités',
-      value: usage?.total_emails_processed || 0,
+      label: 'Classifications IA',
+      value: usage?.totalClassifications || 0,
       color: '#10B981',
     },
     {
       icon: TrendingUp,
-      label: 'Taux de succès',
-      value: usage?.total_emails_processed
-        ? `${Math.round((usage.successful_matches / usage.total_emails_processed) * 100)}%`
-        : '0%',
+      label: 'Filtres personnalisés',
+      value: hasUnlimitedCustomFilters
+        ? `${customFilters.length} actifs`
+        : `${customFilters.length} / ${customFiltersLimit}`,
       color: '#F59E0B',
     },
   ];
@@ -169,23 +206,32 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
             Gestion des Filtres
           </h2>
           <p className={`mt-1 text-sm ${isLightMode ? 'text-gray-600' : 'text-gray-400'}`}>
-            {limits && limits.max_custom_filters === -1
+            {hasUnlimitedCustomFilters
               ? 'Filtres personnalisés illimités'
-              : `${customFilters.length} / ${limits?.max_custom_filters || 0} filtres personnalisés utilisés`}
+              : `${customFilters.length} / ${customFiltersLimit} filtres personnalisés utilisés`}
           </p>
         </div>
         <button
           onClick={handleCreateFilter}
-          disabled={
-            limits?.max_custom_filters !== -1 &&
-            customFilters.length >= (limits?.max_custom_filters || 0)
-          }
+          disabled={!hasUnlimitedCustomFilters && customFilters.length >= customFiltersLimit}
           className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-bold text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus className="h-5 w-5" />
           Créer un filtre
         </button>
       </div>
+
+      {!canManageDefaultFilters && (
+        <div
+          className={`rounded-xl border p-4 text-sm ${
+            isLightMode
+              ? 'border-amber-200 bg-amber-50 text-amber-800'
+              : 'border-amber-500/40 bg-amber-500/10 text-amber-200'
+          }`}
+        >
+          ✨ Les filtres basés sur l'IA et la suppression des filtres par défaut sont disponibles à partir du plan PRO.
+        </div>
+      )}
 
       {/* Stats cards */}
       <div className="grid grid-cols-3 gap-4">
@@ -237,6 +283,8 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
                 filter={filter}
                 isDefault={true}
                 onConfigure={handleConfigureFilter}
+                onDelete={canManageDefaultFilters ? handleDeleteFilter : undefined}
+                canDeleteDefault={canManageDefaultFilters}
                 isLightMode={isLightMode}
               />
             ))}
@@ -272,6 +320,7 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
                 isDefault={false}
                 onConfigure={handleConfigureFilter}
                 onDelete={handleDeleteFilter}
+                canDeleteDefault={canManageDefaultFilters}
                 isLightMode={isLightMode}
               />
             ))}
@@ -283,7 +332,10 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
       <FilterConfigModal
         filter={selectedFilter}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedFilter(null);
+        }}
         onSave={handleSaveFilter}
         isLightMode={isLightMode}
       />

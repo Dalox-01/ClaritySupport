@@ -15,8 +15,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { TabAIConfigAdvanced } from '@/components/tabs/tab-ai-config-advanced';
-import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
+import { TabAIConfigAdvanced, AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
 import { toast } from 'sonner';
 import { Filter } from 'lucide-react';
 
@@ -24,6 +23,7 @@ interface SupportConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: 'ai-config' | 'filters';
+  initialSection?: AIConfigSectionId;
   userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
   zIndex?: number;
   onFocus?: () => void;
@@ -33,6 +33,7 @@ export function SupportConfigModal({
   isOpen, 
   onClose, 
   initialTab = 'ai-config',
+  initialSection = 'models',
   zIndex = 100,
   onFocus,
   userPlan = 'PRO'
@@ -42,6 +43,10 @@ export function SupportConfigModal({
   const [isSaving, setIsSaving] = useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   // Auto-save toutes les 30s
   useEffect(() => {
@@ -255,7 +260,7 @@ export function SupportConfigModal({
                   transition={{ duration: 0.3 }}
                   className="h-full"
                 >
-                  <TabAIConfigAdvanced />
+                  <TabAIConfigAdvanced userPlan={userPlan} initialSection={initialSection} />
                 </motion.div>
               )}
               {activeTab === 'filters' && (
@@ -265,9 +270,9 @@ export function SupportConfigModal({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.3 }}
-                  className="h-full p-6 overflow-y-auto"
+                  className="h-full"
                 >
-                  <FiltersConfigTab userPlan={userPlan} isLightMode={true} />
+                  <TabAIConfigAdvanced userPlan={userPlan} initialSection="filters" />
                 </motion.div>
               )}
             </AnimatePresence>

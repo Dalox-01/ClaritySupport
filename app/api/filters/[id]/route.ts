@@ -29,6 +29,21 @@ const supabase = createClient(
   }
 );
 
+async function getUserPlan(userId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('plan')
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.error('❌ Error fetching user plan:', error);
+    throw new Error('Impossible de déterminer le plan utilisateur');
+  }
+
+  return data?.plan || 'FREE';
+}
+
 /**
  * PATCH - Modifier un filtre personnalisé
  */
@@ -63,11 +78,14 @@ export async function PATCH(
       );
     }
 
-    // Interdire la modification des filtres de base
-    if (existingFilter.is_default) {
+    const plan = await getUserPlan(userId);
+    const canManageDefaultFilters = plan === 'PRO' || plan === 'ENTERPRISE';
+
+    // Interdire la modification des filtres de base pour les plans limités
+    if (existingFilter.is_default && !canManageDefaultFilters) {
       return NextResponse.json({
-        error: 'Les filtres de base ne peuvent pas être modifiés',
-        details: 'Créez un filtre personnalisé pour une configuration sur mesure',
+        error: 'Votre plan ne permet pas de modifier les filtres de base',
+        details: 'Passez sur le plan PRO pour personnaliser ou supprimer ces filtres',
       }, { status: 403 });
     }
 
@@ -163,11 +181,13 @@ export async function DELETE(
       );
     }
 
-    // Interdire la suppression des filtres de base
-    if (existingFilter.is_default) {
+    const plan = await getUserPlan(userId);
+    const canManageDefaultFilters = plan === 'PRO' || plan === 'ENTERPRISE';
+
+    if (existingFilter.is_default && !canManageDefaultFilters) {
       return NextResponse.json({
-        error: 'Les filtres de base ne peuvent pas être supprimés',
-        details: 'Seuls les filtres personnalisés peuvent être supprimés',
+        error: 'Votre plan ne permet pas de supprimer les filtres de base',
+        details: 'Passez sur le plan PRO pour retirer ces filtres',
       }, { status: 403 });
     }
 

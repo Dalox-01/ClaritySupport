@@ -49,6 +49,7 @@ import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/li
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
+import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -122,6 +123,7 @@ export default function MailCenterPage() {
   // State pour la modal de configuration support unifiée
   const [isSupportConfigOpen, setIsSupportConfigOpen] = useState(false);
   const [supportConfigInitialTab, setSupportConfigInitialTab] = useState<'ai-config' | 'filters'>('ai-config');
+  const [supportConfigInitialSection, setSupportConfigInitialSection] = useState<AIConfigSectionId>('models');
   
   // State pour afficher tous les filtres
   const [showAllFilters, setShowAllFilters] = useState(false);
@@ -1286,6 +1288,7 @@ export default function MailCenterPage() {
                   <button
                     onClick={() => {
                       setSupportConfigInitialTab('ai-config');
+                      setSupportConfigInitialSection('models');
                       setIsSupportConfigOpen(true);
                       bringToFront('supportConfig');
                     }}
@@ -1312,6 +1315,7 @@ export default function MailCenterPage() {
                   <button
                     onClick={() => {
                       setSupportConfigInitialTab('filters');
+                      setSupportConfigInitialSection('filters');
                       setIsSupportConfigOpen(true);
                       bringToFront('supportConfig');
                     }}
@@ -1756,6 +1760,7 @@ export default function MailCenterPage() {
         isOpen={isSupportConfigOpen}
         onClose={() => setIsSupportConfigOpen(false)}
         initialTab={supportConfigInitialTab}
+        initialSection={supportConfigInitialSection}
         userPlan={userPlan}
         zIndex={windowZIndexes.supportConfig}
         onFocus={() => bringToFront('supportConfig')}

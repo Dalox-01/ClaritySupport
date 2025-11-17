@@ -24,6 +24,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
+
+export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
+
+interface TabAIConfigAdvancedProps {
+  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  initialSection?: AIConfigSectionId;
+}
 
 // Types avancés pour la configuration IA
 interface AdvancedAIConfig {
@@ -278,8 +286,14 @@ interface AlertConfig {
   enabled: boolean;
 }
 
-export function TabAIConfigAdvanced() {
-  const [activeSection, setActiveSection] = useState<string>('models');
+export function TabAIConfigAdvanced({
+  userPlan = 'FREE',
+  initialSection = 'models',
+}: TabAIConfigAdvancedProps) {
+  const [activeSection, setActiveSection] = useState<AIConfigSectionId>(initialSection);
+  useEffect(() => {
+    setActiveSection(initialSection);
+  }, [initialSection]);
   const [config, setConfig] = useState<AdvancedAIConfig>({
     models: {
       primary: {
@@ -420,12 +434,13 @@ export function TabAIConfigAdvanced() {
 
   const [showAdvanced, setShowAdvanced] = useState<Record<string, boolean>>({});
 
-  const sections = [
+  const sections: Array<{ id: AIConfigSectionId; name: string; icon: any; color: string }> = [
     { id: 'models', name: 'Modèles & Performance', icon: Cpu, color: 'blue' },
     { id: 'prompts', name: 'Prompts & Contexte', icon: FileText, color: 'purple' },
     { id: 'rag', name: 'Base de Connaissances', icon: Database, color: 'blue' },
     { id: 'testing', name: 'Tests & Analyse', icon: TestTube, color: 'pink' },
     { id: 'security', name: 'Sécurité & RGPD', icon: Shield, color: 'red' },
+    { id: 'filters', name: 'Configuration Filtres', icon: Filter, color: 'amber' },
   ];
 
   return (
@@ -505,6 +520,9 @@ export function TabAIConfigAdvanced() {
             )}
             {activeSection === 'security' && (
               <SecurityConfigSection key="security" config={config} setConfig={setConfig} />
+            )}
+            {activeSection === 'filters' && (
+              <FiltersSection key="filters" userPlan={userPlan} />
             )}
           </AnimatePresence>
         </div>
@@ -1860,6 +1878,80 @@ function SecurityConfigSection({ config, setConfig }: any) {
           </div>
         </div>
       </Card>
+    </motion.div>
+  );
+}
+
+interface FiltersSectionProps {
+  userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+}
+
+function FiltersSection({ userPlan }: FiltersSectionProps) {
+  const canManageFilters = userPlan === 'PRO' || userPlan === 'ENTERPRISE';
+
+  if (!canManageFilters) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="space-y-6"
+      >
+        <Card className="p-6 bg-gradient-to-br from-amber-50 to-white border-amber-200 dark:from-amber-500/10 dark:to-transparent dark:border-amber-400/40">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-500/20">
+              <Lock className="w-6 h-6 text-amber-600 dark:text-amber-300" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-amber-900 dark:text-amber-200">
+                Gérez vos filtres avec le plan PRO
+              </h3>
+              <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+                Les filtres IA personnalisés (création, suppression des filtres de base, consignes dédiées) sont réservés aux plans PRO et ENTERPRISE.
+              </p>
+              <ul className="text-sm space-y-1 text-amber-900/70 dark:text-amber-100/70 list-disc list-inside">
+                <li>Ajout illimité de mots-clés par filtre</li>
+                <li>Consignes IA spécifiques par catégorie</li>
+                <li>Suppression des filtres de base inutiles</li>
+              </ul>
+              <div className="pt-3">
+                <Button className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/30">
+                  Découvrir les plans PRO
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-amber-200 dark:border-amber-500/40">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-500/20">
+            <Filter className="w-6 h-6 text-amber-600 dark:text-amber-300" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+              Filtres IA dynamiques
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Créez vos catégories, supprimez les filtres de base et injectez des consignes spécifiques utilisées par l'IA lors des réponses automatiques.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="rounded-3xl border border-amber-200/60 dark:border-amber-500/30 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
+        <FiltersConfigTab userPlan={userPlan} />
+      </div>
     </motion.div>
   );
 }

@@ -11,11 +11,13 @@ interface FilterCardProps {
   onConfigure: (filterId: string) => void;
   onDelete?: (filterId: string) => void;
   isLightMode?: boolean;
+  canDeleteDefault?: boolean;
 }
 
-export function FilterCard({ filter, isDefault, onConfigure, onDelete, isLightMode = false }: FilterCardProps) {
+export function FilterCard({ filter, isDefault, onConfigure, onDelete, isLightMode = false, canDeleteDefault = false }: FilterCardProps) {
   // Récupérer l'icône dynamiquement
   const IconComponent = (Icons as any)[filter.icon] || Icons.Filter;
+  const allowDeletion = onDelete && (!isDefault || canDeleteDefault);
 
   return (
     <motion.div
@@ -76,7 +78,7 @@ export function FilterCard({ filter, isDefault, onConfigure, onDelete, isLightMo
             {isDefault ? 'Configurer' : 'Modifier'}
           </button>
 
-          {!isDefault && onDelete && (
+          {allowDeletion && (
             <button
               onClick={() => onDelete(filter.id)}
               className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
@@ -86,7 +88,7 @@ export function FilterCard({ filter, isDefault, onConfigure, onDelete, isLightMo
               }`}
             >
               <Trash2 className="h-4 w-4" />
-              Supprimer
+              {isDefault ? 'Retirer' : 'Supprimer'}
             </button>
           )}
         </div>

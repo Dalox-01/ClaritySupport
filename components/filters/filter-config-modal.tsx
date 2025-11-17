@@ -6,24 +6,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { UserFilter, FILTER_COLORS, TONE_OPTIONS, LANGUAGE_OPTIONS, PRIORITY_OPTIONS } from '@/types/filters';
+import { UserFilter, FILTER_COLORS, TONE_OPTIONS, LANGUAGE_OPTIONS, PRIORITY_OPTIONS, FilterUpsertPayload } from '@/types/filters';
 import { KeywordInput } from './keyword-input';
 import * as Icons from 'lucide-react';
 import { toast } from 'sonner';
 
 const filterSchema = z.object({
   name: z.string().min(3, 'Le nom doit contenir au moins 3 caractères').max(50),
-  description: z.string().max(200).optional(),
+  description: z.string().max(200).optional().or(z.literal('')),
   icon: z.string(),
   color: z.string(),
   keywords: z.array(z.string()).min(1, 'Au moins un mot-clé requis'),
-  sender_patterns: z.array(z.string()),
-  subject_patterns: z.array(z.string()),
-  auto_reply_enabled: z.boolean(),
-  reply_template: z.string().max(1000).optional(),
+  excludeKeywords: z.array(z.string()),
+  regexPatterns: z.array(z.string()),
+  matchMode: z.enum(['any', 'all']),
+  caseSensitive: z.boolean(),
+  autoReplyEnabled: z.boolean(),
+  responseTemplate: z.string().max(2000).optional().or(z.literal('')),
+  customInstructions: z.string().max(2000).optional().or(z.literal('')),
   tone: z.enum(['pro', 'cordial', 'empathique', 'technique']),
   language: z.enum(['fr', 'en']),
-  priority: z.enum(['high', 'normal', 'low']),
+  priorityLevel: z.enum(['high', 'normal', 'low']),
   is_active: z.boolean(),
 });
 
@@ -33,7 +36,7 @@ interface FilterConfigModalProps {
   filter?: UserFilter | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Partial<UserFilter>) => Promise<void>;
+  onSave: (data: FilterUpsertPayload) => Promise<void>;
   isLightMode?: boolean;
 }
 
@@ -61,13 +64,16 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
       icon: filter?.icon || 'Mail',
       color: filter?.color || '#3B82F6',
       keywords: filter?.keywords || [],
-      sender_patterns: filter?.sender_patterns || [],
-      subject_patterns: filter?.subject_patterns || [],
-      auto_reply_enabled: filter?.auto_reply_enabled || false,
-      reply_template: filter?.reply_template || '',
-      tone: filter?.tone || 'pro',
-      language: filter?.language || 'fr',
-      priority: filter?.priority || 'normal',
+      excludeKeywords: filter?.detection_rules?.excludeKeywords || [],
+      regexPatterns: filter?.detection_rules?.regexPatterns || [],
+      matchMode: filter?.detection_rules?.matchMode || 'any',
+      caseSensitive: filter?.detection_rules?.caseSensitive ?? false,
+      autoReplyEnabled: filter?.response_config?.autoReplyEnabled || false,
+      responseTemplate: filter?.response_config?.responseTemplate || '',
+      customInstructions: filter?.response_config?.customInstructions || '',
+      tone: filter?.response_config?.tone || 'pro',
+      language: filter?.response_config?.language || 'fr',
+      priorityLevel: filter?.response_config?.priorityLevel || 'normal',
       is_active: filter?.is_active !== false,
     },
   });
@@ -75,9 +81,9 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
   const selectedIcon = watch('icon');
   const selectedColor = watch('color');
   const keywords = watch('keywords');
-  const senderPatterns = watch('sender_patterns');
-  const subjectPatterns = watch('subject_patterns');
-  const autoReplyEnabled = watch('auto_reply_enabled');
+  const excludeKeywords = watch('excludeKeywords');
+  const regexPatterns = watch('regexPatterns');
+  const autoReplyEnabled = watch('autoReplyEnabled');
 
   useEffect(() => {
     if (filter) {
@@ -87,13 +93,16 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
         icon: filter.icon,
         color: filter.color,
         keywords: filter.keywords,
-        sender_patterns: filter.sender_patterns,
-        subject_patterns: filter.subject_patterns,
-        auto_reply_enabled: filter.auto_reply_enabled,
-        reply_template: filter.reply_template || '',
-        tone: filter.tone,
-        language: filter.language,
-        priority: filter.priority,
+        excludeKeywords: filter.detection_rules?.excludeKeywords || [],
+        regexPatterns: filter.detection_rules?.regexPatterns || [],
+        matchMode: filter.detection_rules?.matchMode || 'any',
+        caseSensitive: filter.detection_rules?.caseSensitive ?? false,
+        autoReplyEnabled: filter.response_config?.autoReplyEnabled || false,
+        responseTemplate: filter.response_config?.responseTemplate || '',
+        customInstructions: filter.response_config?.customInstructions || '',
+        tone: filter.response_config?.tone || 'pro',
+        language: filter.response_config?.language || 'fr',
+        priorityLevel: filter.response_config?.priorityLevel || 'normal',
         is_active: filter.is_active,
       });
     }
@@ -102,10 +111,32 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
   const onSubmit = async (data: FilterFormData) => {
     setIsLoading(true);
     try {
-      await onSave({
+      const payload: FilterUpsertPayload = {
         id: filter?.id,
-        ...data,
-      });
+        filter_key: filter?.filter_key,
+        name: data.name,
+        description: data.description || null,
+        icon: data.icon,
+        color: data.color,
+        keywords: data.keywords,
+        detection_rules: {
+          matchMode: data.matchMode,
+          caseSensitive: data.caseSensitive,
+          regexPatterns: data.regexPatterns,
+          excludeKeywords: data.excludeKeywords,
+        },
+        response_config: {
+          tone: data.tone,
+          language: data.language,
+          customInstructions: data.customInstructions || undefined,
+          responseTemplate: data.responseTemplate || undefined,
+          autoReplyEnabled: data.autoReplyEnabled,
+          priorityLevel: data.priorityLevel,
+        },
+        is_active: data.is_active,
+      };
+
+      await onSave(payload);
       toast.success(filter ? 'Filtre modifié avec succès' : 'Filtre créé avec succès');
       onClose();
     } catch (error) {
@@ -299,6 +330,35 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
               {/* Section Détection */}
               {activeSection === 'detection' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
+                        Mode de correspondance
+                      </label>
+                      <select
+                        {...register('matchMode')}
+                        className={`w-full rounded-lg border-2 px-4 py-2 transition-colors ${
+                          isLightMode
+                            ? 'border-gray-200 bg-white focus:border-blue-500'
+                            : 'border-gray-700 bg-gray-800 text-white focus:border-blue-500'
+                        }`}
+                      >
+                        <option value="any">Au moins un mot-clé</option>
+                        <option value="all">Tous les mots-clés</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1">
+                      <input
+                        type="checkbox"
+                        {...register('caseSensitive')}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                      />
+                      <label className={`text-sm font-semibold ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
+                        Sensible à la casse
+                      </label>
+                    </div>
+                  </div>
+
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
                       Mots-clés de détection *
@@ -313,24 +373,27 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
 
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
-                      Expéditeurs (patterns)
+                      Mots-clés à exclure
                     </label>
                     <KeywordInput
-                      keywords={senderPatterns}
-                      onChange={(patterns) => setValue('sender_patterns', patterns)}
-                      placeholder="Ex: @support.com"
+                      keywords={excludeKeywords}
+                      onChange={(patterns) => setValue('excludeKeywords', patterns)}
+                      placeholder="Ex: newsletter"
                     />
                   </div>
 
                   <div>
                     <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
-                      Sujets (patterns)
+                      Expressions régulières
                     </label>
                     <KeywordInput
-                      keywords={subjectPatterns}
-                      onChange={(patterns) => setValue('subject_patterns', patterns)}
-                      placeholder="Ex: Urgent"
+                      keywords={regexPatterns}
+                      onChange={(patterns) => setValue('regexPatterns', patterns)}
+                      placeholder="Ex: remboursement|rembourser"
                     />
+                    <p className={`mt-1 text-xs ${isLightMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      Utilisez des REGEX simples pour capturer des variations spécifiques (optionnel)
+                    </p>
                   </div>
                 </motion.div>
               )}
@@ -341,12 +404,31 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      {...register('auto_reply_enabled')}
+                      {...register('autoReplyEnabled')}
                       className="h-4 w-4 rounded border-gray-300 text-blue-600"
                     />
                     <label className={`text-sm font-semibold ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
                       Activer les réponses automatiques
                     </label>
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-gray-700' : 'text-gray-300'}`}>
+                      Consignes IA spécifiques
+                    </label>
+                    <textarea
+                      {...register('customInstructions')}
+                      rows={3}
+                      className={`w-full rounded-lg border-2 px-4 py-2 transition-colors ${
+                        isLightMode
+                          ? 'border-gray-200 bg-white focus:border-blue-500'
+                          : 'border-gray-700 bg-gray-800 text-white focus:border-blue-500'
+                      }`}
+                      placeholder="Ajoutez des instructions que l'IA doit suivre pour ce filtre"
+                    />
+                    <p className={`mt-1 text-xs ${isLightMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      Exemple : "Toujours proposer un rendez-vous téléphonique sous 2h"
+                    </p>
                   </div>
 
                   {autoReplyEnabled && (
@@ -356,7 +438,7 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
                           Template de réponse
                         </label>
                         <textarea
-                          {...register('reply_template')}
+                          {...register('responseTemplate')}
                           rows={4}
                           className={`w-full rounded-lg border-2 px-4 py-2 transition-colors ${
                             isLightMode
@@ -413,7 +495,7 @@ export function FilterConfigModal({ filter, isOpen, onClose, onSave, isLightMode
                             Priorité
                           </label>
                           <select
-                            {...register('priority')}
+                            {...register('priorityLevel')}
                             className={`w-full rounded-lg border-2 px-4 py-2 transition-colors ${
                               isLightMode
                                 ? 'border-gray-200 bg-white focus:border-blue-500'
