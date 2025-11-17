@@ -18,9 +18,10 @@ import {
 } from '@/lib/shopify-service';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  console.log('🟢 [SHOPIFY CALLBACK] ==================== START ====================');
+  console.log('🟢 [SHOPIFY CALLBACK] ==================== START V2 ====================');
   console.log('🟢 [SHOPIFY CALLBACK] Full URL:', req.url);
   console.log('🟢 [SHOPIFY CALLBACK] Method:', req.method);
   console.log('🟢 [SHOPIFY CALLBACK] Headers:', Object.fromEntries(req.headers.entries()));
