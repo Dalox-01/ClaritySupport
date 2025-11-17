@@ -210,6 +210,7 @@ export async function exchangeShopifyCode(
 
 /**
  * Enregistrer une boutique dans la base de données
+ * VERSION SIMPLIFIÉE - Sauvegarde immédiate sans fetchShopInfo
  */
 export async function saveShopToDatabase(
   userId: string,
@@ -219,23 +220,16 @@ export async function saveShopToDatabase(
   try {
     console.log(`🔵 [SHOPIFY] saveShopToDatabase START - userId: ${userId}, domain: ${shopDomain}`);
     
-    // Récupérer les informations de la boutique
-    console.log(`🔵 [SHOPIFY] Fetching shop info from Shopify API...`);
-    const shopInfo = await fetchShopInfo(shopDomain, accessToken);
-    console.log(`✅ [SHOPIFY] Shop info received:`, shopInfo);
-
-    console.log(`🔵 [SHOPIFY] Inserting shop into database...`);
+    // Sauvegarde DIRECTE sans attendre les infos de la boutique
+    console.log(`🔵 [SHOPIFY] Inserting shop into database (minimal data)...`);
     const { data, error } = await supabase
       .from('shopify_shops')
       .insert({
         user_id: userId,
         shop_domain: shopDomain,
-        shop_name: shopInfo.name,
-        shop_email: shopInfo.email,
-        shop_currency: shopInfo.currency,
-        shop_timezone: shopInfo.timezone,
+        shop_name: shopDomain.replace('.myshopify.com', ''), // Nom temporaire
+        shop_email: null,
         access_token: accessToken,
-        scope: 'read_orders,read_customers,read_products,read_inventory',
         status: 'active',
       })
       .select()
@@ -245,6 +239,28 @@ export async function saveShopToDatabase(
       console.error(`❌ [SHOPIFY] Database insert error:`, error);
       throw error;
     }
+
+    console.log(`✅ [SHOPIFY] Shop saved to database: ${data.id}`);
+
+    // Récupérer les infos de la boutique EN ARRIÈRE-PLAN (ne pas bloquer)
+    fetchShopInfo(shopDomain, accessToken)
+      .then(shopInfo => {
+        console.log(`✅ [SHOPIFY] Shop info fetched, updating...`);
+        return supabase
+          .from('shopify_shops')
+          .update({
+            shop_name: shopInfo.name,
+            shop_email: shopInfo.email,
+            shop_currency: shopInfo.currency,
+            shop_timezone: shopInfo.timezone,
+          })
+          .eq('id', data.id);
+      })
+      .catch(err => {
+        console.error(`⚠️ [SHOPIFY] Failed to fetch shop info (non-blocking):`, err);
+      });
+
+    return data;
 
     console.log(`✅ [SHOPIFY] Shop connected: ${shopDomain} for user ${userId}`);
 
@@ -266,7 +282,7 @@ async function fetchShopInfo(
 
   try {
     const response = await fetch(
-      `https://${cleanDomain}/admin/api/2024-01/shop.json`,
+      `https://${cleanDomain}/admin/api/2025-10/shop.json`,
       {
         headers: {
           'X-Shopify-Access-Token': accessToken,
@@ -276,7 +292,7 @@ async function fetchShopInfo(
     );
 
     if (!response.ok) {
-      throw new Error(`Shopify API error: ${response.statusText}`);
+      throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -385,7 +401,7 @@ async function fetchShopifyOrders(
 
   try {
     const response = await fetch(
-      `https://${cleanDomain}/admin/api/2024-01/orders.json?limit=${limit}&status=any`,
+      `https://${cleanDomain}/admin/api/2025-10/orders.json?limit=${limit}&status=any`,
       {
         headers: {
           'X-Shopify-Access-Token': accessToken,
@@ -395,7 +411,7 @@ async function fetchShopifyOrders(
     );
 
     if (!response.ok) {
-      throw new Error(`Shopify API error: ${response.statusText}`);
+      throw new Error(`Shopify API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
