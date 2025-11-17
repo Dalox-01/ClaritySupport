@@ -16,12 +16,15 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TabAIConfigAdvanced } from '@/components/tabs/tab-ai-config-advanced';
+import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 import { toast } from 'sonner';
+import { Filter } from 'lucide-react';
 
 interface SupportConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'ai-config';
+  initialTab?: 'ai-config' | 'filters';
+  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
   zIndex?: number;
   onFocus?: () => void;
 }
@@ -31,7 +34,8 @@ export function SupportConfigModal({
   onClose, 
   initialTab = 'ai-config',
   zIndex = 100,
-  onFocus 
+  onFocus,
+  userPlan = 'PRO'
 }: SupportConfigModalProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [hasChanges, setHasChanges] = useState(false);
@@ -119,6 +123,7 @@ export function SupportConfigModal({
 
   const tabs = [
     { id: 'ai-config', label: 'Configuration IA', icon: Bot },
+    { id: 'filters', label: 'Filtres', icon: Filter },
   ];
 
   if (!isOpen) return null;
@@ -251,6 +256,18 @@ export function SupportConfigModal({
                   className="h-full"
                 >
                   <TabAIConfigAdvanced />
+                </motion.div>
+              )}
+              {activeTab === 'filters' && (
+                <motion.div
+                  key="filters"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full p-6 overflow-y-auto"
+                >
+                  <FiltersConfigTab userPlan={userPlan} isLightMode={true} />
                 </motion.div>
               )}
             </AnimatePresence>
