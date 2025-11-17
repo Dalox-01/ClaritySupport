@@ -185,13 +185,13 @@ export async function POST(req: NextRequest) {
     // Mettre à jour usage_count et last_used_at pour les filtres matchés
     if (matches.length > 0) {
       const filterIds = matches.map(m => m.filterId);
-      await supabase
-        .from('user_filters')
-        .update({
-          usage_count: supabase.raw('usage_count + 1'),
-          last_used_at: new Date().toISOString(),
-        })
-        .in('id', filterIds);
+      
+      // Incrémenter usage_count via SQL direct
+      for (const filterId of filterIds) {
+        await supabase.rpc('increment_filter_usage', { 
+          p_filter_id: filterId 
+        });
+      }
     }
 
     console.log(`✅ Detection complete: ${matches.length} filter(s) matched`);

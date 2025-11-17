@@ -235,6 +235,20 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
+-- FONCTION RPC: Incrémenter usage_count d'un filtre
+-- ============================================
+CREATE OR REPLACE FUNCTION increment_filter_usage(p_filter_id UUID)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE user_filters
+  SET 
+    usage_count = usage_count + 1,
+    last_used_at = NOW()
+  WHERE id = p_filter_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================
 -- COMMENTAIRES POUR DOCUMENTATION
 -- ============================================
 COMMENT ON TABLE user_filters IS 'Filtres personnalisables par utilisateur avec détection IA et limitations par plan (PRO: 5, ENTERPRISE: illimité)';
