@@ -10,6 +10,13 @@ export interface UserFilter {
   is_default: boolean;
   filter_key: string;
   keywords: string[];
+  sender_patterns: string[];
+  subject_patterns: string[];
+  auto_reply_enabled: boolean;
+  reply_template: string | null;
+  tone: 'pro' | 'cordial' | 'empathique' | 'technique';
+  language: 'fr' | 'en';
+  priority: 'high' | 'normal' | 'low';
   detection_rules: {
     matchMode: 'any' | 'all';
     caseSensitive: boolean;
@@ -35,12 +42,16 @@ export interface FilterLimits {
   canCreate: boolean;
   current: number;
   max: number;
+  max_custom_filters: number;
   remaining: number;
   plan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
 }
 
 export interface FilterUsage {
   totalClassifications: number;
+  total_active_filters: number;
+  total_emails_processed: number;
+  successful_matches: number;
   filtersCount: number;
   defaultFiltersCount: number;
   customFiltersCount: number;
@@ -61,19 +72,19 @@ export interface FilterUsageStat {
 
 export interface FilterColor {
   name: string;
-  hex: string;
+  value: string;
   class: string;
 }
 
 export const FILTER_COLORS: FilterColor[] = [
-  { name: 'Bleu', hex: '#3B82F6', class: 'bg-blue-500' },
-  { name: 'Vert', hex: '#10B981', class: 'bg-green-500' },
-  { name: 'Rouge', hex: '#EF4444', class: 'bg-red-500' },
-  { name: 'Jaune', hex: '#F59E0B', class: 'bg-amber-500' },
-  { name: 'Violet', hex: '#8B5CF6', class: 'bg-purple-500' },
-  { name: 'Rose', hex: '#EC4899', class: 'bg-pink-500' },
-  { name: 'Indigo', hex: '#6366F1', class: 'bg-indigo-500' },
-  { name: 'Emeraude', hex: '#059669', class: 'bg-emerald-600' },
+  { name: 'Bleu', value: '#3B82F6', class: 'bg-blue-500' },
+  { name: 'Vert', value: '#10B981', class: 'bg-green-500' },
+  { name: 'Rouge', value: '#EF4444', class: 'bg-red-500' },
+  { name: 'Jaune', value: '#F59E0B', class: 'bg-amber-500' },
+  { name: 'Violet', value: '#8B5CF6', class: 'bg-purple-500' },
+  { name: 'Rose', value: '#EC4899', class: 'bg-pink-500' },
+  { name: 'Indigo', value: '#6366F1', class: 'bg-indigo-500' },
+  { name: 'Emeraude', value: '#059669', class: 'bg-emerald-600' },
 ];
 
 export const TONE_OPTIONS = [
