@@ -16,6 +16,7 @@ const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET!;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
 export async function GET(req: NextRequest) {
+  const startTime = Date.now();
   console.log('🟢 [SHOPIFY CALLBACK] START');
   
   try {
@@ -24,24 +25,34 @@ export async function GET(req: NextRequest) {
     const code = searchParams.get('code');
     const shopDomain = searchParams.get('shop');
     const state = searchParams.get('state');
+    const hmac = searchParams.get('hmac');
 
-    console.log(`🔵 Params: code=${!!code}, shop=${shopDomain}, state=${!!state}`);
+    console.log(`🔵 Received params:`, {
+      hasCode: !!code,
+      shop: shopDomain,
+      hasState: !!state,
+      hasHmac: !!hmac,
+      statePreview: state?.substring(0, 50) + '...',
+    });
 
     if (!code || !shopDomain || !state) {
-      console.error('❌ Missing OAuth params');
+      console.error('❌ Missing OAuth params:', { code: !!code, shop: !!shopDomain, state: !!state });
       return NextResponse.redirect(
         new URL('/mail-center?shopify_error=missing_params', APP_URL)
       );
     }
 
-    // Décoder userId
+    // Décoder userId (URL decode + base64 decode)
     let userId: string;
     try {
-      const stateData = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
+      // Shopify URL-encode le state, il faut le décoder d'abord
+      const decodedState = decodeURIComponent(state);
+      const stateData = JSON.parse(Buffer.from(decodedState, 'base64').toString('utf-8'));
       userId = stateData.userId;
-      console.log(`✅ User ID: ${userId}`);
+      console.log(`✅ User ID decoded: ${userId}`);
     } catch (error) {
-      console.error('❌ Invalid state');
+      console.error('❌ Invalid state decode:', error);
+      console.error(`❌ State received: ${state}`);
       return NextResponse.redirect(
         new URL('/mail-center?shopify_error=invalid_state', APP_URL)
       );
