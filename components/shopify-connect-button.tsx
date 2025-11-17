@@ -63,6 +63,26 @@ export function ShopifyConnectButton({ className, isLightMode = false }: Shopify
 
   useEffect(() => {
     loadShops();
+    
+    // Recharger si on revient du callback Shopify
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('shopify_success') === 'true') {
+      const shop = urlParams.get('shop');
+      toast.success(`✅ Boutique ${shop} connectée avec succès !`);
+      
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', window.location.pathname);
+      
+      // Recharger les boutiques après un court délai pour s'assurer que la BDD est à jour
+      setTimeout(() => loadShops(), 1000);
+    } else if (urlParams.get('shopify_error')) {
+      const error = urlParams.get('shopify_error');
+      const details = urlParams.get('details');
+      toast.error(`❌ Erreur Shopify: ${error}${details ? ' - ' + details : ''}`);
+      
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
   const handleConnect = async () => {
