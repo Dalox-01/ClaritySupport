@@ -194,8 +194,8 @@ export async function POST(req: NextRequest) {
       throw new Error('Failed to check filter limits');
     }
 
-    // Type assertion après vérification null
-    const limitCheck = data as LimitCheckResult;
+    // Annotation de type explicite
+    const limitCheck: LimitCheckResult = data as LimitCheckResult;
 
     if (!limitCheck.can_create) {
       return NextResponse.json({
