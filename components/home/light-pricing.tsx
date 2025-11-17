@@ -57,14 +57,16 @@ export function LightPricing() {
         {/* Description */}
         <AnimatePresence mode="wait">
           <motion.p
-            key={activeSegment}
+            key={`desc-${activeSegment}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
             className="mt-6 text-center text-gray-600"
           >
-            {currentSegment?.description}
+            {activeSegment === 'shopify' 
+              ? 'Automatisez votre support client e-commerce avec l\'IA' 
+              : 'Gérez vos emails professionnels avec une efficacité maximale'}
           </motion.p>
         </AnimatePresence>
 
