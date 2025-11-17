@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/db';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -14,6 +14,18 @@ export const runtime = 'nodejs';
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY!;
 const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET!;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
+
+// Client Supabase avec SERVICE_ROLE_KEY pour bypass RLS
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
