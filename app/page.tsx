@@ -6,6 +6,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Mail, Menu, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AuthButton } from '@/components/auth-button';
 import { DarkHero } from '@/components/home/dark-hero';
@@ -13,10 +14,15 @@ import { DarkBentoFeatures } from '@/components/home/dark-bento-features';
 import { ProofSection } from '@/components/home/ProofSection';
 import { DarkPricing } from '@/components/home/dark-pricing';
 import { DarkFaq } from '@/components/home/dark-faq';
+import { LightHero } from '@/components/home/light-hero';
+import { LightFeatures } from '@/components/home/light-features';
+import { LightPricing } from '@/components/home/light-pricing';
+import { LightFaq } from '@/components/home/light-faq';
 
 export default function HomePage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState<'STARTER' | 'PRO' | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -141,13 +147,28 @@ export default function HomePage() {
       </header>
 
       <main>
-        <DarkHero onGetStarted={handleGetStarted} />
-        <div id="features">
-          <DarkBentoFeatures />
-        </div>
-        <ProofSection />
-        <DarkPricing />
-        <DarkFaq />
+        {/* Conditional rendering based on theme */}
+        {theme === 'dark' ? (
+          <>
+            <DarkHero onGetStarted={handleGetStarted} />
+            <div id="features">
+              <DarkBentoFeatures />
+            </div>
+            <ProofSection />
+            <DarkPricing />
+            <DarkFaq />
+          </>
+        ) : (
+          <>
+            <LightHero onGetStarted={handleGetStarted} />
+            <div id="features">
+              <LightFeatures />
+            </div>
+            <ProofSection />
+            <LightPricing />
+            <LightFaq />
+          </>
+        )}
       </main>
 
       <footer className="relative overflow-hidden border-t border-blue-500/10 bg-[#0A0E27] py-20">
