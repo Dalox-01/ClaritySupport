@@ -50,18 +50,21 @@ export async function GET(req: NextRequest) {
     const userId = session.user.id;
 
     // Vérifier les limites via RPC
-    const { data: limitCheck, error: limitError } = await supabase
+    const { data, error: limitError } = await supabase
       .rpc('check_custom_filter_limit', { p_user_id: userId })
-      .single() as { data: LimitCheckResult | null; error: any };
+      .single();
 
     if (limitError) {
       console.error('❌ Error checking limits:', limitError);
       throw limitError;
     }
 
-    if (!limitCheck) {
+    if (!data) {
       throw new Error('Failed to check filter limits');
     }
+
+    // Type assertion après vérification null
+    const limitCheck = data as LimitCheckResult;
 
     // Récupérer statistiques d'usage
     const { data: filters, error: filtersError } = await supabase
