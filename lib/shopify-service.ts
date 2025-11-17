@@ -159,7 +159,6 @@ export function generateShopifyAuthUrl(
     scope: SHOPIFY_SCOPES,
     redirect_uri: REDIRECT_URI,
     state,
-    grant_options: '[]', // Force non-embedded mode - pas de cookies tiers requis
   });
 
   console.log(`✅ [SHOPIFY] OAuth URL generated for: ${cleanDomain}`);
