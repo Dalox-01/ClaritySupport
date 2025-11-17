@@ -217,9 +217,14 @@ export async function saveShopToDatabase(
   accessToken: string
 ): Promise<ShopifyShop> {
   try {
+    console.log(`🔵 [SHOPIFY] saveShopToDatabase START - userId: ${userId}, domain: ${shopDomain}`);
+    
     // Récupérer les informations de la boutique
+    console.log(`🔵 [SHOPIFY] Fetching shop info from Shopify API...`);
     const shopInfo = await fetchShopInfo(shopDomain, accessToken);
+    console.log(`✅ [SHOPIFY] Shop info received:`, shopInfo);
 
+    console.log(`🔵 [SHOPIFY] Inserting shop into database...`);
     const { data, error } = await supabase
       .from('shopify_shops')
       .insert({
@@ -236,7 +241,10 @@ export async function saveShopToDatabase(
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error(`❌ [SHOPIFY] Database insert error:`, error);
+      throw error;
+    }
 
     console.log(`✅ [SHOPIFY] Shop connected: ${shopDomain} for user ${userId}`);
 
