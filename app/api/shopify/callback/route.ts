@@ -122,29 +122,41 @@ export async function GET(req: NextRequest) {
 
     // Sauvegarder en BDD
     console.log(`🔵 Saving to database...`);
+    console.log(`🔵 Data to save:`, {
+      user_id: userId,
+      shop_domain: shopDomain,
+      shop_name: shopName,
+      has_access_token: !!accessToken,
+    });
+
     const { data: savedShop, error: saveError } = await supabase
       .from('shopify_shops')
-      .upsert({
-        user_id: userId,
-        shop_domain: shopDomain,
-        shop_name: shopName,
-        shop_email: shopEmail,
-        access_token: accessToken,
-        status: 'active',
-      }, {
-        onConflict: 'user_id,shop_domain',
-      })
+      .upsert(
+        {
+          user_id: userId,
+          shop_domain: shopDomain,
+          shop_name: shopName,
+          shop_email: shopEmail,
+          access_token: accessToken,
+          status: 'active',
+        },
+        {
+          onConflict: 'user_id,shop_domain',
+          ignoreDuplicates: false, // Update si existe déjà
+        }
+      )
       .select()
       .single();
 
     if (saveError) {
       console.error('❌ Database save error:', saveError);
+      console.error('❌ Error details:', JSON.stringify(saveError, null, 2));
       return NextResponse.redirect(
         new URL('/mail-center?shopify_error=save_failed', APP_URL)
       );
     }
 
-    console.log(`✅ Shop saved: ${savedShop.id}`);
+    console.log(`✅ Shop saved successfully:`, savedShop?.id);
 
     // Redirection succès
     return NextResponse.redirect(
