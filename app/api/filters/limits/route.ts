@@ -52,6 +52,10 @@ export async function GET(req: NextRequest) {
       throw limitError;
     }
 
+    if (!limitCheck) {
+      throw new Error('Failed to check filter limits');
+    }
+
     // Récupérer statistiques d'usage
     const { data: filters, error: filtersError } = await supabase
       .from('user_filters')
