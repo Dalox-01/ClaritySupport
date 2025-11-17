@@ -49,7 +49,6 @@ import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/li
 import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
-import { ShopifyOneClick } from '@/components/shopify-one-click';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
