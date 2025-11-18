@@ -3,8 +3,11 @@
 import { motion } from 'framer-motion';
 import { Check, X, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { PricingPlan } from '@/lib/constants/pricing';
 import { Button } from '@/components/ui/button';
+import { redirectToStripeCheckout } from '@/lib/client-checkout';
 
 interface PlanCardProps {
   plan: PricingPlan;
@@ -14,6 +17,7 @@ interface PlanCardProps {
 export default function PlanCard({ plan, index }: PlanCardProps) {
   const isPopular = plan.popular;
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleSubscribe = async () => {
     // Si c'est un plan "Contactez-nous", rediriger vers la page contact
@@ -24,7 +28,14 @@ export default function PlanCard({ plan, index }: PlanCardProps) {
 
     // Sinon, rediriger vers le checkout Stripe avec le priceId
     if (plan.stripePriceId) {
-      router.push(`/checkout?priceId=${plan.stripePriceId}`);
+      try {
+        setIsRedirecting(true);
+        await redirectToStripeCheckout(plan.stripePriceId);
+      } catch (error) {
+        console.error('Redirect Stripe échoué', error);
+        toast.error(error instanceof Error ? error.message : 'Redirection Stripe impossible');
+        setIsRedirecting(false);
+      }
     }
   };
 
@@ -72,13 +83,14 @@ export default function PlanCard({ plan, index }: PlanCardProps) {
         {/* CTA Button */}
         <Button
           onClick={handleSubscribe}
-          className={`w-full mb-6 h-12 text-base font-semibold transition-all duration-300 ${
+          disabled={isRedirecting}
+          className={`w-full mb-6 h-12 text-base font-semibold rounded-xl border transition-all duration-200 ${
             isPopular
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl hover:scale-105'
-              : 'bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50'
-          }`}
+              ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800'
+              : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900 hover:bg-gray-50'
+          } ${isRedirecting ? 'cursor-not-allowed opacity-70' : 'hover:-translate-y-0.5'}`}
         >
-          {plan.cta}
+          {isRedirecting ? 'Redirection…' : plan.cta}
         </Button>
 
         {/* Features List */}

@@ -32,10 +32,9 @@ update_shop_statistics(p_shop_id UUID) RETURNS VOID
 ```
 
 **Limites implémentées** :
-- FREE / FREELANCE : 0 boutique (aucun accès)
-- STARTER : 1 boutique maximum
-- PRO : 3 boutiques maximum
-- ENTERPRISE / SCALE : 999,999 boutiques (illimité)
+- STARTER (49€ / mois) : 1 boutique maximum
+- PRO (99€ / mois) : 3 boutiques maximum
+- SCALE (199€ / mois) : Boutiques illimitées
 
 ---
 

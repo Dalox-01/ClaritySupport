@@ -2,11 +2,10 @@
 
 ## 📋 Vue d'ensemble
 
-Intégration Shopify avec limitations par plan :
-- **Starter** : 1 boutique maximum
-- **Pro** : 3 boutiques maximum  
-- **Enterprise** : Boutiques illimitées
-- **Freelance/Free** : Aucun accès
+Intégration Shopify 
+- **STARTER** — Parfait pour démarrer votre boutique en ligne (**49€ / mois**, 1 boutique connectée)
+- **PRO** — Pour les boutiques en croissance (**99€ / mois**, jusqu’à 3 boutiques connectées)
+- **SCALE** — Pour les entreprises e-commerce établies (**199€ / mois**, boutiques illimitées)
 
 ## 🔑 Prérequis
 

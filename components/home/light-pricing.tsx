@@ -3,11 +3,14 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { PRICING_SEGMENTS, type SegmentType } from '@/lib/constants/pricing';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { PRICING_SEGMENTS, type SegmentType } from '@/lib/constants/pricing';
+import { redirectToStripeCheckout } from '@/lib/client-checkout';
 
 export function LightPricing() {
   const [activeSegment, setActiveSegment] = useState<SegmentType>('shopify');
+  const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null);
   const router = useRouter();
 
   const currentSegment = PRICING_SEGMENTS.find((seg) => seg.id === activeSegment);
@@ -139,23 +142,28 @@ export function LightPricing() {
 
                     {/* CTA avec couleur dynamique */}
                     <button
-                      onClick={() => {
-                        if (plan.stripePriceId) {
-                          router.push(`/checkout?priceId=${plan.stripePriceId}`);
+                      onClick={async () => {
+                        if (plan.cta === 'Contactez-nous' || !plan.stripePriceId) {
+                          router.push('/contact');
+                          return;
+                        }
+                        try {
+                          setRedirectingPlan(plan.name);
+                          await redirectToStripeCheckout(plan.stripePriceId);
+                        } catch (error) {
+                          console.error('Redirect Stripe échoué', error);
+                          toast.error(error instanceof Error ? error.message : 'Redirection Stripe impossible');
+                          setRedirectingPlan(null);
                         }
                       }}
-                      className={`group relative mb-8 w-full overflow-hidden rounded-full py-4 text-base font-bold transition-all hover:scale-105 active:scale-100 ${
+                      disabled={redirectingPlan === plan.name}
+                      className={`group relative mb-8 w-full rounded-full border py-4 text-base font-semibold transition-all duration-200 ${
                         isPopular
-                          ? isEcommerce
-                            ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/40'
-                            : 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40'
-                          : 'border-2 border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50 shadow-md'
-                      }`}
+                          ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800'
+                          : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900 hover:bg-gray-50'
+                      } ${redirectingPlan === plan.name ? 'cursor-not-allowed opacity-70' : 'hover:-translate-y-0.5'}`}
                     >
-                      <span className="relative z-10">{plan.cta}</span>
-                      {isPopular && (
-                        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                      )}
+                      <span className="relative z-10">{redirectingPlan === plan.name ? 'Redirection…' : plan.cta}</span>
                     </button>
 
                     {/* Features avec couleur dynamique */}

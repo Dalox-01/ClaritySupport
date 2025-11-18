@@ -5,7 +5,9 @@ import { Check, X, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { PRICING_SEGMENTS, type SegmentType, type PricingPlan } from '@/lib/constants/pricing';
+import { redirectToStripeCheckout } from '@/lib/client-checkout';
 
 // Thèmes de couleur par segment
 const SEGMENT_COLORS = {
@@ -28,8 +30,9 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
   const isPopular = plan.popular;
   const colors = SEGMENT_COLORS[segment];
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     // Si c'est un plan "Contactez-nous", rediriger vers la page contact
     if (plan.cta === 'Contactez-nous') {
       router.push('/contact');
@@ -38,7 +41,14 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
 
     // Sinon, rediriger vers le checkout Stripe avec le priceId
     if (plan.stripePriceId) {
-      router.push(`/checkout?priceId=${plan.stripePriceId}`);
+      try {
+        setIsRedirecting(true);
+        await redirectToStripeCheckout(plan.stripePriceId);
+      } catch (error) {
+        console.error('Redirect Stripe échoué', error);
+        toast.error(error instanceof Error ? error.message : 'Redirection Stripe impossible');
+        setIsRedirecting(false);
+      }
     }
   };
 
@@ -86,13 +96,14 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
         {/* CTA Button */}
         <button
           onClick={handleSubscribe}
-          className={`w-full mb-6 h-12 text-base font-semibold rounded-xl transition-all duration-300 ${
+          disabled={isRedirecting}
+          className={`w-full mb-6 h-12 text-base font-semibold rounded-xl border transition-all duration-200 ${
             isPopular
-              ? `bg-gradient-to-r ${colors.button} text-white shadow-lg hover:shadow-xl hover:scale-105`
-              : `bg-white/5 border-2 ${colors.buttonBorder}`
-          }`}
+              ? 'bg-white text-[#0A0E27] border-white/80 hover:bg-white/90'
+              : 'bg-transparent text-white border-white/30 hover:border-white/70 hover:bg-white/5'
+          } ${isRedirecting ? 'cursor-not-allowed opacity-70' : 'hover:-translate-y-0.5'}`}
         >
-          {plan.cta}
+          {isRedirecting ? 'Redirection…' : plan.cta}
         </button>
 
         {/* Features List */}
