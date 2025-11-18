@@ -51,6 +51,7 @@ import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
 import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
 import { ShopifyConnectPanel } from '@/components/mail-center/ShopifyConnectPanel';
+import { ShopifyQuickConnect } from '@/components/mail-center/ShopifyQuickConnect';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -1255,6 +1256,9 @@ export default function MailCenterPage() {
                   </SelectContent>
                 </Select>
               </Card>
+              <div className="mt-3">
+                <ShopifyQuickConnect />
+              </div>
             </motion.div>
 
             {/* Outils */}
