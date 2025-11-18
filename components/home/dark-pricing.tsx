@@ -278,7 +278,7 @@ export function DarkPricing() {
             className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Tarifs simples et transparents
+              Un investissement rentabilisé en 3 jours.
             </span>
           </motion.h2>
 
@@ -289,7 +289,7 @@ export function DarkPricing() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Choisissez le plan parfait pour votre entreprise. Changez ou annulez à tout moment, sans engagement.
+            Combien vous coûte un agent de support ? 2000€/mois ? ClaritySupport fait le travail de 3 agents pour une fraction du prix.
           </motion.p>
 
           {/* Trust badges */}
@@ -378,12 +378,12 @@ export function DarkPricing() {
               Essayez gratuitement pendant 14 jours
             </h2>
             <p className="text-gray-300 mb-6 text-lg">
-              Découvrez la puissance de ClaritySupport sans risque. Toutes les fonctionnalités incluses, aucune carte bancaire requise.
+              Découvrez la puissance de ClaritySupport sans risque. Si vous ne gagnez pas de temps dès la première semaine, vous ne payez rien.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/checkout">
                 <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
-                  Commencer l'essai gratuit
+                  Démarrer mon essai (0€)
                 </button>
               </Link>
               <Link href="/contact">

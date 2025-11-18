@@ -44,10 +44,10 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 backdrop-blur-md"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 backdrop-blur-md"
         >
           <Sparkles className="h-4 w-4" />
-          <span>Support client automatisé par IA</span>
+          <span>🚀 +30% de taux de conversion observé</span>
         </motion.div>
 
         {/* Title amélioré */}
@@ -57,10 +57,10 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-6 text-5xl font-black leading-[1.1] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
         >
-          L'IA qui transforme vos emails
+          Votre Service Client ne doit pas vous coûter de l'argent.
           <br />
           <span className="inline-block bg-gradient-to-r from-[#0EA5E9] via-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
-            e-commerce en chiffre d'affaires
+            Il doit vous en rapporter.
           </span>
         </motion.h1>
 
@@ -71,7 +71,7 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-300 sm:text-2xl"
         >
-          ClaritySupport centralise tous les emails de votre boutique en ligne et se connecte à Shopify pour générer des réponses prêtes à envoyer qui respectent vos politiques, vos offres et vos stocks.
+          ClaritySupport n'est pas juste un helpdesk. C'est une IA qui répond à vos clients en 30 secondes, résout les problèmes, et pousse à l'achat. 24/7. Sans pause café.
         </motion.p>
 
         {/* CTA Buttons améliorés */}
@@ -83,10 +83,10 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
         >
           <button
             onClick={onGetStarted}
-            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-10 py-5 text-lg font-bold text-white shadow-xl shadow-blue-500/30 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 active:scale-100"
+            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-10 py-5 text-lg font-bold text-white shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/50 active:scale-100"
           >
             <span className="relative z-10 flex items-center gap-3">
-              Essayer gratuitement
+              Booster mes ventes maintenant
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </span>
           </button>
@@ -95,7 +95,7 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
             href="#pricing"
             className="group inline-flex items-center gap-2 rounded-full border-2 border-blue-500/30 bg-white/5 px-10 py-5 text-lg font-bold text-white backdrop-blur-md transition-all hover:border-blue-500/50 hover:bg-white/10"
           >
-            <span>Voir les tarifs</span>
+            <span>Voir le ROI</span>
           </a>
         </motion.div>
 

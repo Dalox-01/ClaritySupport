@@ -6,34 +6,34 @@ import { useState } from 'react';
 
 const faqs = [
   {
-    question: 'Comment fonctionne la synchronisation des emails ?',
+    question: 'Est-ce que l\'IA va dire n\'importe quoi à mes clients ?',
     answer:
-      'ClaritySupport se connecte de manière sécurisée à vos comptes Gmail et Outlook via OAuth 2.0. Vos emails sont synchronisés en temps réel et stockés de manière chiffrée. Nous ne conservons jamais vos mots de passe et respectons les standards de sécurité les plus élevés.',
+      'Non. Vous gardez le contrôle total. L\'IA apprend de vos réponses passées et de votre base de connaissances. Vous pouvez choisir de valider chaque réponse avant envoi (mode Copilote) ou de laisser l\'IA gérer les questions simples (mode Autopilote).',
   },
   {
-    question: 'L\'IA peut-elle vraiment comprendre le contexte de mes emails de support ?',
+    question: 'Est-ce compatible avec Shopify ?',
     answer:
-      'Absolument ! Notre IA analyse le contexte, l\'historique des conversations et le sentiment du client pour générer des réponses précises et personnalisées. Elle s\'adapte au ton de votre entreprise et apprend de vos corrections pour s\'améliorer continuellement.',
+      'Oui, nativement. L\'IA voit les commandes, les statuts de livraison, les numéros de suivi et les stocks en temps réel. Elle peut dire à un client "Votre commande #1234 est en route" sans que vous ayez à chercher.',
   },
   {
-    question: 'Puis-je annuler mon abonnement à tout moment ?',
+    question: 'Est-ce que c\'est difficile à installer ?',
     answer:
-      'Oui, sans aucun engagement. Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun frais caché, aucune période d\'engagement minimum. Vos données restent accessibles pendant 30 jours après l\'annulation pour faciliter votre transition.',
+      '2 minutes chrono. Connectez votre Gmail/Outlook, connectez Shopify en un clic, et c\'est parti. Pas besoin de développeur.',
   },
   {
-    question: 'Mes données clients sont-elles sécurisées ?',
+    question: 'Est-ce que ça remplace un humain ?',
     answer:
-      'La sécurité est notre priorité absolue. Nous utilisons un chiffrement AES-256 de bout en bout, une authentification à deux facteurs optionnelle, et sommes conformes au RGPD. Vos données sont hébergées en Europe sur des serveurs certifiés ISO 27001. Vos clients sont protégés.',
+      'Ça remplace les tâches répétitives et chronophages (80% du volume). Votre équipe peut enfin se concentrer sur les cas complexes, les VIP et la stratégie de croissance.',
   },
   {
-    question: 'Combien de boîtes mail puis-je connecter ?',
+    question: 'Combien de temps je gagne vraiment ?',
     answer:
-      'Cela dépend de votre plan : le plan FREE permet 1 compte, le plan STARTER permet 3 comptes, et le plan PRO permet un nombre illimité de comptes email. Vous pouvez librement mélanger Gmail, Outlook et autres fournisseurs.',
+      'Nos clients divisent leur temps de support par 5 en moyenne. Si vous passez 2h par jour sur les emails, vous passerez à 20 minutes. Le reste du temps ? Vous le consacrez à vendre.',
   },
   {
-    question: 'Proposez-vous une API pour intégrer ClaritySupport à mes outils ?',
+    question: 'Puis-je essayer avant de payer ?',
     answer:
-      'Oui ! Le plan PRO inclut un accès complet à notre API REST et aux webhooks. Intégrez ClaritySupport à votre CRM, helpdesk ou outils internes pour automatiser vos workflows. Documentation technique complète et support développeur disponibles.',
+      'Oui, vous avez 14 jours d\'essai gratuit avec toutes les fonctionnalités PRO. Aucune carte bancaire n\'est requise pour commencer.',
   },
 ];
 

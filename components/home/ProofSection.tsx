@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { useRef } from 'react';
 
 const proofPoints = [
-  'Mail Center avec tous vos comptes',
-  'Organisation par statuts intelligents',
-  'Réponses automatiques avec IA',
-  'Synchronisation temps réel Gmail & Outlook',
+  'Réponses en < 1 minute',
+  'Augmentation du panier moyen',
+  'Satisfaction client 5/5',
+  'Intégration Shopify native',
 ];
 
 export function ProofSection() {
@@ -63,10 +63,10 @@ export function ProofSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              Voyez la différence
+              L'expérience client qui
               <br />
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
-                par vous-même.
+                fait revenir vos acheteurs.
               </span>
             </motion.h2>
             
@@ -77,7 +77,7 @@ export function ProofSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
-              Le Mail Center centralise tous vos emails, génère des réponses avec l&rsquo;IA, organise par statuts et automatise vos workflows. Une interface unique pour tout gérer.
+              Vos clients n'attendent pas. Ils veulent des réponses immédiates et précises. ClaritySupport leur donne exactement ça, tout en boostant votre image de marque.
             </motion.p>
 
             <ul className="mb-8 space-y-4">
@@ -324,7 +324,7 @@ export function ProofSection() {
             >
               <span className="flex items-center gap-1.5">
                 <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                Génération instantanée
+                Vente sauvée !
               </span>
             </motion.div>
 
@@ -344,7 +344,7 @@ export function ProofSection() {
               }}
               className="absolute -left-4 bottom-32 rounded-xl border border-purple-200 bg-gradient-to-br from-white to-purple-50 px-4 py-2 text-sm font-medium text-gray-900 shadow-xl backdrop-blur-sm dark:border-purple-900 dark:from-gray-900 dark:to-purple-950 dark:text-white"
             >
-              🎯 Ton parfait
+              ❤️ Client ravi
             </motion.div>
             
             {/* Glow effect */}

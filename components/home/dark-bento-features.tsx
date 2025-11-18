@@ -22,43 +22,43 @@ import { useRef, useState } from 'react';
 const mainFeatures = [
   {
     icon: Bot,
-    title: 'IA Avancée',
-    description: 'Réponses automatiques contextuelles qui comprennent l\'intent du client et reproduisent votre ton professionnel.',
+    title: 'Vendeur Expert 24/7',
+    description: 'Ne dort jamais. Ne prend jamais de pause. Répond à chaque client avec l\'objectif de convertir.',
     gradient: 'from-purple-500 to-pink-500',
     borderGradient: 'from-purple-500/50 to-pink-500/50',
   },
   {
     icon: Mail,
-    title: 'Centralisation',
-    description: 'Unifiez Gmail, Outlook et autres boîtes mail. Une seule interface pour gérer tout votre support.',
+    title: 'Vision 360° Client',
+    description: 'Connecté à Shopify. L\'IA connaît l\'historique d\'achat et propose le produit complémentaire parfait.',
     gradient: 'from-blue-500 to-cyan-500',
     borderGradient: 'from-blue-500/50 to-cyan-500/50',
   },
   {
     icon: Zap,
-    title: 'Automatisation',
-    description: 'Réponses instantanées 24/7. L\'IA traite les demandes récurrentes pendant que vous dormez.',
+    title: 'Réponses Instantanées',
+    description: 'Le client pose une question. 10 secondes plus tard, il a sa réponse. 30 secondes plus tard, il achète.',
     gradient: 'from-cyan-500 to-teal-500',
     borderGradient: 'from-cyan-500/50 to-teal-500/50',
   },
   {
     icon: BarChart3,
-    title: 'Analytics',
-    description: 'Tableaux de bord en temps réel : temps de réponse, satisfaction client, volume traité, tendances.',
+    title: 'Tableau de Bord ROI',
+    description: 'Ne suivez pas juste les tickets. Suivez le chiffre d\'affaires généré par votre support.',
     gradient: 'from-orange-500 to-red-500',
     borderGradient: 'from-orange-500/50 to-red-500/50',
   },
   {
     icon: Shield,
-    title: 'Sécurité',
-    description: 'Chiffrement AES-256, conformité RGPD, hébergement EU. Vos données sont protégées.',
+    title: 'Données Blindées',
+    description: 'Vos données clients sont précieuses. Nous les protégeons comme un coffre-fort bancaire (AES-256).',
     gradient: 'from-green-500 to-emerald-500',
     borderGradient: 'from-green-500/50 to-emerald-500/50',
   },
   {
     icon: Clock,
-    title: 'Gain de Temps',
-    description: 'Économisez jusqu\'\u00e0 85% de temps sur le support. Concentrez-vous sur la croissance de votre business.',
+    title: 'Liberté Totale',
+    description: 'Réduisez votre temps de gestion de 85%. Passez vos journées à développer votre marque, pas à répondre aux emails.',
     gradient: 'from-indigo-500 to-blue-500',
     borderGradient: 'from-indigo-500/50 to-blue-500/50',
   },
@@ -188,9 +188,9 @@ export function DarkBentoFeatures() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
           >
-            Transformez votre support client{' '}
+            Arrêtez de perdre des ventes{' '}
             <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              avec l\'IA
+              à cause d'un support lent
             </span>
           </motion.h2>
 
@@ -201,7 +201,7 @@ export function DarkBentoFeatures() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
           >
-            Délivrez un service exceptionnel, augmentez la satisfaction client et libérez du temps pour votre équipe
+            Chaque minute d'attente est une vente perdue. ClaritySupport répond instantanément pour sécuriser le panier.
           </motion.p>
         </div>
 
