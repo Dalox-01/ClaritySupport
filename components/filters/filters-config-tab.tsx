@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, X, Trash2, Edit2, Check } from 'lucide-react';
 import { UserFilter, FilterLimits, FilterPlan } from '@/types/filters';
 import { toast } from 'sonner';
+import { SUPPORT_CATEGORIES } from '@/lib/support-categories';
 
 const slugifyFilterKey = (value: string) =>
   value
@@ -12,6 +13,21 @@ const slugifyFilterKey = (value: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_|_$/g, '') || `filter_${Date.now()}`;
+
+// Mots-clés par défaut pour chaque catégorie
+const DEFAULT_KEYWORDS: Record<string, string[]> = {
+  'urgent': ['urgent', 'ASAP', 'immédiat', 'prioritaire', 'critique'],
+  'commande': ['commande', 'commander', 'achat', 'panier', 'checkout'],
+  'remboursement': ['remboursement', 'rembourser', 'argent', 'restitution', 'annulation'],
+  'question-produit': ['produit', 'article', 'référence', 'disponibilité', 'stock'],
+  'suivi-commande': ['suivi', 'livraison', 'colis', 'transporteur', 'tracking'],
+  'sav': ['SAV', 'garantie', 'réparation', 'défectueux', 'panne'],
+  'reclamation': ['réclamation', 'plainte', 'insatisfait', 'problème', 'déçu'],
+  'information': ['information', 'renseignement', 'question', 'demande', 'savoir'],
+  'facturation': ['facture', 'facturation', 'TVA', 'paiement', 'reçu'],
+  'technique': ['technique', 'bug', 'erreur', 'connexion', 'installation'],
+  'autre': ['autre', 'divers', 'général']
+};
 
 interface FiltersConfigTabProps {
   userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
@@ -26,6 +42,9 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
   const [editingFilterName, setEditingFilterName] = useState<string | null>(null);
   const [tempFilterName, setTempFilterName] = useState<string>('');
+
+  // Créer les filtres par défaut à partir de SUPPORT_CATEGORIES
+  const [allFilters, setAllFilters] = useState<Array<UserFilter & { isVirtual?: boolean }>>([]);
 
   const effectivePlan: FilterPlan = (limits?.plan as FilterPlan) || userPlan;
   const customFiltersLimit = limits?.max ?? (effectivePlan === 'PRO' ? 5 : effectivePlan === 'ENTERPRISE' ? 999999 : 0);
@@ -43,17 +62,66 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
         fetch('/api/filters/limits'),
       ]);
 
+      let dbFilters: UserFilter[] = [];
       if (filtersRes.ok) {
         const data = await filtersRes.json();
-        setFilters(data.filters || []);
-      } else {
-        toast.error('Impossible de charger les filtres');
+        dbFilters = data.filters || [];
       }
 
       if (limitsRes.ok) {
         const data = await limitsRes.json();
         setLimits(data.limits || null);
       }
+
+      // Créer les filtres virtuels à partir de SUPPORT_CATEGORIES
+      const virtualFilters = SUPPORT_CATEGORIES.map(cat => {
+        // Chercher s'il existe déjà en base
+        const existingFilter = dbFilters.find(f => f.filter_key === cat.id);
+        
+        if (existingFilter) {
+          return existingFilter;
+        }
+
+        // Sinon créer un filtre virtuel
+        return {
+          id: `virtual_${cat.id}`,
+          name: cat.label,
+          filter_key: cat.id,
+          is_default: true,
+          is_active: true,
+          keywords: DEFAULT_KEYWORDS[cat.id] || [],
+          detection_rules: {
+            keywords: DEFAULT_KEYWORDS[cat.id] || [],
+            matchMode: 'any' as const,
+            patterns: [],
+            requiresAIConfirmation: false,
+            minConfidence: 0,
+          },
+          response_config: {
+            tone: 'professional' as const,
+            language: 'fr',
+            customInstructions: '',
+            autoReply: false,
+          },
+          isVirtual: true,
+          user_id: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          description: '',
+          color: '#3B82F6',
+          icon: cat.icon,
+          usage_count: 0,
+          last_used_at: null,
+        } as any;
+      });
+
+      // Ajouter les filtres personnalisés (non-virtuels et non dans SUPPORT_CATEGORIES)
+      const customFilters = dbFilters.filter(f => 
+        !SUPPORT_CATEGORIES.some(cat => cat.id === f.filter_key)
+      );
+
+      setAllFilters([...virtualFilters, ...customFilters]);
+      setFilters(dbFilters);
     } catch (error) {
       toast.error('Erreur lors du chargement des filtres');
     } finally {
@@ -113,33 +181,65 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const handleUpdateFilter = useCallback(
     async (filterId: string, updates: Partial<UserFilter>) => {
       setSavingStates((prev) => ({ ...prev, [filterId]: true }));
+      
+      const filter = allFilters.find(f => f.id === filterId);
+      
       try {
-        const res = await fetch(`/api/filters/${filterId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates),
-        });
+        // Si c'est un filtre virtuel, on doit le créer d'abord
+        if (filter?.isVirtual) {
+          const newFilter = {
+            name: filter.name,
+            filter_key: filter.filter_key,
+            keywords: updates.keywords || filter.keywords,
+            detection_rules: filter.detection_rules,
+            response_config: {
+              ...filter.response_config,
+              ...(updates.response_config || {}),
+            },
+            is_active: true,
+            is_default: true,
+          };
 
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error || 'Erreur lors de la sauvegarde');
+          const res = await fetch('/api/filters', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newFilter),
+          });
+
+          if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Erreur lors de la création');
+          }
+        } else {
+          // Mise à jour normale
+          const res = await fetch(`/api/filters/${filterId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+          });
+
+          if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Erreur lors de la sauvegarde');
+          }
         }
 
         await fetchFilters();
+        toast.success('Filtre sauvegardé');
       } catch (error: any) {
         toast.error(error.message || 'Erreur lors de la sauvegarde');
       } finally {
         setSavingStates((prev) => ({ ...prev, [filterId]: false }));
       }
     },
-    []
+    [allFilters]
   );
 
   const handleAddKeyword = async (filterId: string) => {
     const keyword = newKeywordInputs[filterId]?.trim();
     if (!keyword) return;
 
-    const filter = filters.find((f) => f.id === filterId);
+    const filter = allFilters.find((f) => f.id === filterId);
     if (!filter) return;
 
     const currentKeywords = filter.keywords || [];
@@ -157,7 +257,7 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   };
 
   const handleRemoveKeyword = async (filterId: string, keyword: string) => {
-    const filter = filters.find((f) => f.id === filterId);
+    const filter = allFilters.find((f) => f.id === filterId);
     if (!filter) return;
 
     const updatedKeywords = (filter.keywords || []).filter((k) => k !== keyword);
@@ -167,7 +267,7 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   };
 
   const handleUpdateInstructions = async (filterId: string, instructions: string) => {
-    const filter = filters.find((f) => f.id === filterId);
+    const filter = allFilters.find((f) => f.id === filterId);
     if (!filter) return;
 
     await handleUpdateFilter(filterId, {
@@ -230,12 +330,10 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
         <p className={`text-sm ${isLightMode ? 'text-gray-600' : 'text-gray-400'}`}>
-          {hasUnlimitedCustomFilters
-            ? 'Filtres personnalisés illimités'
-            : `${customFilters.length} / ${customFiltersLimit} filtres personnalisés`}
+          {SUPPORT_CATEGORIES.length} filtres de base • {customFilters.length} personnalisés
         </p>
         <button
           onClick={handleCreateFilter}
@@ -248,18 +346,18 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
       </div>
 
       <div className="space-y-3">
-        {filters.map((filter) => (
+        {allFilters.map((filter) => (
           <div
             key={filter.id}
-            className={`rounded-xl border p-5 shadow-sm transition-all hover:shadow-md ${
+            className={`rounded-lg border p-4 ${
               isLightMode 
-                ? 'border-gray-200 bg-gradient-to-br from-white to-gray-50/50' 
-                : 'border-gray-700 bg-gradient-to-br from-gray-800 to-gray-800/50'
+                ? 'border-gray-200 bg-white shadow-sm' 
+                : 'border-gray-700 bg-gray-800'
             }`}
           >
-            {/* Header - Nom du filtre éditable */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3 flex-1">
+            {/* Header - Nom du filtre */}
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 flex-1">
                 {editingFilterName === filter.id ? (
                   <div className="flex items-center gap-2 flex-1">
                     <input
@@ -271,54 +369,51 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
                         if (e.key === 'Escape') handleCancelEditName();
                       }}
                       autoFocus
-                      className={`flex-1 px-3 py-1.5 rounded-lg border-2 font-semibold text-base ${
+                      className={`flex-1 px-2 py-1 rounded border-2 font-semibold text-sm ${
                         isLightMode
-                          ? 'border-blue-400 bg-white text-gray-900 focus:border-blue-500'
-                          : 'border-blue-500 bg-gray-700 text-white focus:border-blue-400'
+                          ? 'border-blue-400 bg-white text-gray-900'
+                          : 'border-blue-500 bg-gray-700 text-white'
                       }`}
                     />
                     <button
                       onClick={() => handleSaveFilterName(filter.id)}
-                      className="p-1.5 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
-                      title="Sauvegarder"
+                      className="p-1 rounded bg-green-500 text-white hover:bg-green-600"
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={handleCancelEditName}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isLightMode
-                          ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      className={`p-1 rounded ${
+                        isLightMode ? 'bg-gray-200 text-gray-700' : 'bg-gray-700 text-gray-300'
                       }`}
-                      title="Annuler"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : (
                   <>
-                    <h3 className={`font-semibold text-lg ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
+                    <h3 className={`font-semibold text-base ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
                       {filter.name}
                     </h3>
-                    <button
-                      onClick={() => handleStartEditName(filter)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isLightMode
-                          ? 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
-                          : 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                      }`}
-                      title="Modifier le nom"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
+                    {!filter.isVirtual && (
+                      <button
+                        onClick={() => handleStartEditName(filter)}
+                        className={`p-1 rounded transition-colors ${
+                          isLightMode
+                            ? 'text-gray-500 hover:bg-gray-100'
+                            : 'text-gray-400 hover:bg-gray-700'
+                        }`}
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </>
                 )}
                 {filter.is_default && (
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     isLightMode
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-blue-500/20 text-blue-400'
                   }`}>
                     Par défaut
                   </span>
@@ -327,12 +422,11 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
               {!filter.is_default && (
                 <button
                   onClick={() => handleDeleteFilter(filter.id)}
-                  className={`p-2 rounded-lg transition-all hover:scale-105 ${
+                  className={`p-1.5 rounded transition-colors ${
                     isLightMode 
                       ? 'text-red-600 hover:bg-red-50' 
                       : 'text-red-400 hover:bg-red-500/10'
                   }`}
-                  title="Supprimer le filtre"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -340,47 +434,39 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
             </div>
 
             {/* Section Mots-clés */}
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center justify-between">
-                <label className={`block text-sm font-semibold ${
-                  isLightMode ? 'text-gray-700' : 'text-gray-300'
-                }`}>
-                  🏷️ Mots-clés de détection
-                </label>
-                <span className={`text-xs ${isLightMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                  {(filter.keywords || []).length} mot{(filter.keywords || []).length !== 1 ? 's' : ''}-clé{(filter.keywords || []).length !== 1 ? 's' : ''}
-                </span>
-              </div>
+            <div className="space-y-2 mb-3">
+              <label className={`block text-xs font-semibold ${
+                isLightMode ? 'text-gray-700' : 'text-gray-300'
+              }`}>
+                Mots-clés ({(filter.keywords || []).length})
+              </label>
               
-              {/* Affichage des mots-clés existants */}
+              {/* Mots-clés existants */}
               {(filter.keywords || []).length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {(filter.keywords || []).map((keyword) => (
                     <span
                       key={keyword}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105 ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                         isLightMode
-                          ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 hover:border-blue-300'
-                          : 'bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-blue-300 border border-blue-500/30 hover:border-blue-400/40'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
                       }`}
                     >
                       {keyword}
                       <button
                         onClick={() => handleRemoveKeyword(filter.id, keyword)}
-                        className={`hover:scale-110 transition-transform ${
-                          isLightMode ? 'hover:text-red-600' : 'hover:text-red-400'
-                        }`}
-                        title="Supprimer ce mot-clé"
+                        className="hover:text-red-600 dark:hover:text-red-400"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <X className="h-3 w-3" />
                       </button>
                     </span>
                   ))}
                 </div>
               )}
 
-              {/* Champ d'ajout de mot-clé */}
-              <div className="flex gap-2">
+              {/* Ajout de mot-clé */}
+              <div className="flex gap-1.5">
                 <input
                   type="text"
                   value={newKeywordInputs[filter.id] || ''}
@@ -388,54 +474,46 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
                     setNewKeywordInputs((prev) => ({ ...prev, [filter.id]: e.target.value }))
                   }
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddKeyword(filter.id);
-                    }
+                    if (e.key === 'Enter') handleAddKeyword(filter.id);
                   }}
-                  placeholder="Ajouter un mot-clé (ex: urgent, remboursement...)"
-                  className={`flex-1 px-4 py-2.5 rounded-lg border-2 text-sm transition-colors ${
+                  placeholder="Ajouter un mot-clé..."
+                  className={`flex-1 px-2 py-1.5 rounded border text-xs ${
                     isLightMode
-                      ? 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100'
-                      : 'border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                      ? 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
+                      : 'border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500'
                   }`}
                 />
                 <button
                   onClick={() => handleAddKeyword(filter.id)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-700"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5" />
                   Ajouter
                 </button>
               </div>
             </div>
 
             {/* Section Prompt Contexte */}
-            <div className="space-y-3">
-              <label className={`block text-sm font-semibold ${
+            <div className="space-y-2">
+              <label className={`block text-xs font-semibold ${
                 isLightMode ? 'text-gray-700' : 'text-gray-300'
               }`}>
-                🤖 Prompt Contexte (Consignes IA)
+                Prompt Contexte
               </label>
               <textarea
                 value={filter.response_config?.customInstructions || ''}
                 onChange={(e) => handleUpdateInstructions(filter.id, e.target.value)}
-                placeholder="Exemple : Tu dois répondre avec empathie aux demandes de remboursement. Explique clairement la procédure et rassure le client..."
-                rows={4}
-                className={`w-full px-4 py-3 rounded-lg border-2 text-sm resize-none transition-colors font-mono ${
+                placeholder="Instructions pour l'IA concernant ce type d'email..."
+                rows={3}
+                className={`w-full px-3 py-2 rounded border text-xs resize-none ${
                   isLightMode
-                    ? 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-purple-400 focus:ring-2 focus:ring-purple-100'
-                    : 'border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20'
+                    ? 'border-gray-300 bg-white text-gray-900 placeholder:text-gray-400'
+                    : 'border-gray-600 bg-gray-700/50 text-white placeholder:text-gray-500'
                 }`}
               />
               {savingStates[filter.id] && (
-                <div className="flex items-center gap-2 text-xs text-blue-500 animate-pulse">
-                  <div className="h-2 w-2 rounded-full bg-blue-500" />
-                  Sauvegarde automatique en cours...
-                </div>
+                <p className="text-xs text-blue-500">Sauvegarde...</p>
               )}
-              <p className={`text-xs ${isLightMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                💡 Ces consignes seront utilisées par l'IA lors de la classification et génération de réponses pour ce type d'email.
-              </p>
             </div>
           </div>
         ))}
