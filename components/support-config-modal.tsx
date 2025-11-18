@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TabAIConfigAdvanced, AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
+import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 import { toast } from 'sonner';
 import { Filter } from 'lucide-react';
 
@@ -128,6 +129,7 @@ export function SupportConfigModal({
 
   const tabs = [
     { id: 'ai-config', label: 'Configuration IA', icon: Bot },
+    { id: 'filters', label: 'Filtres', icon: Filter },
   ];
 
   if (!isOpen) return null;

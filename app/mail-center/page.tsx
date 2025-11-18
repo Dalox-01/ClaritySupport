@@ -1311,33 +1311,6 @@ export default function MailCenterPage() {
                     </div>
                   </button>
 
-                  {/* Gestion des Filtres */}
-                  <button
-                    onClick={() => {
-                      setSupportConfigInitialTab('filters');
-                      setSupportConfigInitialSection('filters');
-                      setIsSupportConfigOpen(true);
-                      bringToFront('supportConfig');
-                    }}
-                    className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg border transition-all duration-300 hover:scale-[1.02] hover:translate-x-0.5 active:scale-[0.98] group text-left",
-                      isLightMode
-                        ? "border-emerald-300/50 hover:border-emerald-400/70 bg-emerald-50/50 hover:bg-emerald-600 hover:text-white shadow-sm hover:shadow-lg hover:shadow-emerald-500/30"
-                        : "border-emerald-500/20 hover:border-emerald-400/40 bg-emerald-500/10 hover:bg-emerald-500/20"
-                    )}
-                    title="Gérer les filtres de détection"
-                  >
-                    <Filter className={cn("w-4 h-4", isLightMode ? "text-emerald-600 group-hover:text-white" : "text-emerald-400")} />
-                    <div className="flex-1 min-w-0">
-                      <div className={cn("text-xs font-medium", isLightMode ? "text-emerald-700 group-hover:text-white" : "text-emerald-300")}>
-                        Filtres
-                      </div>
-                      <div className={cn("text-[10px]", isLightMode ? "text-emerald-600/70 group-hover:text-white/80" : "text-emerald-400/70")}>
-                        Détection automatique
-                      </div>
-                    </div>
-                  </button>
-
                   {/* Toggle IA Active/Inactive */}
                   <button
                     onClick={toggleAI}
