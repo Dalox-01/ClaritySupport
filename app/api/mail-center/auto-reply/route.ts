@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     // Charger la configuration IA de l'utilisateur (créativité, ton, style, etc.)
     const { data: userData } = await supabase
       .from('users')
-      .select('ai_prompt_config')
+      .select('ai_prompt_config, knowledge_base')
       .eq('id', userId)
       .single();
 
@@ -119,7 +119,55 @@ export async function POST(req: NextRequest) {
 
         console.log(`📧 [AUTO-REPLY] Traitement email ${email.id}: ${email.subject}`);
 
-        // Générer la réponse avec l'IA + configuration utilisateur
+        // 🔍 CHARGER BASE DE CONNAISSANCES
+        let knowledgeBaseContext: string | undefined;
+        if (userData?.knowledge_base) {
+          try {
+            const { KnowledgeBaseManager } = await import('@/lib/product-knowledge');
+            const kbManager = new KnowledgeBaseManager(userData.knowledge_base);
+            knowledgeBaseContext = kbManager.generateContextForAI();
+          } catch (error) {
+            console.warn('⚠️ Erreur chargement KB:', error);
+          }
+        }
+
+        // 🛒 CONTEXTE SHOPIFY POUR EMAILS DE COMMANDE/LIVRAISON
+        let shopifyContext: any | undefined;
+        try {
+          const isOrderEmail = /commande|colis|livraison|suivi|tracking|retard/i.test(
+            `${email.subject} ${email.body_text || ''}`
+          );
+
+          if (isOrderEmail && email.from_email) {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+            const shopifyRes = await fetch(`${baseUrl}/api/shopify/query`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                customerEmail: email.from_email,
+                emailSubject: email.subject,
+                emailBody: email.body_text || email.snippet || '',
+              }),
+            });
+
+            if (shopifyRes.ok) {
+              const data = await shopifyRes.json();
+              if (data.found && data.order) {
+                shopifyContext = {
+                  type: 'shopify_order_context',
+                  order: data.order,
+                  instructions: 'Utilise ces informations de commande pour répondre avec précision sur le statut, la date d\'expédition et le suivi. Si rien ne correspond exactement, reste transparent et propose de vérifier manuellement.',
+                };
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Shopify context fetch failed in auto-reply, continuing without it', e);
+        }
+
+        // Générer la réponse avec l'IA + configuration utilisateur + base de connaissances + Shopify
         const aiReplyResult = await generateReplyWithAI({
           email: {
             id: email.id,
@@ -160,6 +208,8 @@ export async function POST(req: NextRequest) {
             signature: aiConfig?.signature || '',
           },
           aiConfig: aiConfig || undefined, // Passer la config complète (créativité, do/don't lists, etc.)
+          knowledgeBaseContext, // 📚 BASE DE CONNAISSANCES
+          shopifyContext, // 🛒 CONTEXTE SHOPIFY
         });
 
         if (!aiReplyResult || !aiReplyResult.body_text) {

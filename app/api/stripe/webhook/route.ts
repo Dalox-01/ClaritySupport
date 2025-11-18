@@ -356,7 +356,7 @@ function mapStripeStatus(status?: string | null): 'active' | 'past_due' | 'cance
 async function syncUserPlan(params: {
   userId: string;
   planType?: string | null;
-  segment?: 'shopify' | 'freelance' | null;
+  segment?: 'shopify' | null;
   status?: string | null;
   stripeCustomerId?: string | null;
 }): Promise<void> {

@@ -41,6 +41,8 @@ export type ReplyGenerationOptions = {
   tone?: 'professionnel' | 'amical' | 'formel';
   aiConfig?: AIPromptConfig; // Configuration du prompt IA (créativité, style, etc.)
   language?: 'fr' | 'en';
+  knowledgeBaseContext?: string; // 📚 Contexte de la base de connaissances (RAG)
+  shopifyContext?: any; // 🛒 Contexte Shopify (commande, livraison, tracking)
 };
 
 export type GeneratedReply = {
@@ -378,6 +380,8 @@ export async function generateReplyWithAI(
     tone = 'professionnel',
     language = 'fr',
     aiConfig, // Configuration IA de l'utilisateur
+    knowledgeBaseContext, // 📚 Base de connaissances
+    shopifyContext, // 🛒 Contexte Shopify (commande / colis)
   } = options;
 
   const startTime = Date.now();
@@ -395,12 +399,27 @@ export async function generateReplyWithAI(
       const builder = new AIPromptBuilder(aiConfig);
       const category = email.category || 'support_ticket';
       
-      // Générer le prompt système avec la config complète
+      // 📚 GÉNÉRER le prompt système avec la config complète + base de connaissances
+      let contextParts: string[] = [];
+      if (knowledgeBaseContext) {
+        contextParts.push(knowledgeBaseContext);
+      }
+      const userContextStr = Object.entries(user_context)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+      if (userContextStr) {
+        contextParts.push(userContextStr);
+      }
+      if (shopifyContext) {
+        contextParts.push(
+          'SHOPIFY_CONTEXT:\n' +
+          JSON.stringify(shopifyContext, null, 2)
+        );
+      }
+
       systemPrompt = builder.generateSystemPrompt(
         category as any,
-        Object.entries(user_context)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\n')
+        contextParts.join('\n\n')
       );
       
       // Ajouter instructions anti-emojis

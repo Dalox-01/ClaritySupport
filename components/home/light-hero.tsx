@@ -36,13 +36,13 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-6 text-6xl font-extrabold leading-[1.05] tracking-tight text-gray-900 sm:text-7xl lg:text-8xl"
+            className="mb-6 text-5xl font-extrabold leading-[1.05] tracking-tight text-gray-900 sm:text-6xl lg:text-7xl"
           >
-            Support client intelligent
+            L'IA qui fait passer
             <br />
             <span className="relative inline-block">
               <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 bg-clip-text text-transparent">
-                disponible 24/7
+                vos emails e-commerce en pilote automatique
               </span>
               {/* Soulignement animé */}
               <motion.div
@@ -61,10 +61,7 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-700 sm:text-2xl"
           >
-            L'IA qui automatise vos emails, satisfait vos clients et libère votre temps.{' '}
-            <span className="font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              Simple. Efficace. Puissant.
-            </span>
+            ClaritySupport se connecte à Shopify et à vos boîtes mail pour analyser chaque demande, retrouver la bonne commande et proposer une réponse prête à envoyer qui respecte vos politiques et votre ton de marque.
           </motion.p>
 
           {/* CTA professionnel */}

@@ -1,6 +1,6 @@
 // Configuration des thèmes par segment d'abonnement
 
-export type ThemeType = 'ecommerce' | 'freelance' | 'default';
+export type ThemeType = 'ecommerce' | 'default';
 
 // Mapping des plans vers les segments
 export const PLAN_TO_SEGMENT: Record<string, ThemeType> = {
@@ -8,13 +8,6 @@ export const PLAN_TO_SEGMENT: Record<string, ThemeType> = {
   'starter': 'ecommerce',
   'pro': 'ecommerce', 
   'scale': 'ecommerce',
-  
-  // Freelance
-  'solo': 'freelance',
-  'unlimited': 'freelance',
-  'team': 'freelance',
-  'business': 'freelance',
-  'company': 'freelance',
   
   // Default
   'free': 'default',
@@ -34,11 +27,6 @@ export function detectSegmentFromPlan(planName: string | null | undefined): Them
   // Recherche par mots-clés
   if (normalizedPlan.includes('starter') || normalizedPlan.includes('scale')) {
     return 'ecommerce';
-  }
-  if (normalizedPlan.includes('solo') || normalizedPlan.includes('unlimited') || 
-      normalizedPlan.includes('team') || normalizedPlan.includes('business') || 
-      normalizedPlan.includes('company')) {
-    return 'freelance';
   }
   if (normalizedPlan.includes('pro')) {
     // Si c'est juste "pro", on doit deviner - par défaut ecommerce
@@ -67,24 +55,6 @@ export const THEME_COLORS = {
     glow: 'shadow-green-500/50',
     badge: 'bg-green-600',
     rgb: { r: 22, g: 163, b: 74 }, // Pour les styles inline
-  },
-  freelance: {
-    name: 'Freelance',
-    primary: 'rgb(37, 99, 235)', // blue-600
-    primaryHover: 'rgb(29, 78, 216)', // blue-700
-    secondary: 'rgb(6, 182, 212)', // cyan-500
-    gradient: 'from-blue-600 to-cyan-600',
-    gradientHover: 'from-blue-700 to-cyan-700',
-    bg: {
-      light: 'bg-gradient-to-br from-blue-50 via-white to-cyan-50',
-      dark: 'bg-gradient-to-br from-[#0A0E27] via-[#0F1629] to-[#0A0E27]',
-      class: 'bg-blue-500/10',
-    },
-    border: 'border-blue-500/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    glow: 'shadow-blue-500/50',
-    badge: 'bg-blue-600',
-    rgb: { r: 37, g: 99, b: 235 },
   },
   default: {
     name: 'Standard',

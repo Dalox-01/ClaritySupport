@@ -15,7 +15,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { getPlanLimits, PlanName, getPlanNameWithSegment } from './plan-limits';
+import { getPlanLimits, PlanName } from './plan-limits';
 import { PRICING_SEGMENTS, SegmentType } from './constants/pricing';
 
 const supabase = createClient(
@@ -56,7 +56,7 @@ export interface UserPlanInfo {
 
 /**
  * Récupère les informations complètes du plan d'un utilisateur
- * Retourne le plan UNIFIÉ (PRO_SHOPIFY, PRO_FREELANCE, etc.)
+ * Retourne le plan UNIFIÉ (STARTER_SHOPIFY, PRO_SHOPIFY, SCALE_SHOPIFY, FREE)
  */
 export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   // Essayer d'abord la table subscriptions
@@ -68,8 +68,8 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
     .single();
 
   if (subscription) {
-    const segment = subscription.segment || 'shopify';
-    const unifiedPlanName = getPlanNameWithSegment(subscription.plan, segment);
+    const segment: SegmentType = 'shopify';
+    const unifiedPlanName = (subscription.plan || 'FREE').toUpperCase() as PlanName;
     
     return {
       userId,
@@ -97,7 +97,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   return {
     userId,
     plan: planName,
-    segment: 'shopify', // Par défaut
+    segment: 'shopify',
     status: 'active',
     isActive: true,
   };
@@ -322,7 +322,7 @@ export async function canAccessFeature(
 // ============================================================================
 
 /**
- * Retourne les plans suggérés pour accéder à une fonctionnalité
+ * Retourne les plans suggérés pour accéder à une fonctionnalité (même segment unique)
  */
 function getSuggestedPlansForFeature(
   currentPlan: PlanName,
@@ -355,16 +355,12 @@ export function getNextPlan(currentPlan: PlanName, currentSegment: SegmentType):
 /**
  * Obtient le nom human-readable d'un plan
  * PRO_SHOPIFY → "PRO E-commerce"
- * PRO_FREELANCE → "PRO Freelance"
  */
 export function getHumanReadablePlanName(planName: PlanName): string {
   const mapping: Record<PlanName, string> = {
     STARTER_SHOPIFY: 'STARTER E-commerce',
     PRO_SHOPIFY: 'PRO E-commerce',
     SCALE_SHOPIFY: 'SCALE E-commerce',
-    SOLO_FREELANCE: 'SOLO Freelance',
-    PRO_FREELANCE: 'PRO Freelance',
-    UNLIMITED_FREELANCE: 'UNLIMITED Freelance',
     FREE: 'Gratuit',
   };
   

@@ -16,18 +16,13 @@ export const stripe = getStripe();
 
 /**
  * Mapping des nouveaux Price IDs (depuis pricing.ts) vers les plans
- * E-commerce (shopify) et Freelance
+ * E-commerce (shopify uniquement)
  */
-export const NEW_PRICE_TO_PLAN_MAP: Record<string, { segment: 'shopify' | 'freelance'; plan: string; period: 'monthly' }> = {
+export const NEW_PRICE_TO_PLAN_MAP: Record<string, { segment: 'shopify'; plan: string; period: 'monthly' }> = {
   // E-commerce Plans
   'price_1ST1dgGJn0NQpREzoGsS4OPI': { segment: 'shopify', plan: 'STARTER', period: 'monthly' },
   'price_1ST1gZGJn0NQpREz5KODKSCP': { segment: 'shopify', plan: 'PRO', period: 'monthly' },
   'price_1ST1iLGJn0NQpREzIdkg9x2N': { segment: 'shopify', plan: 'SCALE', period: 'monthly' },
-  
-  // Freelance Plans
-  'price_1ST1nmGJn0NQpREzqP6lfgbH': { segment: 'freelance', plan: 'SOLO', period: 'monthly' },
-  'price_1ST1qTGJn0NQpREzJUHjVmtt': { segment: 'freelance', plan: 'PRO', period: 'monthly' },
-  'price_1ST1t9GJn0NQpREzTsWCr3w4': { segment: 'freelance', plan: 'UNLIMITED', period: 'monthly' },
 };
 
 /**
@@ -215,7 +210,7 @@ export async function getInvoices(customerId: string, limit = 10): Promise<Strip
 export function getPlanTypeFromPriceId(priceId: string): {
   planType: PlanType | string;
   billingPeriod: 'monthly' | 'yearly';
-  segment?: 'shopify' | 'freelance';
+  segment?: 'shopify';
 } | null {
   // D'abord, vérifier dans le nouveau mapping
   const newPlanInfo = NEW_PRICE_TO_PLAN_MAP[priceId];

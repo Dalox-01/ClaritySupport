@@ -59,20 +59,77 @@ export async function POST(req: NextRequest) {
     // CHARGER LA CONFIGURATION IA DE L'UTILISATEUR
     const { data: userData } = await supabase
       .from('users')
-      .select('ai_prompt_config')
+      .select('ai_prompt_config, knowledge_base')
       .eq('id', session.user.id)
       .single();
 
     const aiConfig = userData?.ai_prompt_config || null;
+    const knowledgeBase = userData?.knowledge_base || null;
 
     console.log(`🎨 Config IA chargée:`, {
       hasConfig: !!aiConfig,
       creativity: aiConfig?.creativity,
       tone: aiConfig?.tone,
-      style: aiConfig?.style
+      style: aiConfig?.style,
+      hasKnowledgeBase: !!knowledgeBase
     });
 
-    // Générer la réponse avec l'IA + config utilisateur
+    // 🔍 GÉNÉRER CONTEXTE BASE DE CONNAISSANCES (si disponible)
+    let knowledgeBaseContext: string | undefined;
+    if (knowledgeBase) {
+      try {
+        const { KnowledgeBaseManager } = await import('@/lib/product-knowledge');
+        const kbManager = new KnowledgeBaseManager(knowledgeBase);
+        knowledgeBaseContext = kbManager.generateContextForAI({
+          includeProducts: true,
+          includeCompanyInfo: true,
+          includeFAQ: true,
+          includeBusinessRules: true,
+        });
+        console.log(`📚 Base de connaissances chargée: ${knowledgeBaseContext.length} caractères`);
+      } catch (error) {
+        console.warn('⚠️ Erreur chargement base de connaissances:', error);
+      }
+    }
+
+    // 🛒 TENTER DE RÉCUPÉRER LE CONTEXTE SHOPIFY POUR LES EMAILS DE COMMANDE/LIVRAISON
+    let shopifyContext: any | undefined;
+    try {
+      const isOrderEmail = /commande|colis|livraison|suivi|tracking|retard/i.test(
+        `${email.subject} ${email.body_text || ''}`
+      );
+
+      if (isOrderEmail && email.from_email) {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const shopifyRes = await fetch(`${baseUrl}/api/shopify/query`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: req.headers.get('cookie') || '',
+          },
+          body: JSON.stringify({
+            customerEmail: email.from_email,
+            emailSubject: email.subject,
+            emailBody: email.body_text || email.snippet || '',
+          }),
+        });
+
+        if (shopifyRes.ok) {
+          const data = await shopifyRes.json();
+          if (data.found && data.order) {
+            shopifyContext = {
+              type: 'shopify_order_context',
+              order: data.order,
+              instructions: 'Utilise ces informations de commande pour répondre avec précision sur le statut, la date d\'expédition et le suivi. Si rien ne correspond exactement, reste transparent et propose de vérifier manuellement.',
+            };
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Shopify context fetch failed, continuing without it', e);
+    }
+
+    // Générer la réponse avec l'IA + config utilisateur + base de connaissances + contexte Shopify
     const reply = await generateReplyWithAI({
       email,
       tone: aiConfig?.tone || 'professionnel',
@@ -81,7 +138,9 @@ export async function POST(req: NextRequest) {
         company_name: aiConfig?.companyName || '',
         signature: aiConfig?.signature || '',
       },
-      aiConfig: aiConfig || undefined, // Passer config complète (créativité, do/don't lists, etc.)
+      aiConfig: aiConfig || undefined, // Config complète (créativité, do/don't lists, etc.)
+      knowledgeBaseContext, // 📚 BASE DE CONNAISSANCES
+      shopifyContext, // 🛒 CONTEXTE SHOPIFY
     });
 
     console.log(`✅ Réponse générée: ${reply.subject}`);

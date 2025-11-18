@@ -1,14 +1,11 @@
 /**
  * Limites et fonctionnalités par plan
- * 6 PLANS DISTINCTS : 3 E-commerce + 2 Freelance + 1 Gratuit
- * IMPORTANT: PRO_SHOPIFY ≠ PRO_FREELANCE (prix, limites, features différents)
+ * 4 PLANS DISTINCTS : 3 E-commerce + 1 Gratuit
  */
 
 export type PlanName = 
   // E-commerce (Shopify) - 3 plans
   | 'STARTER_SHOPIFY' | 'PRO_SHOPIFY' | 'SCALE_SHOPIFY'
-  // Freelance - 2 plans
-  | 'SOLO_FREELANCE' | 'PRO_FREELANCE' | 'UNLIMITED_FREELANCE'
   // Système
   | 'FREE';
 
@@ -18,9 +15,6 @@ export const PLAN_NAME_MAPPING: Record<string, PlanName> = {
   'STARTER': 'STARTER_SHOPIFY',
   'PRO': 'PRO_SHOPIFY', // Par défaut, PRO = E-commerce
   'SCALE': 'SCALE_SHOPIFY',
-  // Freelance
-  'SOLO': 'SOLO_FREELANCE',
-  'UNLIMITED': 'UNLIMITED_FREELANCE',
   // Gratuit
   'FREE': 'FREE',
 };
@@ -92,49 +86,6 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     orderTracking: true,
   },
   
-  // ============ FREELANCE - 3 PLANS ============
-  SOLO_FREELANCE: {
-    emailAccounts: 1,
-    autoRepliesPerMonth: 500,
-    aiTemplates: false,
-    prioritySupport: false,
-    analytics: false,
-    multiShops: 0,
-    whiteLabel: false,
-    customApi: false,
-    signatureDynamique: false,
-    upsellAuto: false,
-    orderTracking: false,
-  },
-  
-  PRO_FREELANCE: {
-    emailAccounts: 1,
-    autoRepliesPerMonth: 2000,  // ⚠️ DIFFÉRENT de PRO_SHOPIFY (20000)
-    aiTemplates: true,
-    prioritySupport: true,
-    analytics: true,
-    multiShops: 0,
-    whiteLabel: false,
-    customApi: false,
-    signatureDynamique: true,
-    upsellAuto: false,
-    orderTracking: false,
-  },
-  
-  UNLIMITED_FREELANCE: {
-    emailAccounts: 1,
-    autoRepliesPerMonth: -1, // illimité
-    aiTemplates: true,
-    prioritySupport: true,
-    analytics: true,
-    multiShops: 0,
-    whiteLabel: false,
-    customApi: true,
-    signatureDynamique: true,
-    upsellAuto: false,
-    orderTracking: false,
-  },
-  
   // ============ GRATUIT ============
   FREE: {
     emailAccounts: 1,
@@ -154,19 +105,13 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
 /**
  * Convertir un nom de plan + segment en PlanName unifié
  */
-export function getPlanNameWithSegment(planBaseName: string, segment: 'shopify' | 'freelance'): PlanName {
+export function getPlanNameWithSegment(planBaseName: string, segment: 'shopify'): PlanName {
   const normalized = planBaseName.toUpperCase();
   
   if (segment === 'shopify') {
     if (normalized === 'STARTER') return 'STARTER_SHOPIFY';
     if (normalized === 'PRO') return 'PRO_SHOPIFY';
     if (normalized === 'SCALE') return 'SCALE_SHOPIFY';
-  }
-  
-  if (segment === 'freelance') {
-    if (normalized === 'SOLO') return 'SOLO_FREELANCE';
-    if (normalized === 'PRO') return 'PRO_FREELANCE';
-    if (normalized === 'UNLIMITED') return 'UNLIMITED_FREELANCE';
   }
   
   if (normalized === 'FREE') return 'FREE';
@@ -179,7 +124,7 @@ export function getPlanNameWithSegment(planBaseName: string, segment: 'shopify' 
  * Récupérer les limites d'un plan avec gestion du segment
  * NOUVELLE VERSION: Utilise les plans unifiés (PRO_SHOPIFY vs PRO_FREELANCE)
  */
-export function getPlanLimits(planName: string | null | undefined, segment?: 'shopify' | 'freelance'): PlanLimits {
+export function getPlanLimits(planName: string | null | undefined, segment?: 'shopify'): PlanLimits {
   if (!planName) return PLAN_LIMITS.FREE;
   
   // Si segment fourni, construire le nom de plan complet

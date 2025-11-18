@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Sparkles, ShoppingCart, User, Building2 } from 'lucide-react';
+import { Check, X, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,30 +20,6 @@ const SEGMENT_COLORS = {
     buttonBorder: 'border-green-600/50 text-green-300 hover:bg-green-500/20',
     checkmark: 'from-green-500 to-emerald-500',
     footer: 'from-green-600 via-emerald-600 to-green-600',
-  },
-  freelance: {
-    primary: 'from-blue-600 to-cyan-600',
-    secondary: 'from-blue-400 to-cyan-400',
-    border: 'border-blue-500',
-    borderHover: 'hover:border-blue-300/50',
-    bg: 'from-blue-50/50 to-cyan-50/50',
-    badge: 'from-blue-600 to-cyan-600',
-    button: 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700',
-    buttonBorder: 'border-blue-600/50 text-blue-300 hover:bg-blue-500/20',
-    checkmark: 'from-blue-500 to-cyan-500',
-    footer: 'from-blue-600 via-cyan-600 to-blue-600',
-  },
-  tpe: {
-    primary: 'from-purple-600 to-pink-600',
-    secondary: 'from-purple-400 to-pink-400',
-    border: 'border-purple-500',
-    borderHover: 'hover:border-purple-300/50',
-    bg: 'from-purple-50/50 to-pink-50/50',
-    badge: 'from-purple-600 to-pink-600',
-    button: 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700',
-    buttonBorder: 'border-purple-600/50 text-purple-300 hover:bg-purple-500/20',
-    checkmark: 'from-purple-500 to-pink-500',
-    footer: 'from-purple-600 via-pink-600 to-purple-600',
   },
 };
 
@@ -175,8 +151,6 @@ function SegmentSelector({
   const getSegmentColors = (segmentId: SegmentType) => {
     const colors = {
       shopify: { active: 'from-green-600 to-emerald-600', shadow: 'shadow-green-400/50', glow: 'from-green-600 to-emerald-600' },
-      freelance: { active: 'from-blue-600 to-cyan-600', shadow: 'shadow-blue-400/50', glow: 'from-blue-600 to-cyan-600' },
-      tpe: { active: 'from-purple-600 to-pink-600', shadow: 'shadow-purple-400/50', glow: 'from-purple-600 to-pink-600' },
     };
     return colors[segmentId];
   };
@@ -251,9 +225,7 @@ export function DarkPricing() {
       <div className="absolute inset-0 opacity-20">
         <motion.div
           className={`absolute left-1/4 top-1/4 h-96 w-96 rounded-full blur-3xl ${
-            activeSegment === 'shopify' ? 'bg-green-500/30' :
-            activeSegment === 'freelance' ? 'bg-blue-500/30' :
-            'bg-purple-500/30'
+            'bg-green-500/30'
           }`}
           animate={{
             scale: [1, 1.3, 1],
@@ -268,9 +240,7 @@ export function DarkPricing() {
         />
         <motion.div
           className={`absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full blur-3xl ${
-            activeSegment === 'shopify' ? 'bg-emerald-500/30' :
-            activeSegment === 'freelance' ? 'bg-cyan-500/30' :
-            'bg-pink-500/30'
+            'bg-emerald-500/30'
           }`}
           animate={{
             scale: [1, 1.4, 1],

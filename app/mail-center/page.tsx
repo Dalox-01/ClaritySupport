@@ -50,6 +50,7 @@ import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
 import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
+import { ShopifyConnectPanel } from '@/components/mail-center/ShopifyConnectPanel';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -1556,6 +1557,10 @@ export default function MailCenterPage() {
                 </div>
               </div>
             </motion.section>
+
+            <div className="mt-4">
+              <ShopifyConnectPanel />
+            </div>
 
           {/* Overlay pour fermer sidebar mobile */}
           <AnimatePresence>

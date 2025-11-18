@@ -1,6 +1,6 @@
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 
-export type SegmentType = 'shopify' | 'freelance';
+export type SegmentType = 'shopify';
 
 export interface PricingFeature {
   text: string;
@@ -88,71 +88,6 @@ export const PRICING_SEGMENTS: Segment[] = [
           { text: 'IA entraînée sur votre marque', included: true },
           { text: 'Maximisation du panier moyen', included: true },
           { text: 'Solution personnalisée & API', included: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'freelance',
-    label: 'Freelance',
-    icon: User,
-    plans: [
-      {
-        name: 'SOLO',
-        price: 19,
-        period: 'mois',
-        description: 'Pour les indépendants qui démarrent',
-        cta: 'Commencer',
-        stripeProductId: 'prod_TPrW8AoxGc2X5C',
-        stripePriceId: 'price_1ST1nmGJn0NQpREzqP6lfgbH',
-        features: [
-          { text: '1 compte email connecté', included: true },
-          { text: '500 clients traités automatiquement/mois', included: true },
-          { text: 'Inbox toujours à zéro', included: true },
-          { text: 'Accès mobile optimisé', included: true },
-          { text: 'Support communautaire', included: true },
-          { text: 'Réponses IA personnalisées', included: false },
-          { text: 'Clients illimités', included: false },
-          { text: 'Intégrations avancées', included: false },
-        ],
-      },
-      {
-        name: 'PRO',
-        price: 39,
-        period: 'mois',
-        description: 'Pour les freelances professionnels',
-        popular: true,
-        cta: 'Commencer',
-        stripeProductId: 'prod_TPrZSMdjLdu6kF',
-        stripePriceId: 'price_1ST1qTGJn0NQpREzJUHjVmtt',
-        features: [
-          { text: '1 compte email connecté', included: true },
-          { text: '2 000 clients traités automatiquement/mois', included: true },
-          { text: 'Gestion prioritaire intelligente', included: true },
-          { text: 'Application mobile complète', included: true },
-          { text: 'Support réactif par email', included: true },
-          { text: 'Réponses IA professionnelles', included: true },
-          { text: 'Signatures à votre image', included: true },
-          { text: 'Suivi de vos performances', included: true },
-        ],
-      },
-      {
-        name: 'UNLIMITED',
-        price: 69,
-        period: 'mois',
-        description: 'Pour les freelances high-performers',
-        cta: 'Commencer',
-        stripeProductId: 'prod_TPrcMECD2gO3Et',
-        stripePriceId: 'price_1ST1t9GJn0NQpREzTsWCr3w4',
-        features: [
-          { text: '1 compte email connecté', included: true },
-          { text: 'Clients illimités sans restriction', included: true },
-          { text: 'Automatisations intelligentes complètes', included: true },
-          { text: 'Application mobile hors-ligne', included: true },
-          { text: 'Support prioritaire dédié', included: true },
-          { text: 'IA adaptée à votre personnalité', included: true },
-          { text: 'Connectez vos outils favoris', included: true },
-          { text: 'Accès développeur complet', included: true },
         ],
       },
     ],

@@ -15,7 +15,7 @@ const supabase = createClient(
 export interface UserSubscription {
   user_id: string;
   plan: PlanType;
-  segment?: 'shopify' | 'freelance';
+  segment?: 'shopify';
   status: 'active' | 'cancelled' | 'expired' | 'trial';
   current_period_start: string;
   current_period_end: string;

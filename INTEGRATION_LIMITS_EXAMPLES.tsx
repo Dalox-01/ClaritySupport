@@ -16,7 +16,7 @@ import { UpgradeModal } from '@/components/plan/UpgradeModal';
 // Dans votre composant MailCenter
 export function MailCenterWithLimits() {
   const [userPlan, setUserPlan] = useState('STARTER'); // À récupérer depuis votre session/API
-  const [userSegment, setUserSegment] = useState<'shopify' | 'freelance'>('shopify');
+  const [userSegment, setUserSegment] = useState<'shopify'>('shopify');
 
   const {
     checkLimit,
@@ -136,7 +136,7 @@ import { useActionWithLimitCheck } from '@/hooks/usePlanLimits';
 
 export function MailCenterSimplified() {
   const [userPlan] = useState('SOLO');
-  const [userSegment] = useState<'shopify' | 'freelance'>('freelance');
+  const [userSegment] = useState<'shopify'>('shopify');
 
   const {
     executeWithCheck,

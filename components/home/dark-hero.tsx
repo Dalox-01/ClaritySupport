@@ -55,12 +55,12 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6 text-6xl font-black leading-[1.1] tracking-tight sm:text-7xl md:text-8xl lg:text-9xl"
+          className="mb-6 text-5xl font-black leading-[1.1] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
         >
-          Support client
+          L'IA qui transforme vos emails
           <br />
           <span className="inline-block bg-gradient-to-r from-[#0EA5E9] via-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
-            réinventé
+            e-commerce en chiffre d'affaires
           </span>
         </motion.h1>
 
@@ -71,8 +71,7 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-300 sm:text-2xl"
         >
-          Centralisez vos emails, automatisez les réponses avec l'IA,
-          et offrez un service client exceptionnel 24/7.
+          ClaritySupport centralise tous les emails de votre boutique en ligne et se connecte à Shopify pour générer des réponses prêtes à envoyer qui respectent vos politiques, vos offres et vos stocks.
         </motion.p>
 
         {/* CTA Buttons améliorés */}
