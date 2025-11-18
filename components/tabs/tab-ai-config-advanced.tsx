@@ -436,20 +436,20 @@ export function TabAIConfigAdvanced({
 
   const sections: Array<{ id: AIConfigSectionId; name: string; icon: any; color: string }> = [
     { id: 'models', name: 'Modèles & Performance', icon: Cpu, color: 'blue' },
-    { id: 'prompts', name: 'Prompts & Contexte', icon: FileText, color: 'purple' },
+    { id: 'prompts', name: 'Prompts & Contexte', icon: FileText, color: 'blue' },
     { id: 'rag', name: 'Base de Connaissances', icon: Database, color: 'blue' },
     { id: 'testing', name: 'Tests & Analyse', icon: TestTube, color: 'pink' },
     { id: 'security', name: 'Sécurité & RGPD', icon: Shield, color: 'red' },
-    { id: 'filters', name: 'Configuration Filtres', icon: Filter, color: 'amber' },
+    { id: 'filters', name: 'Configuration Filtres', icon: Filter, color: 'blue' },
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-950 dark:via-blue-950/20 dark:to-purple-950/20">
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-blue-50/30 dark:from-slate-950 dark:via-blue-950/20 dark:to-blue-950/20">
       {/* Header avec navigation */}
       <div className="flex-none p-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-purple-500" />
-          <h2 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <Sparkles className="w-5 h-5 text-blue-500" />
+          <h2 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent">
             Configuration IA Avancée
           </h2>
           <a href="/docs/ai-config" target="_blank" rel="noopener noreferrer">
@@ -535,7 +535,7 @@ export function TabAIConfigAdvanced({
             <RotateCcw className="w-4 h-4 mr-2" />
             Réinitialiser
           </Button>
-          <Button size="sm" className="ml-auto bg-gradient-to-r from-purple-600 to-blue-600">
+          <Button size="sm" className="ml-auto bg-gradient-to-r from-blue-600 to-blue-600">
             <Save className="w-4 h-4 mr-2" />
             Sauvegarder
           </Button>
@@ -554,7 +554,7 @@ function ModelConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-blue-200 dark:border-blue-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Cpu className="w-5 h-5 text-blue-500" />
           Configuration du Modèle OpenAI
@@ -822,9 +822,9 @@ function ModelConfigSection({ config, setConfig }: any) {
       </Card>
 
       {/* Load Balancing & Fallback - Simplifié pour OpenAI */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-purple-200 dark:border-purple-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Layers className="w-5 h-5 text-purple-500" />
+          <Layers className="w-5 h-5 text-blue-500" />
           Stratégie de Répartition
         </h3>
         
@@ -868,9 +868,9 @@ function PromptsConfigSection({ config, setConfig }: any) {
       className="space-y-6"
     >
       {/* Éditeur de Prompt Système */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-purple-200 dark:border-purple-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-purple-500" />
+          <FileText className="w-5 h-5 text-blue-500" />
           Prompt Système Principal
         </h3>
         
@@ -1017,7 +1017,7 @@ function PromptsConfigSection({ config, setConfig }: any) {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-purple-500" />
+                <Sparkles className="w-4 h-4 text-blue-500" />
                 <Label className="text-sm">Utiliser des Emojis</Label>
               </div>
               <Switch
@@ -1047,7 +1047,7 @@ function PromptsConfigSection({ config, setConfig }: any) {
       </Card>
 
       {/* Variables Personnalisées */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-blue-200 dark:border-blue-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Code className="w-5 h-5 text-blue-500" />
           Variables Personnalisées
@@ -1055,7 +1055,7 @@ function PromptsConfigSection({ config, setConfig }: any) {
         
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Définissez des variables réutilisables dans vos prompts avec la syntaxe <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">{'{{nom_variable}}'}</code>
+            Définissez des variables réutilisables dans vos prompts avec la syntaxe <code className="px-2 py-1 bg-white dark:bg-slate-900 rounded">{'{{nom_variable}}'}</code>
           </p>
 
           {/* Variables prédéfinies */}
@@ -1127,7 +1127,7 @@ function PromptsConfigSection({ config, setConfig }: any) {
       </Card>
 
       {/* Contexte et Préprocessing */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-orange-200 dark:border-orange-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-orange-200 dark:border-orange-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Layers className="w-5 h-5 text-orange-500" />
           Gestion du Contexte
@@ -1292,7 +1292,7 @@ function RAGConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-blue-200 dark:border-blue-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Database className="w-5 h-5 text-blue-500" />
           Base de Connaissances (RAG)
@@ -1494,9 +1494,9 @@ function TestingConfigSection({ config, setConfig }: any) {
       className="space-y-6"
     >
       {/* Playground de Test */}
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-pink-200 dark:border-pink-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TestTube className="w-5 h-5 text-pink-500" />
+          <TestTube className="w-5 h-5 text-blue-500" />
           Playground de Test IA
         </h3>
         
@@ -1521,7 +1521,7 @@ function TestingConfigSection({ config, setConfig }: any) {
             <Button
               onClick={handleRunTest}
               disabled={isTestting || !testProblem.trim()}
-              className="flex-1 bg-gradient-to-r from-pink-600 to-purple-600"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-600"
             >
               {isTestting ? (
                 <>
@@ -1574,12 +1574,12 @@ function TestingConfigSection({ config, setConfig }: any) {
                     </div>
                   </Card>
 
-                  <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
+                  <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
                     <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Latence</span>
+                      <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Latence</span>
                     </div>
-                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                       {testResult.latency}ms
                     </div>
                   </Card>
@@ -1607,9 +1607,9 @@ function TestingConfigSection({ config, setConfig }: any) {
               )}
 
               {/* Réponse Générée */}
-              <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+              <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur">
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-pink-500" />
+                  <Sparkles className="w-5 h-5 text-blue-500" />
                   Réponse Générée
                 </h4>
                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border">
@@ -1632,12 +1632,12 @@ function TestingConfigSection({ config, setConfig }: any) {
 
               {/* Debug Info */}
               {showDebug && (
-                <Card className="p-6 bg-slate-50 dark:bg-slate-900/50 border-slate-300 dark:border-slate-700">
+                <Card className="p-6 bg-white dark:bg-slate-900/50 border-slate-300 dark:border-slate-700">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <Microscope className="w-5 h-5" />
                     Informations de Debug
                   </h4>
-                  <pre className="text-xs bg-slate-100 dark:bg-slate-800 p-4 rounded-lg overflow-auto">
+                  <pre className="text-xs bg-white dark:bg-slate-900 p-4 rounded-lg overflow-auto">
                     {JSON.stringify({ 
                       config: config.models.primary,
                       result: testResult 
@@ -1711,7 +1711,7 @@ function SecurityConfigSection({ config, setConfig }: any) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-red-200 dark:border-red-900">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-red-200 dark:border-red-900">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Shield className="w-5 h-5 text-red-500" />
           Sécurité & RGPD
@@ -1726,7 +1726,7 @@ function SecurityConfigSection({ config, setConfig }: any) {
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <EyeOff className="w-4 h-4 text-purple-500" />
+                  <EyeOff className="w-4 h-4 text-blue-500" />
                   <Label className="text-sm font-medium">Masquage des Données Personnelles (PII)</Label>
                 </div>
                 <p className="text-xs text-slate-500">
@@ -1740,21 +1740,21 @@ function SecurityConfigSection({ config, setConfig }: any) {
             </div>
             
             {piiMaskingEnabled && (
-              <div className="space-y-2 pl-6 border-l-2 border-purple-200 dark:border-purple-800">
+              <div className="space-y-2 pl-6 border-l-2 border-blue-200 dark:border-blue-800">
                 <div className="flex items-center gap-2 text-xs">
-                  <Check className="w-3 h-3 text-green-500" />
+                  <Check className="w-3 h-3 text-blue-500" />
                   <span>Emails : user@example.com → u***@e***.com</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                  <Check className="w-3 h-3 text-green-500" />
+                  <Check className="w-3 h-3 text-blue-500" />
                   <span>Téléphones : 06 12 34 56 78 → 06 ** ** ** 78</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                  <Check className="w-3 h-3 text-green-500" />
+                  <Check className="w-3 h-3 text-blue-500" />
                   <span>Cartes bancaires : masquage complet</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                  <Check className="w-3 h-3 text-green-500" />
+                  <Check className="w-3 h-3 text-blue-500" />
                   <span>Adresses : masquage partiel</span>
                 </div>
               </div>
@@ -1829,7 +1829,7 @@ function SecurityConfigSection({ config, setConfig }: any) {
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <Lock className="w-4 h-4 text-green-500" />
+                  <Lock className="w-4 h-4 text-blue-500" />
                   <Label className="text-sm font-medium">Chiffrement des Données</Label>
                 </div>
                 <p className="text-xs text-slate-500">
@@ -1842,36 +1842,36 @@ function SecurityConfigSection({ config, setConfig }: any) {
                 disabled
               />
             </div>
-            <div className="mt-2 p-2 bg-green-50 dark:bg-green-950/20 rounded text-xs text-green-700 dark:text-green-300">
+            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-xs text-blue-700 dark:text-blue-300">
               🔒 Chiffrement activé par défaut (obligatoire pour conformité RGPD)
             </div>
           </div>
 
           {/* Conformité RGPD */}
-          <div className="p-4 border-2 border-green-200 dark:border-green-900 rounded-lg bg-green-50/50 dark:bg-green-950/20">
+          <div className="p-4 border-2 border-blue-200 dark:border-blue-900 rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <CheckCircle2 className="w-4 h-4 text-blue-600" />
               Conformité RGPD
             </h4>
             <div className="space-y-2 text-xs">
               <div className="flex items-start gap-2">
-                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <Check className="w-3 h-3 text-blue-600 mt-0.5" />
                 <span>Droit à l'oubli : Suppression automatique après période de rétention</span>
               </div>
               <div className="flex items-start gap-2">
-                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <Check className="w-3 h-3 text-blue-600 mt-0.5" />
                 <span>Minimisation des données : Seules les données nécessaires sont collectées</span>
               </div>
               <div className="flex items-start gap-2">
-                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <Check className="w-3 h-3 text-blue-600 mt-0.5" />
                 <span>Transparence : Logs d'audit complets et accessibles</span>
               </div>
               <div className="flex items-start gap-2">
-                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <Check className="w-3 h-3 text-blue-600 mt-0.5" />
                 <span>Sécurité : Chiffrement bout-en-bout et masquage PII</span>
               </div>
               <div className="flex items-start gap-2">
-                <Check className="w-3 h-3 text-green-600 mt-0.5" />
+                <Check className="w-3 h-3 text-blue-600 mt-0.5" />
                 <span>Hébergement : Serveurs en Union Européenne (Paris, Francfort)</span>
               </div>
             </div>
@@ -1897,25 +1897,25 @@ function FiltersSection({ userPlan }: FiltersSectionProps) {
         exit={{ opacity: 0, y: -20 }}
         className="space-y-6"
       >
-        <Card className="p-6 bg-gradient-to-br from-amber-50 to-white border-amber-200 dark:from-amber-500/10 dark:to-transparent dark:border-amber-400/40">
+        <Card className="p-6 bg-gradient-to-br from-white to-white border-blue-200 dark:from-blue-500/10 dark:to-transparent dark:border-blue-400/40">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-500/20">
-              <Lock className="w-6 h-6 text-amber-600 dark:text-amber-300" />
+            <div className="p-3 rounded-2xl bg-blue-100 dark:bg-blue-500/20">
+              <Lock className="w-6 h-6 text-blue-600 dark:text-blue-300" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-amber-900 dark:text-amber-200">
+              <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-200">
                 Gérez vos filtres avec le plan PRO
               </h3>
-              <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+              <p className="text-sm text-blue-800/80 dark:text-blue-200/80">
                 Les filtres IA personnalisés (création, suppression des filtres de base, consignes dédiées) sont réservés aux plans PRO et ENTERPRISE.
               </p>
-              <ul className="text-sm space-y-1 text-amber-900/70 dark:text-amber-100/70 list-disc list-inside">
+              <ul className="text-sm space-y-1 text-blue-900/70 dark:text-blue-100/70 list-disc list-inside">
                 <li>Ajout illimité de mots-clés par filtre</li>
                 <li>Consignes IA spécifiques par catégorie</li>
                 <li>Suppression des filtres de base inutiles</li>
               </ul>
               <div className="pt-3">
-                <Button className="bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/30">
+                <Button className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30">
                   Découvrir les plans PRO
                 </Button>
               </div>
@@ -1933,10 +1933,10 @@ function FiltersSection({ userPlan }: FiltersSectionProps) {
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      <Card className="p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-amber-200 dark:border-amber-500/40">
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-blue-200 dark:border-blue-500/40">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-500/20">
-            <Filter className="w-6 h-6 text-amber-600 dark:text-amber-300" />
+          <div className="p-3 rounded-2xl bg-blue-100 dark:bg-blue-500/20">
+            <Filter className="w-6 h-6 text-blue-600 dark:text-blue-300" />
           </div>
           <div>
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
@@ -1949,9 +1949,12 @@ function FiltersSection({ userPlan }: FiltersSectionProps) {
         </div>
       </Card>
 
-      <div className="rounded-3xl border border-amber-200/60 dark:border-amber-500/30 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
+      <div className="rounded-3xl border border-blue-200/60 dark:border-blue-500/30 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
         <FiltersConfigTab userPlan={userPlan} />
       </div>
     </motion.div>
   );
 }
+
+
+
