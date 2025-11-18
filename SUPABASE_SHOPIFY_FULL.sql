@@ -48,6 +48,15 @@ WHERE segment IS NULL;
 -- ------------------------------------------------------------
 -- 3. TABLE PRINCIPALE - SHOPIFY_SHOPS
 -- ------------------------------------------------------------
+ALTER TABLE public.shopify_shops
+  ADD COLUMN IF NOT EXISTS shop_name TEXT;
+
+ALTER TABLE public.shopify_shops
+  ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('pending','active','inactive','error'));
+
+ALTER TABLE public.shopify_shops
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN GENERATED ALWAYS AS (status = 'active') STORED;
+
 CREATE TABLE IF NOT EXISTS public.shopify_shops (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
