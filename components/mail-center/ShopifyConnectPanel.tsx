@@ -26,6 +26,16 @@ export function ShopifyConnectPanel() {
   const [shopDomain, setShopDomain] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const normalizedPlan = (limits?.plan || '').toUpperCase();
+  const displayPlan = normalizedPlan.replace('_SHOPIFY', '') || 'FREE';
+  const maxShops = limits && typeof limits.maxShops === 'number' ? limits.maxShops : 0;
+  const hasShopifyAccess = limits
+    ? Boolean(limits.hasAccess) || maxShops !== 0 || ['STARTER', 'PRO', 'SCALE'].includes(displayPlan)
+    : false;
+  const canAddMore = limits
+    ? Boolean(limits.canAddMore ?? (maxShops === -1 || maxShops > shops.length))
+    : false;
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -64,7 +74,7 @@ export function ShopifyConnectPanel() {
     return <div className="rounded-lg border p-4 text-sm">Chargement Shopify…</div>;
   }
 
-  if (!limits?.hasAccess) {
+  if (!hasShopifyAccess) {
     return (
       <div className="rounded-lg border p-4 text-sm">
         Votre plan actuel ne permet pas encore de connecter Shopify.
@@ -79,7 +89,7 @@ export function ShopifyConnectPanel() {
           <h3 className="text-sm font-medium">Boutiques Shopify connectées</h3>
           {limits && (
             <p className="text-xs text-muted-foreground">
-              {limits.currentShops}/{limits.maxShops} boutiques utilisées sur votre plan {limits.plan}
+              {limits.currentShops}/{limits.maxShops === -1 ? '∞' : limits.maxShops} boutiques utilisées sur votre plan {displayPlan}
             </p>
           )}
         </div>
@@ -104,7 +114,7 @@ export function ShopifyConnectPanel() {
         </ul>
       )}
 
-      {limits?.canAddMore && (
+      {canAddMore && (
         <div className="space-y-2">
           <label className="text-xs font-medium">
             Connecter une nouvelle boutique Shopify
