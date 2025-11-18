@@ -16,17 +16,32 @@ const slugifyFilterKey = (value: string) =>
 
 // Mots-clés par défaut pour chaque catégorie
 const DEFAULT_KEYWORDS: Record<string, string[]> = {
-  'urgent': ['urgent', 'ASAP', 'immédiat', 'prioritaire', 'critique'],
-  'commande': ['commande', 'commander', 'achat', 'panier', 'checkout'],
-  'remboursement': ['remboursement', 'rembourser', 'argent', 'restitution', 'annulation'],
-  'question-produit': ['produit', 'article', 'référence', 'disponibilité', 'stock'],
-  'suivi-commande': ['suivi', 'livraison', 'colis', 'transporteur', 'tracking'],
-  'sav': ['SAV', 'garantie', 'réparation', 'défectueux', 'panne'],
-  'reclamation': ['réclamation', 'plainte', 'insatisfait', 'problème', 'déçu'],
-  'information': ['information', 'renseignement', 'question', 'demande', 'savoir'],
-  'facturation': ['facture', 'facturation', 'TVA', 'paiement', 'reçu'],
-  'technique': ['technique', 'bug', 'erreur', 'connexion', 'installation'],
-  'autre': ['autre', 'divers', 'général']
+  'urgent': ['urgent', 'ASAP', 'immédiat', 'prioritaire', 'critique', 'rapidement', 'vite', 'pressé', 'emergency', 'SOS', 'help', 'au secours', 'maintenant', 'tout de suite', 'important'],
+  'commande': ['commande', 'commander', 'achat', 'panier', 'checkout', 'acheter', 'passer commande', 'nouvelle commande', 'order', 'shopping', 'cart', 'paiement', 'carte bancaire', 'CB', 'Paypal'],
+  'remboursement': ['remboursement', 'rembourser', 'argent', 'restitution', 'annulation', 'refund', 'retour', 'annuler', 'avoir', 'compensation', 'dédommagement', 'money back', 'remise', 'crédit'],
+  'question-produit': ['produit', 'article', 'référence', 'disponibilité', 'stock', 'caractéristiques', 'dimensions', 'couleur', 'taille', 'spécifications', 'détails', 'description', 'product', 'info produit', 'compatible'],
+  'suivi-commande': ['suivi', 'livraison', 'colis', 'transporteur', 'tracking', 'expédition', 'où est', 'délai', 'reçu', 'shipping', 'delivery', 'Colissimo', 'Chronopost', 'UPS', 'DHL'],
+  'sav': ['SAV', 'garantie', 'réparation', 'défectueux', 'panne', 'cassé', 'ne fonctionne pas', 'broken', 'warranty', 'repair', 'retour SAV', 'échange', 'remplacement', 'dysfonctionnement'],
+  'reclamation': ['réclamation', 'plainte', 'insatisfait', 'problème', 'déçu', 'complaint', 'mécontent', 'pas content', 'scandale', 'inadmissible', 'inacceptable', 'arnaque', 'colère', 'furieux', 'service client'],
+  'information': ['information', 'renseignement', 'question', 'demande', 'savoir', 'info', 'comment', 'pourquoi', 'quand', 'où', 'qui', 'help', 'aide', 'explication', 'précision'],
+  'facturation': ['facture', 'facturation', 'TVA', 'paiement', 'reçu', 'invoice', 'montant', 'prix', 'tarif', 'coût', 'devis', 'avoir fiscal', 'comptabilité', 'SIRET', 'attestation'],
+  'technique': ['technique', 'bug', 'erreur', 'connexion', 'installation', 'problème technique', 'ne marche pas', 'crash', 'error', 'not working', 'setup', 'configuration', 'paramètres', 'wifi', 'réseau'],
+  'autre': ['autre', 'divers', 'général', 'questions', 'demande générale', 'misc', 'various', 'other']
+};
+
+// Prompts contexte par défaut pour chaque catégorie
+const DEFAULT_PROMPTS: Record<string, string> = {
+  'urgent': 'Tu dois traiter cette demande en PRIORITÉ ABSOLUE. Ton ton doit être professionnel, rassurant et réactif. Propose une solution immédiate et concrète. Si nécessaire, escalade vers un responsable. Utilise des phrases courtes et claires.',
+  'commande': 'Tu dois faciliter le processus de commande. Sois clair sur les étapes, les moyens de paiement acceptés, les délais de livraison. Rassure le client sur la sécurité du paiement. Si besoin, propose ton aide pour finaliser la commande.',
+  'remboursement': 'Tu dois répondre avec empathie et professionnalisme. Explique clairement la procédure de remboursement, les délais (généralement 7-14 jours ouvrés), et rassure le client. Demande les informations nécessaires (numéro de commande, IBAN si besoin). Reste courtois même si le client est mécontent.',
+  'question-produit': 'Tu dois fournir des informations précises et complètes sur les produits. Mentionne les caractéristiques techniques, les avantages, la compatibilité. Si tu ne connais pas la réponse, propose de te renseigner auprès de l\'équipe produit. Utilise un ton expert mais accessible.',
+  'suivi-commande': 'Tu dois fournir le suivi de livraison de manière claire. Mentionne le numéro de tracking, le transporteur, la date de livraison estimée. Si la commande est en retard, présente des excuses et propose une solution (geste commercial si nécessaire). Reste transparent sur l\'état de la livraison.',
+  'sav': 'Tu dois gérer le retour SAV avec professionnalisme. Explique la procédure : retour du produit, diagnostic, réparation ou échange. Mentionne la garantie applicable et les délais. Si le produit n\'est plus sous garantie, propose des solutions alternatives (réparation payante, remplacement). Reste empathique.',
+  'reclamation': 'Tu dois ABSOLUMENT rester calme et empathique, même face à un client en colère. Présente des excuses sincères, reconnais le problème sans chercher d\'excuses. Propose une solution concrète et rapide (remboursement, avoir, geste commercial). Assure un suivi personnalisé. Ton objectif : transformer un client mécontent en ambassadeur.',
+  'information': 'Tu dois répondre de manière claire et pédagogique. Structure ta réponse avec des paragraphes courts. Si la question est vague, demande des précisions. Propose des liens vers la FAQ ou la documentation si pertinent. Reste disponible pour des questions complémentaires.',
+  'facturation': 'Tu dois fournir les informations de facturation avec précision. Explique comment obtenir une facture (téléchargement depuis le compte client, envoi par email). Mentionne les mentions légales obligatoires. Pour les entreprises, précise les informations de TVA intracommunautaire si applicable.',
+  'technique': 'Tu dois résoudre le problème technique de manière méthodique. Pose des questions de diagnostic (système d\'exploitation, navigateur, message d\'erreur exact). Propose des solutions étape par étape, numérotées. Si le problème persiste, propose une assistance à distance ou un ticket d\'escalade vers l\'équipe technique.',
+  'autre': 'Tu dois identifier la nature de la demande et la rediriger vers la bonne catégorie si possible. Reste courtois et propose ton aide pour clarifier la demande. Si nécessaire, transfère vers le service approprié.'
 };
 
 interface FiltersConfigTabProps {
@@ -100,7 +115,7 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
           response_config: {
             tone: 'professional' as const,
             language: 'fr',
-            customInstructions: '',
+            customInstructions: DEFAULT_PROMPTS[cat.id] || '',
             autoReply: false,
           },
           isVirtual: true,
