@@ -2,15 +2,64 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2, Store, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+
+type ShopifyConnectButtonProps = {
+  size?: 'sm' | 'md';
+  fullWidth?: boolean;
+  className?: string;
+};
 
 export function ShopifyQuickConnect() {
+  return (
+    <div className="rounded-xl border border-[#C3E6D1] bg-[#F6FFFB] p-4 shadow-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-emerald-900">Shopify</p>
+          <p className="text-xs text-emerald-700">
+            Connectez votre boutique pour retrouver commandes, clients et stocks en 1 clic.
+          </p>
+        </div>
+        <ShopifyConnectButton />
+      </div>
+    </div>
+  );
+}
+
+export function ShopifyConnectButton({ size = 'md', fullWidth = false, className }: ShopifyConnectButtonProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [shopDomain, setShopDomain] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const triggerClass = cn(
+    'inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 text-white font-semibold shadow-sm transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2',
+    size === 'sm' ? 'px-4 py-1.5 text-xs' : 'px-5 py-2 text-sm',
+    fullWidth && 'w-full',
+    className,
+  );
+
+  const normalizeDomain = (value: string) => {
+    if (!value) return '';
+    let domain = value.trim().toLowerCase();
+    domain = domain.replace(/^https?:\/\//, '');
+    domain = domain.split('/')[0];
+    domain = domain.replace(/\s+/g, '');
+    if (!domain) return '';
+    if (!domain.endsWith('.myshopify.com')) {
+      domain = domain.replace(/\.myshopify\.com$/, '');
+      domain = `${domain}.myshopify.com`;
+    }
+    return domain;
+  };
+
   const handleConnect = async () => {
-    if (!shopDomain.trim()) {
-      setError('Entrez un domaine myshopify.com');
+    const domain = normalizeDomain(shopDomain);
+    if (!domain) {
+      setError('Entrez un domaine Shopify valide');
       return;
     }
 
@@ -21,7 +70,7 @@ export function ShopifyQuickConnect() {
       const response = await fetch('/api/shopify/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shopDomain }),
+        body: JSON.stringify({ shopDomain: domain }),
       });
 
       const data = await response.json();
@@ -31,7 +80,10 @@ export function ShopifyQuickConnect() {
       }
 
       toast.success('Redirection vers Shopify…');
-      window.location.href = data.authUrl;
+      setIsDialogOpen(false);
+      setTimeout(() => {
+        window.location.href = data.authUrl;
+      }, 150);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
@@ -39,52 +91,108 @@ export function ShopifyQuickConnect() {
     }
   };
 
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setTimeout(() => {
+      setError(null);
+    }, 200);
+  };
+
   return (
-    <div className="rounded-2xl border border-emerald-100 bg-white/90 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">Connecter Shopify</p>
-          <p className="text-xs text-slate-500">
-            Renseignez votre domaine <span className="font-medium text-slate-800">ma-boutique.myshopify.com</span>
-          </p>
-        </div>
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          setError(null);
+          setIsDialogOpen(true);
+        }}
+        className={triggerClass}
+      >
+        <Store className="h-4 w-4" />
+        Shopify
+      </button>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <input
-            type="text"
-            placeholder="ma-boutique.myshopify.com"
-            value={shopDomain}
-            onChange={(e) => setShopDomain(e.target.value)}
-            className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-          />
-          <button
-            type="button"
-            onClick={handleConnect}
-            disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-600 px-5 py-2 text-sm font-semibold text-emerald-700 transition transform hover:-translate-y-0.5 hover:border-emerald-700 hover:bg-emerald-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? (
-              <span>Connexion…</span>
-            ) : (
-              <>
-                <svg
-                  viewBox="0 0 32 32"
-                  aria-hidden="true"
-                  className="h-4 w-4"
+      <AnimatePresence>
+        {isDialogOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/70"
+              onClick={closeDialog}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="relative w-full max-w-md rounded-2xl border border-emerald-100 bg-white/95 shadow-2xl backdrop-blur-xl"
+            >
+              <div className="flex items-center justify-between border-b border-emerald-100 px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-emerald-50 p-2">
+                    <Store className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Connexion Shopify</p>
+                    <p className="text-xs text-slate-500">Renseignez votre domaine puis validez.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeDialog}
+                  className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100"
                 >
-                  <path
-                    fill="currentColor"
-                    d="M25.5 7.2c-.4-1.6-1.8-2.8-3.4-3.1-.3 0-.6-.1-.9-.1-1.3 0-2.5.6-3.4 1.5-.9-.9-2.1-1.5-3.4-1.5-.3 0-.6 0-.9.1-1.6.3-3 1.5-3.4 3.1L6 8.5v17.3c0 .9.7 1.6 1.6 1.6h16.7c.9 0 1.6-.7 1.6-1.6V8.5l-.4-1.3zM18.3 6c.3-.3.8-.5 1.3-.5.1 0 .3 0 .4.1.7.1 1.2.7 1.4 1.4l.1.2-3.8.8c.1-.8.3-1.5.6-2zm-4.6 0c.3-.1.5-.1.8-.1.5 0 1 .2 1.3.5.3.4.5 1 .6 1.6l-3.7.8c.2-1 .5-1.9 1-2.8zm8.8 16.5c-.4 1.1-1.5 1.8-2.5 2.1-.5.1-1 .2-1.4.2-.9 0-1.8-.3-2.6-.8-.8.5-1.7.8-2.6.8h-.1c-.5 0-.9-.1-1.4-.2-1.1-.3-2.1-1-2.5-2.1-.2-.4-.2-.9 0-1.3.2-.5.6-.9 1.1-1.1l.1-.1c.4-.2.9-.3 1.3-.2.4 0 .8.1 1.1.3.5.3.9.8 1.1 1.3.2-.5.6-1 1.1-1.3.3-.2.7-.3 1.1-.3.4 0 .9 0 1.3.2l.1.1c.5.2.9.6 1.1 1.1.2.4.2.9 0 1.3z"
-                  />
-                </svg>
-                Connecter Shopify
-              </>
-            )}
-          </button>
-        </div>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
 
-        {error && <p className="text-xs text-red-600">{error}</p>}
-      </div>
-    </div>
+              <div className="px-6 py-5 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-600">Domaine Shopify</label>
+                  <Input
+                    placeholder="ma-boutique.myshopify.com"
+                    value={shopDomain}
+                    onChange={(e) => setShopDomain(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                  Tapez simplement « ma-boutique » : nous ajoutons automatiquement <span className="font-semibold">.myshopify.com</span>.
+                </div>
+                {error && <p className="text-xs text-red-600">{error}</p>}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 border-t border-emerald-100 px-6 py-4">
+                <button
+                  type="button"
+                  onClick={closeDialog}
+                  className="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConnect}
+                  disabled={loading}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Connexion…
+                    </>
+                  ) : (
+                    'Connecter ma boutique'
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

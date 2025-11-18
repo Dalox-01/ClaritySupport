@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { ShopifyConnectButton } from './ShopifyQuickConnect';
 
 type ShopifyShop = {
   id: string;
@@ -23,7 +24,6 @@ export function ShopifyConnectPanel() {
   const [shops, setShops] = useState<ShopifyShop[]>([]);
   const [limits, setLimits] = useState<PlanLimits | null>(null);
   const [loading, setLoading] = useState(true);
-  const [shopDomain, setShopDomain] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const normalizedPlan = (limits?.plan || '').toUpperCase();
@@ -53,22 +53,6 @@ export function ShopifyConnectPanel() {
     };
     load();
   }, []);
-
-  const handleConnect = async () => {
-    setError(null);
-    try {
-      const res = await fetch('/api/shopify/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shopDomain }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Erreur de connexion Shopify');
-      window.location.href = json.authUrl;
-    } catch (e: any) {
-      setError(e.message || 'Erreur');
-    }
-  };
 
   if (loading) {
     return <div className="rounded-lg border p-4 text-sm">Chargement Shopify…</div>;
@@ -119,22 +103,7 @@ export function ShopifyConnectPanel() {
           <label className="text-xs font-medium">
             Connecter une nouvelle boutique Shopify
           </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="ma-boutique.myshopify.com"
-              value={shopDomain}
-              onChange={(e) => setShopDomain(e.target.value)}
-              className="flex-1 rounded border px-2 py-1 text-xs"
-            />
-            <button
-              type="button"
-              onClick={handleConnect}
-              className="rounded bg-black px-3 py-1 text-xs font-medium text-white"
-            >
-              Connecter Shopify
-            </button>
-          </div>
+          <ShopifyConnectButton size="sm" fullWidth className="justify-center" />
         </div>
       )}
 
