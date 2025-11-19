@@ -112,62 +112,31 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
             className="relative hidden lg:block"
           >
             <motion.div 
-              className="relative transform-gpu"
+              className="relative"
               style={{ 
-                transformStyle: "preserve-3d",
                 y,
                 opacity
               }}
             >
-              {/* Ambient Glow Background */}
-              <div className="absolute -inset-16 opacity-40 blur-3xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600" />
-              </div>
-
-              {/* Glass Morphism Container */}
-              <div className="relative">
-                {/* Subtle Border Gradient */}
-                <div className="absolute -inset-[1px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 rounded-2xl" />
-                
-                {/* Main Window */}
-                <div className="relative rounded-2xl overflow-hidden backdrop-blur-xl bg-gradient-to-br from-gray-900/90 via-gray-800/90 to-gray-900/90 shadow-[0_20px_70px_-15px_rgba(0,0,0,0.8)]">
-                  {/* Premium Header */}
-                  <div className="relative border-b border-white/5 bg-gradient-to-b from-gray-800/50 to-gray-800/30 px-4 py-3 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                      {/* macOS Controls */}
-                      <div className="flex gap-2">
-                        <div className="h-3 w-3 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg shadow-red-500/50" />
-                        <div className="h-3 w-3 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50" />
-                        <div className="h-3 w-3 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-lg shadow-green-500/50" />
-                      </div>
-                      {/* Window Title */}
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <span className="text-xs font-medium text-white/60">ClaritySupport</span>
-                      </div>
-                    </div>
+              {/* Simple Window */}
+              <div className="relative rounded-lg overflow-hidden border border-white/10 bg-gray-900/95 shadow-2xl">
+                {/* Clean Header */}
+                <div className="flex items-center gap-2 border-b border-white/5 bg-gray-800/50 px-4 py-2.5">
+                  <div className="flex gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
                   </div>
+                  <span className="ml-2 text-xs text-white/40">ClaritySupport</span>
+                </div>
 
-                  {/* Screenshot Container */}
-                  <div className="relative">
-                    {/* Top Gradient Overlay */}
-                    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-blue-500/10 via-transparent to-transparent pointer-events-none z-10" />
-                    
-                    {/* Screenshot */}
-                    <img
-                      src="/screenshots/mailcenter-interface.png"
-                      alt="ClaritySupport Interface"
-                      className="w-full"
-                    />
-                    
-                    {/* Bottom Gradient Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-purple-500/10 via-transparent to-transparent pointer-events-none" />
-                    
-                    {/* Corner Shine Effect */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-white/5 to-transparent rounded-bl-full pointer-events-none" />
-                  </div>
-
-                  {/* Bottom Glow Bar */}
-                  <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+                {/* Screenshot */}
+                <div className="relative">
+                  <img
+                    src="/screenshots/mailcenter-interface.png"
+                    alt="ClaritySupport Interface"
+                    className="w-full"
+                  />
                 </div>
               </div>
             </motion.div>
