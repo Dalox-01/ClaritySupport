@@ -90,7 +90,8 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
         <div className="mb-8">
           <div className="flex items-baseline gap-1">
             <span className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              {plan.price}€
+              {plan.price}
+              {typeof plan.price === 'number' && '€'}
             </span>
             <span className="text-gray-500 dark:text-gray-400 font-medium">/mois</span>
           </div>

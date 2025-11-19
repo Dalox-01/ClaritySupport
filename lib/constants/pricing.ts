@@ -9,7 +9,7 @@ export interface PricingFeature {
 
 export interface PricingPlan {
   name: string;
-  price: number;
+  price: number | string;
   period: string;
   description: string;
   features: PricingFeature[];
