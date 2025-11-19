@@ -81,6 +81,7 @@
     "gsap": "^3.13.0",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.2.4",
+    "isomorphic-dompurify": "^2.32.0",
     "isomorphic-fetch": "^3.0.0",
     "jotai": "^2.15.1",
     "jspdf": "^3.0.3",
