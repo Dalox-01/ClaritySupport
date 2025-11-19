@@ -86,12 +86,12 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0E27]">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-blue-500/10 bg-[#0A0E27]/95 backdrop-blur-sm">
+    <div className="min-h-screen bg-white dark:bg-[#0A0E27] transition-colors duration-300">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm dark:border-blue-500/10 dark:bg-[#0A0E27]/95">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div>
-            <Link href="/" className="flex items-center gap-2 font-bold text-white transition-opacity hover:opacity-80">
-              <Mail className="h-6 w-6 text-blue-400" />
+            <Link href="/" className="flex items-center gap-2 font-bold text-gray-900 transition-opacity hover:opacity-80 dark:text-white">
+              <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               <span className="hidden sm:inline">ClaritySupport</span>
             </Link>
           </div>
@@ -101,7 +101,7 @@ export default function HomePage() {
             {['features', 'pricing', 'contact'].map((item) => (
               <Link 
                 key={item}
-                className="text-sm font-medium text-gray-300 transition-colors hover:text-blue-400" 
+                className="text-sm font-medium text-gray-600 transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400" 
                 href={item === 'contact' ? '/contact' : `#${item}`}
               >
                 {item === 'features' ? 'Fonctionnalités' : item === 'pricing' ? 'Tarifs' : 'Contact'}
@@ -117,7 +117,7 @@ export default function HomePage() {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex items-center justify-center rounded-lg p-2 text-gray-300 transition-colors hover:bg-blue-500/10 active:scale-95 md:hidden"
+              className="flex items-center justify-center rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 active:scale-95 dark:text-gray-300 dark:hover:bg-blue-500/10 md:hidden"
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -126,14 +126,14 @@ export default function HomePage() {
         
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="animate-in fade-in slide-in-from-top-2 border-t border-blue-500/10 bg-[#0A0E27] md:hidden">
+          <div className="animate-in fade-in slide-in-from-top-2 border-t border-gray-200 bg-white dark:border-blue-500/10 dark:bg-[#0A0E27] md:hidden">
             <div className="space-y-1 px-4 pb-4 pt-2">
               {['features', 'pricing', 'contact'].map((item) => (
                 <Link
                   key={item}
                   href={item === 'contact' ? '/contact' : `#${item}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block rounded-lg px-4 py-3 text-base font-medium text-gray-300 transition-colors hover:bg-blue-500/10 hover:text-blue-400"
+                  className="block rounded-lg px-4 py-3 text-base font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
                 >
                   {item === 'features' ? 'Fonctionnalités' : item === 'pricing' ? 'Tarifs' : 'Contact'}
                 </Link>
@@ -147,49 +147,34 @@ export default function HomePage() {
       </header>
 
       <main>
-        {/* Conditional rendering based on theme */}
-        {theme === 'dark' ? (
-          <>
-            <DarkHero onGetStarted={handleGetStarted} />
-            <div id="features">
-              <DarkBentoFeatures />
-            </div>
-            <ProofSection />
-            <DarkPricing />
-            <DarkFaq />
-          </>
-        ) : (
-          <>
-            <LightHero onGetStarted={handleGetStarted} />
-            <div id="features">
-              <LightFeatures />
-            </div>
-            <ProofSection />
-            <LightPricing />
-            <LightFaq />
-          </>
-        )}
+        <DarkHero onGetStarted={handleGetStarted} />
+        <div id="features">
+          <DarkBentoFeatures />
+        </div>
+        <ProofSection />
+        <DarkPricing />
+        <DarkFaq />
       </main>
 
-      <footer className="relative overflow-hidden border-t border-blue-500/10 bg-[#0A0E27] py-20">
+      <footer className="relative overflow-hidden border-t border-gray-200 bg-gray-50 py-20 dark:border-blue-500/10 dark:bg-[#0A0E27]">
         {/* Decorative gradient */}
-        <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-full -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl opacity-40" />
+        <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-full -translate-x-1/2 rounded-full bg-blue-500/5 blur-3xl opacity-40 dark:bg-blue-500/10" />
         
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div className="sm:col-span-2">
-              <Link href="/" className="mb-4 inline-flex items-center gap-2 font-bold text-white transition-opacity hover:opacity-80">
-                <Mail className="h-6 w-6 text-blue-400" />
+              <Link href="/" className="mb-4 inline-flex items-center gap-2 font-bold text-gray-900 transition-opacity hover:opacity-80 dark:text-white">
+                <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <span>ClaritySupport</span>
               </Link>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 ClaritySupport transforme votre support client en levier de croissance. Répondez instantanément, augmentez vos conversions et libérez votre équipe des tâches répétitives.
               </p>
             </div>
             
             <div>
-              <h3 className="mb-4 text-sm font-bold text-white">Produit</h3>
-              <ul className="space-y-3 text-sm text-gray-400">
+              <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-white">Produit</h3>
+              <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                 {[
                   { href: '#features', label: 'Fonctionnalités' },
                   { href: '#pricing', label: 'Tarifs' },
@@ -198,7 +183,7 @@ export default function HomePage() {
                   <li key={link.href}>
                     <Link 
                       href={link.href} 
-                      className="transition-colors hover:text-white"
+                      className="transition-colors hover:text-blue-600 dark:hover:text-white"
                     >
                       {link.label}
                     </Link>
@@ -208,8 +193,8 @@ export default function HomePage() {
             </div>
             
             <div>
-              <h3 className="mb-4 text-sm font-bold text-white">Support</h3>
-              <ul className="space-y-3 text-sm text-gray-400">
+              <h3 className="mb-4 text-sm font-bold text-gray-900 dark:text-white">Support</h3>
+              <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                 {[
                   { href: '/contact', label: 'Contact' },
                   { href: '/legal', label: 'Mentions légales' },
@@ -218,7 +203,7 @@ export default function HomePage() {
                   <li key={link.href}>
                     <Link 
                       href={link.href} 
-                      className="transition-colors hover:text-blue-400"
+                      className="transition-colors hover:text-blue-600 dark:hover:text-blue-400"
                     >
                       {link.label}
                     </Link>
@@ -228,7 +213,7 @@ export default function HomePage() {
             </div>
           </div>
           
-          <div className="mt-16 border-t border-blue-500/10 pt-8 text-center text-sm text-gray-500">
+          <div className="mt-16 border-t border-gray-200 pt-8 text-center text-sm text-gray-500 dark:border-blue-500/10">
             <p>© {new Date().getFullYear()} ClaritySupport. Tous droits réservés.</p>
           </div>
         </div>

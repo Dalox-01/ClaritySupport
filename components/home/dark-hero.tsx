@@ -1,163 +1,166 @@
 'use client';
 
 import { ArrowRight, Sparkles, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
 interface DarkHeroProps {
   onGetStarted: () => void;
 }
 
 export function DarkHero({ onGetStarted }: DarkHeroProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0F1629] to-[#0A0E27] pt-24 pb-16">
-      {/* Animated gradient orbs - améliorés */}
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.4, 0.3],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-        className="pointer-events-none absolute left-1/3 top-1/4 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[120px]"
-      />
-      <motion.div
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: 'easeInOut',
-          delay: 1,
-        }}
-        className="pointer-events-none absolute bottom-1/4 right-1/3 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]"
-      />
+    <section ref={containerRef} className="relative flex min-h-screen items-center overflow-hidden bg-white dark:bg-[#0A0E27] pt-24 pb-16 lg:pt-0 transition-colors duration-300">
+      {/* Grid Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-500 opacity-10 dark:opacity-20 blur-[100px]" />
+      </div>
 
-      {/* Main content - perfectly centered */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 text-center sm:px-8 lg:px-12">
-        {/* Badge avec animation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 backdrop-blur-md"
-        >
-          <Sparkles className="h-4 w-4" />
-          <span>🚀 +30% de taux de conversion observé</span>
-        </motion.div>
-
-        {/* Title amélioré */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-6 text-5xl font-black leading-[1.1] tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-        >
-          Votre Service Client ne doit pas vous coûter de l'argent.
-          <br />
-          <span className="inline-block bg-gradient-to-r from-[#0EA5E9] via-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
-            Il doit vous en rapporter.
-          </span>
-        </motion.h1>
-
-        {/* Subtitle amélioré */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-gray-300 sm:text-2xl"
-        >
-          ClaritySupport n'est pas juste un helpdesk. C'est une IA qui répond à vos clients en 30 secondes, résout les problèmes, et pousse à l'achat. 24/7. Sans pause café.
-        </motion.p>
-
-        {/* CTA Buttons améliorés */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
-        >
-          <button
-            onClick={onGetStarted}
-            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-10 py-5 text-lg font-bold text-white shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/50 active:scale-100"
-          >
-            <span className="relative z-10 flex items-center gap-3">
-              Booster mes ventes maintenant
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </span>
-          </button>
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-8 lg:px-12">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 items-center">
           
-          <a
-            href="#pricing"
-            className="group inline-flex items-center gap-2 rounded-full border-2 border-blue-500/30 bg-white/5 px-10 py-5 text-lg font-bold text-white backdrop-blur-md transition-all hover:border-blue-500/50 hover:bg-white/10"
-          >
-            <span>Voir le ROI</span>
-          </a>
-        </motion.div>
-
-        {/* Trust badges améliorés */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-20 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-400"
-        >
-          {['Essai gratuit 14 jours', 'Sans carte bancaire', 'Configuration en 2 min'].map((text, index) => (
+          {/* Left Column: Content */}
+          <div className="relative z-20 flex flex-col items-start text-left">
+            {/* Badge */}
             <motion.div
-              key={text}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-              className="flex items-center gap-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300 px-4 py-2 text-sm font-medium backdrop-blur-md"
             >
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500/20">
-                <Check className="h-3 w-3 flex-shrink-0 text-cyan-400" strokeWidth={3} />
-              </div>
-              <span className="whitespace-nowrap font-medium">{text}</span>
+              <Sparkles className="h-4 w-4" />
+              <span>Product of the Week</span>
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* Mockup - amélioré avec animations */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="relative mx-auto max-w-6xl"
-        >
-          <div className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-[#1a1f3a]/90 to-[#0f1320]/90 shadow-2xl shadow-blue-500/20 backdrop-blur-sm transition-all duration-500 hover:shadow-blue-500/30">
-            {/* Window controls */}
-            <div className="flex items-center gap-3 border-b border-blue-500/10 bg-gradient-to-r from-[#0f1320]/80 to-[#1a1f3a]/80 px-6 py-4 backdrop-blur-md">
-              <div className="flex gap-2">
-                <div className="h-3 w-3 rounded-full bg-red-500/80 transition-all hover:bg-red-500" />
-                <div className="h-3 w-3 rounded-full bg-yellow-500/80 transition-all hover:bg-yellow-500" />
-                <div className="h-3 w-3 rounded-full bg-green-500/80 transition-all hover:bg-green-500" />
-              </div>
-              <div className="ml-6 flex-1 rounded-lg border border-blue-500/10 bg-[#0A0E27]/50 px-4 py-2.5 text-left text-sm text-gray-400 backdrop-blur-sm">
-                claritysupport.com/mail-center
-              </div>
-            </div>
+            {/* Title */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="mb-6 text-5xl font-black leading-[1.1] tracking-tight text-gray-900 dark:text-white sm:text-6xl lg:text-7xl"
+            >
+              Transformez votre
+              <br />
+              <span className="bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-500 bg-clip-text text-transparent">
+                Support en Profit.
+              </span>
+            </motion.h1>
 
-            {/* Screenshot content */}
-            <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27]">
-              <img
-                src="/screenshots/mailcenter-interface.png"
-                alt="Interface ClaritySupport Mail Center"
-                className="h-full w-full object-cover object-top"
-                loading="lazy"
-              />
-              {/* Subtle overlay gradient */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A0E27]/20 via-transparent to-transparent" />
-            </div>
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mb-8 max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gray-400 sm:text-xl"
+            >
+              L'IA qui répond, résout et vend pour vous. 24/7.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col gap-4 sm:flex-row"
+            >
+              <button
+                onClick={onGetStarted}
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-[#6366f1] px-8 py-4 text-lg font-bold text-white transition-all hover:bg-[#5558dd] hover:scale-105 active:scale-95"
+              >
+                Booster mes ventes
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </button>
+            </motion.div>
+
+            {/* Trust badges */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-8 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400"
+            >
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <span>Pas de carte requise</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <span>Essai gratuit 14 jours</span>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Glow effect amélioré */}
-          <div className="pointer-events-none absolute -inset-4 -z-10 rounded-2xl bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-blue-500/20 blur-3xl opacity-40" />
-        </motion.div>
+          {/* Right Column: 3D MacBook Window - Podwise Style */}
+          <motion.div
+            initial={{ opacity: 0, x: 100, rotateY: -30, rotateX: 15, scale: 0.7 }}
+            animate={{ opacity: 1, x: 40, rotateY: -18, rotateX: -5, scale: 1.6 }}
+            transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 60, damping: 25 }}
+            style={{ 
+              perspective: "1500px",
+              transformStyle: "preserve-3d"
+            }}
+            className="relative hidden lg:block"
+          >
+            <motion.div 
+              className="relative transform-gpu"
+              style={{ 
+                transformStyle: "preserve-3d",
+                y,
+                opacity
+              }}
+            >
+              {/* Animated Rainbow Border Glow */}
+              <motion.div
+                className="absolute -inset-[2px] rounded-xl opacity-60 blur-md"
+                style={{
+                  background: "linear-gradient(90deg, #a855f7, #ec4899, #3b82f6, #06b6d4, #a855f7)",
+                  backgroundSize: "300% 100%",
+                }}
+                animate={{
+                  backgroundPosition: ["0% 50%", "300% 50%"],
+                }}
+                transition={{
+                  duration: 6,
+                  ease: "linear",
+                  repeat: Infinity,
+                }}
+              />
+              
+              {/* MacBook Window */}
+              <div className="relative rounded-xl border border-gray-200/30 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl dark:border-white/5 overflow-hidden">
+                {/* MacOS Header */}
+                <div className="flex items-center gap-1.5 border-b border-gray-700/50 bg-gray-800/90 px-3 py-2.5 backdrop-blur-sm">
+                  <div className="flex gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+                  </div>
+                </div>
+                {/* Screenshot with subtle inner glow */}
+                <div className="relative">
+                  <img
+                    src="/screenshots/mailcenter-interface.png"
+                    alt="ClaritySupport Interface"
+                    className="w-full"
+                  />
+                  {/* Inner subtle glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+        </div>
       </div>
     </section>
   );

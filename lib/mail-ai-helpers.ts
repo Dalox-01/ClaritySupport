@@ -3,7 +3,8 @@
 import OpenAI from 'openai';
 import { EmailCategory, EmailSentiment, type EmailCache } from './mail-center-types';
 import { SupportCategory } from './support-categories';
-import { AIPromptConfig, AIPromptBuilder, DEFAULT_AI_CONFIG } from './ai-prompt-config';
+import { AIPromptConfig, AIPromptBuilder, DEFAULT_AI_CONFIG, SYSTEM_PROMPT_RUNTIME } from './ai-prompt-config';
+import { minifyShopifyOrder, type ShopifyOrder } from './shopify-minifier';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -393,9 +394,35 @@ export async function generateReplyWithAI(
 
     // INTÉGRATION DU SYSTÈME AIPromptBuilder
     let systemPrompt: string;
-    
-    if (aiConfig) {
-      // Utiliser AIPromptBuilder avec la config utilisateur
+    let userPrompt: string;
+
+    // NOUVELLE LOGIQUE : MASTER PROMPT (Si contexte Shopify présent)
+    if (shopifyContext || knowledgeBaseContext) {
+      console.log('🚀 Utilisation du Master Prompt V2 (Shopify/KB)');
+      
+      // 1. Minification de la commande
+      const orderContext = minifyShopifyOrder(shopifyContext as ShopifyOrder);
+      
+      // 2. Préparation des variables
+      const shopName = user_context.company_name || (shopifyContext as any)?.shop_name || 'Notre Boutique';
+      const kbContent = knowledgeBaseContext || "Aucune règle spécifique définie. Utilise le bon sens commercial standard.";
+      const toneStr = tone === 'amical' ? 'Amical et chaleureux' : 
+                      tone === 'formel' ? 'Très formel et respectueux' : 
+                      'Professionnel et courtois';
+
+      // 3. Construction du prompt système
+      systemPrompt = SYSTEM_PROMPT_RUNTIME
+        .replace('{{SHOP_NAME}}', shopName)
+        .replace('{{KNOWLEDGE_BASE}}', kbContent)
+        .replace('{{ORDER_CONTEXT}}', orderContext)
+        .replace('{{TONE}}', toneStr)
+        .replace('{{CUSTOMER_EMAIL}}', email.body_text || email.snippet || '');
+
+      // Le prompt système contient déjà l'email client, donc le user prompt est simple
+      userPrompt = `Génère la réponse maintenant pour le client ${senderName}.`;
+      
+    } else if (aiConfig) {
+      // Utiliser AIPromptBuilder avec la config utilisateur (LEGACY / STANDARD)
       const builder = new AIPromptBuilder(aiConfig);
       const category = email.category || 'support_ticket';
       
@@ -410,12 +437,7 @@ export async function generateReplyWithAI(
       if (userContextStr) {
         contextParts.push(userContextStr);
       }
-      if (shopifyContext) {
-        contextParts.push(
-          'SHOPIFY_CONTEXT:\n' +
-          JSON.stringify(shopifyContext, null, 2)
-        );
-      }
+      // ... (Shopify context handled in Master Prompt path above, but kept here for fallback)
 
       systemPrompt = builder.generateSystemPrompt(
         category as any,
@@ -427,6 +449,21 @@ export async function generateReplyWithAI(
 - N'utilise AUCUN emoji ou caractère spécial (✓, ✗, •, →, etc.)
 - Utilise uniquement des lettres, chiffres, ponctuation standard (. , ! ? : ; - " ')
 - Évite les symboles Unicode et les caractères de formatage spéciaux`;
+
+      userPrompt = `EMAIL REÇU:
+De: ${email.from_name || email.from_email}
+Objet: ${email.subject || '(sans objet)'}
+Contenu:
+${email.body_text?.substring(0, 1500) || email.snippet || ''}
+
+${template_body ? `TEMPLATE À UTILISER COMME BASE:\n${template_body}\n\n` : ''}
+
+Génère une réponse appropriée. Réponds UNIQUEMENT avec un JSON valide:
+{
+  "subject": "Objet de la réponse (reprendre le sujet original avec 'Re:')",
+  "body_text": "Corps de l'email en texte brut",
+  "body_html": "Corps de l'email en HTML simple (avec <p>, <br>, <strong> uniquement)"
+}`;
 
     } else {
       // Fallback: prompt manuel (legacy)
@@ -449,9 +486,8 @@ INSTRUCTIONS:
 - Utilise uniquement des lettres, chiffres, ponctuation standard (. , ! ? : ; - " ')
 - Évite les symboles Unicode et les caractères de formatage spéciaux
 ${custom_prompt ? `\nINSTRUCTIONS PERSONNALISÉES:\n${custom_prompt}` : ''}`;
-    }
 
-    let userPrompt = `EMAIL REÇU:
+      userPrompt = `EMAIL REÇU:
 De: ${email.from_name || email.from_email}
 Objet: ${email.subject || '(sans objet)'}
 Contenu:
@@ -465,6 +501,7 @@ Génère une réponse appropriée. Réponds UNIQUEMENT avec un JSON valide:
   "body_text": "Corps de l'email en texte brut",
   "body_html": "Corps de l'email en HTML simple (avec <p>, <br>, <strong> uniquement)"
 }`;
+    }
 
     // MAPPING CRÉATIVITÉ → TEMPERATURE OPENAI
     // creativity: 0 (précis/brut) → temp: 0.3

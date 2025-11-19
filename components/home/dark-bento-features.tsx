@@ -116,7 +116,7 @@ export function DarkBentoFeatures() {
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] py-32"
+      className="relative overflow-hidden bg-gray-50 py-32 transition-colors duration-300 dark:bg-gradient-to-br dark:from-[#0A0E27] dark:via-[#0f1629] dark:to-[#0A0E27]"
     >
       {/* Animated mesh background */}
       <div className="absolute inset-0 opacity-30">
@@ -162,7 +162,7 @@ export function DarkBentoFeatures() {
             transition={{ duration: 0.6 }}
           >
             <motion.span
-              className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm font-medium text-cyan-300"
+              className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300"
               animate={{
                 boxShadow: [
                   '0 0 0 0 rgba(6, 182, 212, 0)',
@@ -186,10 +186,10 @@ export function DarkBentoFeatures() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
+            className="mt-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl"
           >
             Arrêtez de perdre des ventes{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-cyan-400">
               à cause d'un support lent
             </span>
           </motion.h2>
@@ -199,7 +199,7 @@ export function DarkBentoFeatures() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
+            className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400"
           >
             Chaque minute d'attente est une vente perdue. ClaritySupport répond instantanément pour sécuriser le panier.
           </motion.p>
@@ -229,7 +229,7 @@ export function DarkBentoFeatures() {
                 className="group relative"
                 style={{ transformStyle: 'preserve-3d' }}
               >
-                <div className="relative h-full overflow-hidden rounded-3xl border border-blue-500/10 bg-gradient-to-br from-[#1a1f3a] to-[#0f1320] p-8 transition-all duration-300 group-hover:border-blue-500/30">
+                <div className="relative h-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-300 group-hover:border-blue-500/30 group-hover:shadow-xl dark:border-blue-500/10 dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] dark:shadow-none">
                   {/* Animated gradient border on hover */}
                   <motion.div
                     className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100"
@@ -274,12 +274,12 @@ export function DarkBentoFeatures() {
                   </motion.div>
 
                   {/* Title */}
-                  <h3 className="mb-3 text-xl font-bold text-white group-hover:text-blue-300 transition-colors">
+                  <h3 className="mb-3 text-xl font-bold text-gray-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-300">
                     {feature.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+                  <p className="text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-300">
                     {feature.description}
                   </p>
 
@@ -358,7 +358,7 @@ export function DarkBentoFeatures() {
                       }}
                       className="group relative"
                     >
-                      <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all duration-500 hover:border-white/20 hover:bg-white/10 hover:shadow-2xl">
+                      <div className="relative h-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-500 hover:border-blue-200 hover:bg-blue-50 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-sm dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:shadow-2xl">
                         {/* Icon container */}
                         <motion.div
                           className={`mb-6 inline-flex rounded-2xl bg-gradient-to-br ${feature.gradient} p-4`}
@@ -372,10 +372,10 @@ export function DarkBentoFeatures() {
                         </motion.div>
 
                         {/* Content */}
-                        <h3 className="mb-3 text-xl font-bold text-white">
+                        <h3 className="mb-3 text-xl font-bold text-gray-900 dark:text-white">
                           {feature.title}
                         </h3>
-                        <p className="text-gray-400">{feature.description}</p>
+                        <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
 
                         {/* Animated glow effect */}
                         <motion.div

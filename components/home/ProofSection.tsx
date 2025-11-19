@@ -23,7 +23,7 @@ export function ProofSection() {
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-white py-16 dark:bg-black sm:py-20 lg:py-24">
+    <section ref={sectionRef} className="relative overflow-hidden bg-gray-50 py-16 transition-colors duration-300 dark:bg-[#0A0E27] sm:py-20 lg:py-24">
       {/* Animated background elements */}
       <motion.div 
         className="pointer-events-none absolute right-0 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-blue-500/5 blur-3xl dark:bg-blue-500/10"

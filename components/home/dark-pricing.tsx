@@ -57,10 +57,10 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.03 }}
-      className={`relative flex flex-col h-full rounded-2xl border-2 bg-gradient-to-br from-[#1a1f3a] to-[#0f1320] shadow-lg transition-all duration-300 hover:shadow-2xl ${
+      className={`relative flex flex-col h-full rounded-2xl border-2 bg-white shadow-lg transition-all duration-300 hover:shadow-2xl dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] ${
         isPopular
           ? `${colors.border} scale-105 md:scale-110 z-10`
-          : `border-blue-500/20 ${colors.borderHover}`
+          : `border-gray-200 dark:border-blue-500/20 ${colors.borderHover}`
       }`}
     >
       {/* Badge Recommandé */}
@@ -79,8 +79,8 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
       <div className="relative flex flex-col h-full p-6 md:p-8">
         {/* Header */}
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-          <p className="text-sm text-gray-400 min-h-[40px]">{plan.description}</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 min-h-[40px]">{plan.description}</p>
         </div>
 
         {/* Prix */}
@@ -89,7 +89,7 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
             <span className={`text-5xl font-extrabold bg-gradient-to-r ${colors.secondary} bg-clip-text text-transparent`}>
               {plan.price}€
             </span>
-            <span className="text-gray-400 font-medium">/{plan.period}</span>
+            <span className="text-gray-500 dark:text-gray-400 font-medium">/{plan.period}</span>
           </div>
         </div>
 
@@ -99,8 +99,8 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
           disabled={isRedirecting}
           className={`w-full mb-6 h-12 text-base font-semibold rounded-xl border transition-all duration-200 ${
             isPopular
-              ? 'bg-white text-[#0A0E27] border-white/80 hover:bg-white/90'
-              : 'bg-transparent text-white border-white/30 hover:border-white/70 hover:bg-white/5'
+              ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800 dark:bg-white dark:text-[#0A0E27] dark:border-white/80 dark:hover:bg-white/90'
+              : 'bg-transparent text-gray-900 border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:text-white dark:border-white/30 dark:hover:border-white/70 dark:hover:bg-white/5'
           } ${isRedirecting ? 'cursor-not-allowed opacity-70' : 'hover:-translate-y-0.5'}`}
         >
           {isRedirecting ? 'Redirection…' : plan.cta}
@@ -118,20 +118,20 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
                   className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-transform duration-200 group-hover/feature:scale-110 ${
                     feature.included
                       ? `bg-gradient-to-br ${colors.checkmark}`
-                      : 'bg-gray-700'
+                      : 'bg-gray-200 dark:bg-gray-700'
                   }`}
                 >
                   {feature.included ? (
                     <Check className="h-3 w-3 text-white" strokeWidth={3} />
                   ) : (
-                    <X className="h-3 w-3 text-gray-500" strokeWidth={2} />
+                    <X className="h-3 w-3 text-gray-400 dark:text-gray-500" strokeWidth={2} />
                   )}
                 </div>
                 <span
                   className={`text-sm leading-relaxed ${
                     feature.included
-                      ? 'text-gray-200 font-medium'
-                      : 'text-gray-500 line-through'
+                      ? 'text-gray-700 dark:text-gray-200 font-medium'
+                      : 'text-gray-400 dark:text-gray-500 line-through'
                   }`}
                 >
                   {feature.text}
@@ -185,7 +185,7 @@ function SegmentSelector({
               ${
                 isActive
                   ? `bg-gradient-to-r ${segmentColors.active} text-white scale-105 ${segmentColors.shadow}`
-                  : 'bg-white/5 text-gray-300 hover:bg-white/10 border-2 border-blue-500/20'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border-2 border-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 dark:border-blue-500/20'
               }
             `}
           >
@@ -231,7 +231,7 @@ export function DarkPricing() {
     PRICING_SEGMENTS.find((s) => s.id === activeSegment)?.plans || [];
 
   return (
-    <section id="pricing" className="relative overflow-hidden bg-gradient-to-br from-[#0A0E27] via-[#0f1629] to-[#0A0E27] py-32">
+    <section id="pricing" className="relative overflow-hidden bg-gray-50 py-32 transition-colors duration-300 dark:bg-gradient-to-br dark:from-[#0A0E27] dark:via-[#0f1629] dark:to-[#0A0E27]">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
         <motion.div
@@ -275,9 +275,9 @@ export function DarkPricing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl"
+            className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl"
           >
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
               Un investissement rentabilisé en 3 jours.
             </span>
           </motion.h2>
@@ -287,7 +287,7 @@ export function DarkPricing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-gray-400"
+            className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400"
           >
             Combien vous coûte un agent de support ? 2000€/mois ? ClaritySupport fait le travail de 3 agents pour une fraction du prix.
           </motion.p>
@@ -298,7 +298,7 @@ export function DarkPricing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-400"
+            className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500 dark:text-gray-400"
           >
             {[
               'Essai gratuit 14 jours',
@@ -306,7 +306,7 @@ export function DarkPricing() {
               'Annulation en 1 clic'
             ].map((badge) => (
               <div key={badge} className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span>{badge}</span>
@@ -373,11 +373,11 @@ export function DarkPricing() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-20 text-center"
         >
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-blue-500/30 max-w-3xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">
+          <div className="bg-white backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-gray-200 dark:bg-gradient-to-br dark:from-blue-500/10 dark:to-cyan-500/10 dark:border-blue-500/30">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
               Essayez gratuitement pendant 14 jours
             </h2>
-            <p className="text-gray-300 mb-6 text-lg">
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-lg">
               Découvrez la puissance de ClaritySupport sans risque. Si vous ne gagnez pas de temps dès la première semaine, vous ne payez rien.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -387,7 +387,7 @@ export function DarkPricing() {
                 </button>
               </Link>
               <Link href="/contact">
-                <button className="px-8 py-3 bg-white/5 border-2 border-blue-500/50 text-blue-300 font-semibold rounded-xl hover:bg-blue-500/20 transition-all duration-300">
+                <button className="px-8 py-3 bg-gray-100 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 dark:bg-white/5 dark:border-blue-500/50 dark:text-blue-300 dark:hover:bg-blue-500/20 transition-all duration-300">
                   Contacter un conseiller
                 </button>
               </Link>
