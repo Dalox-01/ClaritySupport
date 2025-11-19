@@ -14,19 +14,7 @@ type ShopifyConnectButtonProps = {
 };
 
 export function ShopifyQuickConnect() {
-  return (
-    <div className="rounded-xl border border-[#C3E6D1] bg-[#F6FFFB] p-4 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-emerald-900">Shopify</p>
-          <p className="text-xs text-emerald-700">
-            Connectez votre boutique pour retrouver commandes, clients et stocks en 1 clic.
-          </p>
-        </div>
-        <ShopifyConnectButton />
-      </div>
-    </div>
-  );
+  return <ShopifyConnectButton />;
 }
 
 export function ShopifyConnectButton({ size = 'md', fullWidth = false, className }: ShopifyConnectButtonProps) {
@@ -128,22 +116,22 @@ export function ShopifyConnectButton({ size = 'md', fullWidth = false, className
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="relative w-full max-w-md rounded-2xl border border-emerald-100 bg-white/95 shadow-2xl backdrop-blur-xl"
+              className="relative w-full max-w-md rounded-2xl border border-slate-700/50 bg-slate-900/95 shadow-2xl backdrop-blur-xl"
             >
-              <div className="flex items-center justify-between border-b border-emerald-100 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-slate-700/50 px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-emerald-50 p-2">
-                    <Store className="h-5 w-5 text-emerald-600" />
+                  <div className="rounded-xl bg-emerald-500/10 p-2">
+                    <Store className="h-5 w-5 text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">Connexion Shopify</p>
-                    <p className="text-xs text-slate-500">Renseignez votre domaine puis validez.</p>
+                    <p className="text-sm font-semibold text-slate-50">Connexion Shopify</p>
+                    <p className="text-xs text-slate-400">Renseignez votre domaine puis validez.</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={closeDialog}
-                  className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100"
+                  className="rounded-full p-1 text-slate-400 transition hover:bg-slate-800"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -151,25 +139,26 @@ export function ShopifyConnectButton({ size = 'md', fullWidth = false, className
 
               <div className="px-6 py-5 space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-slate-600">Domaine Shopify</label>
+                  <label className="text-xs font-semibold text-slate-300">Domaine Shopify</label>
                   <Input
                     placeholder="ma-boutique.myshopify.com"
                     value={shopDomain}
                     onChange={(e) => setShopDomain(e.target.value)}
                     autoFocus
+                    className="bg-slate-800 border-slate-700 text-slate-100 placeholder:text-slate-500"
                   />
                 </div>
-                <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                <div className="rounded-xl bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
                   Tapez simplement « ma-boutique » : nous ajoutons automatiquement <span className="font-semibold">.myshopify.com</span>.
                 </div>
-                {error && <p className="text-xs text-red-600">{error}</p>}
+                {error && <p className="text-xs text-red-400">{error}</p>}
               </div>
 
-              <div className="flex items-center justify-end gap-3 border-t border-emerald-100 px-6 py-4">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-700/50 px-6 py-4">
                 <button
                   type="button"
                   onClick={closeDialog}
-                  className="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100"
+                  className="rounded-full px-4 py-2 text-sm font-medium text-slate-400 transition hover:bg-slate-800"
                 >
                   Annuler
                 </button>

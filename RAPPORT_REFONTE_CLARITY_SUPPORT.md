@@ -57,7 +57,7 @@ keywords: ['support client', 'IA', 'automatisation', 'service client', 'emails',
 - ✅ Message plus ambitieux et professionnel
 - ✅ Focus sur la transformation business
 - ✅ Promesse de valeur claire : "service exceptionnel 24/7"
-- ✅ Trust badges optimisés : "Essai gratuit 14 jours" (au lieu de 30), "Configuration en 2 min"
+- ✅ Trust badges optimisés : "Essai gratuit 7 jours" (au lieu de 30), "Configuration en 2 min"
 
 ---
 
@@ -112,7 +112,7 @@ keywords: ['support client', 'IA', 'automatisation', 'service client', 'emails',
 
 #### Essai gratuit :
 - Avant : "Essayez gratuitement pendant **7 jours**"
-- Après : "Essayez gratuitement pendant **14 jours**"
+- Après : "Essayez gratuitement pendant **7 jours**"
 - ✅ Plus généreux, plus confiance
 
 #### Trust badges :
@@ -203,7 +203,7 @@ keywords: ['support client', 'IA', 'automatisation', 'service client', 'emails',
 ### 2. Conversion
 - ✅ Message plus clair = moins de friction
 - ✅ Trust badges renforcés = plus de confiance
-- ✅ Essai 14 jours au lieu de 7 = barrière plus basse
+- ✅ Essai 7 jours au lieu de 7 = barrière plus basse
 
 ### 3. SEO
 - ✅ Meilleur ranking sur "support client automatisé"

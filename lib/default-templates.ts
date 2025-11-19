@@ -495,7 +495,7 @@ Laissez-moi vous présenter [Produit] - la solution qui permet de [Bénéfice].
 • [Avantage 3]
 
 🎁 Offre spéciale pour vous :
-[CTA] - Essai gratuit de 14 jours, sans carte bancaire
+[CTA] - Essai gratuit de 7 jours, sans carte bancaire
 
 Vous avez des questions ? Répondez simplement à cet email, je serai ravi de vous aider !
 

@@ -98,7 +98,7 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
             className="mb-16 flex flex-wrap items-center justify-center gap-8 text-sm"
           >
             {[
-              { text: 'Essai gratuit 14 jours', icon: '✓' },
+              { text: 'Essai gratuit 7 jours', icon: '✓' },
               { text: 'Sans engagement', icon: '✓' },
               { text: 'Configuration en 2 minutes', icon: '✓' }
             ].map((item) => (

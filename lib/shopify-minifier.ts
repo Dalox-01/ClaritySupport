@@ -90,12 +90,12 @@ export function minifyShopifyOrder(order: ShopifyOrder | null | undefined): stri
   }
 
   // 5. Règles de gestion (Alertes)
-  // Si > 14 jours ET non expédié -> ALERTE
+  // Si > 7 jours ET non expédié -> ALERTE
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - dateObj.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  if (diffDays > 14 && !order.fulfillment_status) {
+  if (diffDays > 7 && !order.fulfillment_status) {
     lines.push(`[ALERTE: RETARD ANORMAL DETECTÉ]`);
   }
 

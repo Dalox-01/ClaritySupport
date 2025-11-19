@@ -402,7 +402,7 @@ export function DarkBentoFeatures() {
             onClick={() => setShowAll(!showAll)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-blue-500/30 bg-blue-500/10 px-8 py-4 font-bold text-blue-300 transition-all hover:border-blue-500/50 hover:bg-blue-500/20"
+            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-blue-600 px-8 py-4 font-bold text-white transition-all hover:bg-blue-700 shadow-lg hover:shadow-blue-500/25"
           >
             <span className="relative z-10">
               {showAll ? 'Réduire les fonctionnalités' : 'Découvrir toutes les fonctionnalités'}

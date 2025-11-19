@@ -74,7 +74,7 @@ Effet magique : des petites particules bleues qui suivent le curseur avec un lé
 1. **0-15s** : Problème → "Votre équipe croule sous les emails de support ?"
 2. **15-30s** : Solution → "ClaritySupport automatise 85% de vos réponses"
 3. **30-45s** : Démo rapide → Interface en action
-4. **45-60s** : CTA → "Essayez gratuitement 14 jours"
+4. **45-60s** : CTA → "Essayez gratuitement 7 jours"
 
 **Placeholder avant la vidéo :**
 ```tsx

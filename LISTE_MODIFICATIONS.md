@@ -55,7 +55,7 @@
 ### 6. **components/home/dark-hero.tsx** ✅
 **Modifications:**
 - ✅ Subtitle hero section: "La plateforme intelligente qui transforme votre support client. Centralisez Gmail & Outlook, générez des réponses avec l'IA, et délivrez un service exceptionnel 24/7."
-- ✅ Trust badges: "Essai gratuit 14 jours", "Sans carte bancaire", "Configuration en 2 min"
+- ✅ Trust badges: "Essai gratuit 7 jours", "Sans carte bancaire", "Configuration en 2 min"
 
 **Impact:** Message principal, Premier impact visuel
 
@@ -95,7 +95,7 @@
 **Modifications:**
 - ✅ Titre: "Tarifs simples et transparents" (minuscules, plus moderne)
 - ✅ Description: "Choisissez le plan parfait pour votre **entreprise**" (B2B)
-- ✅ Essai gratuit: "14 jours" au lieu de 7
+- ✅ Essai gratuit: "7 jours" au lieu de 7
 - ✅ Description essai: "Découvrez la puissance de ClaritySupport sans risque"
 
 **Impact:** Conversion pricing page

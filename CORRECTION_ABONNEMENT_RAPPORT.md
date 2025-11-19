@@ -388,7 +388,7 @@ const autoRepliesLimit = planData.data.limits.autoRepliesPerMonth === -1
 - [ ] Implémenter un système de notification avant expiration
 
 ### Long terme
-- [ ] Système de trials automatiques (14 jours)
+- [ ] Système de trials automatiques (7 jours)
 - [ ] Proration automatique lors des upgrades/downgrades
 - [ ] A/B testing des prix et features
 

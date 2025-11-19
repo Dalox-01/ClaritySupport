@@ -33,13 +33,10 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleSubscribe = async () => {
-    // Si c'est un plan "Contactez-nous", rediriger vers la page contact
     if (plan.cta === 'Contactez-nous') {
       router.push('/contact');
       return;
     }
-
-    // Sinon, rediriger vers le checkout Stripe avec le priceId
     if (plan.stripePriceId) {
       try {
         setIsRedirecting(true);
@@ -57,81 +54,98 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: index * 0.03 }}
-      className={`relative flex flex-col h-full rounded-2xl border-2 bg-white shadow-lg transition-all duration-300 hover:shadow-2xl dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] ${
+      className={`relative flex flex-col h-full rounded-3xl transition-all duration-300 ${
         isPopular
-          ? `${colors.border} scale-105 md:scale-110 z-10`
-          : `border-gray-200 dark:border-blue-500/20 ${colors.borderHover}`
+          ? 'bg-white dark:bg-[#0f1320] shadow-2xl scale-105 md:scale-110 z-10 border-2 border-green-500 dark:border-green-500'
+          : 'bg-white/50 dark:bg-[#0f1320]/50 shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-800 hover:border-green-300/50 dark:hover:border-green-500/30'
       }`}
     >
-      {/* Badge Recommandé */}
+      {/* Badge Recommandé - Plus élégant */}
       {isPopular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-          <div className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r ${colors.badge} px-4 py-1.5 text-xs font-semibold text-white shadow-lg`}>
+        <div className="absolute -top-5 left-0 right-0 flex justify-center z-20">
+          <div className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-lg shadow-green-500/20 ring-4 ring-white dark:ring-[#0A0E27]">
             <Sparkles className="h-3.5 w-3.5" />
-            Recommandé
+            Le plus populaire
           </div>
         </div>
       )}
 
-      {/* Fond gradient subtil */}
-      <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${colors.bg} via-transparent opacity-20 transition-opacity duration-500`} />
+      {/* Fond gradient subtil pour le populaire */}
+      {isPopular && (
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-green-50/50 to-transparent dark:from-green-900/10 dark:to-transparent pointer-events-none" />
+      )}
 
-      <div className="relative flex flex-col h-full p-6 md:p-8">
+      <div className="relative flex flex-col h-full p-8">
         {/* Header */}
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 min-h-[40px]">{plan.description}</p>
+        <div className="mb-8">
+          <h3 className={`text-2xl font-bold mb-2 ${isPopular ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+            {plan.name}
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 min-h-[40px] leading-relaxed">
+            {plan.description}
+          </p>
         </div>
 
         {/* Prix */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="flex items-baseline gap-1">
-            <span className={`text-5xl font-extrabold bg-gradient-to-r ${colors.secondary} bg-clip-text text-transparent`}>
+            <span className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
               {plan.price}€
             </span>
-            <span className="text-gray-500 dark:text-gray-400 font-medium">/{plan.period}</span>
+            <span className="text-gray-500 dark:text-gray-400 font-medium">/mois</span>
           </div>
+          {plan.price !== 'Sur devis' && (
+            <p className="mt-2 text-xs font-medium text-green-600 dark:text-green-400">
+              Facturé annuellement (ou mensuel dispo)
+            </p>
+          )}
         </div>
 
         {/* CTA Button */}
         <button
           onClick={handleSubscribe}
           disabled={isRedirecting}
-          className={`w-full mb-6 h-12 text-base font-semibold rounded-xl border transition-all duration-200 ${
+          className={`w-full mb-8 h-14 text-base font-bold rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95 ${
             isPopular
-              ? 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800 dark:bg-white dark:text-[#0A0E27] dark:border-white/80 dark:hover:bg-white/90'
-              : 'bg-transparent text-gray-900 border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:text-white dark:border-white/30 dark:hover:border-white/70 dark:hover:bg-white/5'
-          } ${isRedirecting ? 'cursor-not-allowed opacity-70' : 'hover:-translate-y-0.5'}`}
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500 shadow-green-500/25'
+              : 'bg-white text-gray-900 border-2 border-gray-100 hover:border-green-200 hover:bg-green-50 dark:bg-white/5 dark:text-white dark:border-white/10 dark:hover:bg-white/10'
+          } ${isRedirecting ? 'cursor-not-allowed opacity-70' : ''}`}
         >
           {isRedirecting ? 'Redirection…' : plan.cta}
         </button>
 
+        {/* Divider */}
+        <div className="h-px w-full bg-gray-100 dark:bg-gray-800 mb-8" />
+
         {/* Features List */}
         <div className="flex-1">
-          <div className="space-y-3">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            Inclus dans {plan.name} :
+          </p>
+          <div className="space-y-4">
             {plan.features.map((feature, idx) => (
               <div
                 key={idx}
                 className="flex items-start gap-3 group/feature"
               >
                 <div
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 transition-transform duration-200 group-hover/feature:scale-110 ${
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
                     feature.included
-                      ? `bg-gradient-to-br ${colors.checkmark}`
-                      : 'bg-gray-200 dark:bg-gray-700'
+                      ? 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400'
+                      : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600'
                   }`}
                 >
                   {feature.included ? (
-                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                    <Check className="h-3 w-3" strokeWidth={3} />
                   ) : (
-                    <X className="h-3 w-3 text-gray-400 dark:text-gray-500" strokeWidth={2} />
+                    <X className="h-3 w-3" strokeWidth={2} />
                   )}
                 </div>
                 <span
                   className={`text-sm leading-relaxed ${
                     feature.included
-                      ? 'text-gray-700 dark:text-gray-200 font-medium'
-                      : 'text-gray-400 dark:text-gray-500 line-through'
+                      ? 'text-gray-700 dark:text-gray-300 font-medium'
+                      : 'text-gray-400 dark:text-gray-600'
                   }`}
                 >
                   {feature.text}
@@ -140,11 +154,6 @@ function PlanCard({ plan, index, segment }: { plan: PricingPlan; index: number; 
             ))}
           </div>
         </div>
-
-        {/* Footer gradient bar (only for popular) */}
-        {isPopular && (
-          <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${colors.footer} rounded-b-2xl`} />
-        )}
       </div>
     </motion.div>
   );
@@ -277,8 +286,8 @@ export function DarkPricing() {
             transition={{ duration: 0.6 }}
             className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl"
           >
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent dark:from-purple-400 dark:via-pink-400 dark:to-purple-400">
-              Un investissement rentabilisé en 3 jours.
+            <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-cyan-400 dark:to-blue-400">
+              L'excellence du support client. Automatisée.
             </span>
           </motion.h2>
 
@@ -289,7 +298,7 @@ export function DarkPricing() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400"
           >
-            Combien vous coûte un agent de support ? 2000€/mois ? ClaritySupport fait le travail de 3 agents pour une fraction du prix.
+            Une qualité de réponse irréprochable, 24/7. L'outil indispensable pour les e-commerçants qui visent la perfection.
           </motion.p>
 
           {/* Trust badges */}
@@ -301,7 +310,7 @@ export function DarkPricing() {
             className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500 dark:text-gray-400"
           >
             {[
-              'Essai gratuit 14 jours',
+              'Essai gratuit 7 jours',
               'Sans carte bancaire',
               'Annulation en 1 clic'
             ].map((badge) => (
@@ -375,7 +384,7 @@ export function DarkPricing() {
         >
           <div className="bg-white backdrop-blur-sm rounded-2xl p-8 sm:p-12 shadow-lg border border-gray-200 dark:bg-gradient-to-br dark:from-blue-500/10 dark:to-cyan-500/10 dark:border-blue-500/30">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-              Essayez gratuitement pendant 14 jours
+              Essayez gratuitement pendant 7 jours
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6 text-lg">
               Découvrez la puissance de ClaritySupport sans risque. Si vous ne gagnez pas de temps dès la première semaine, vous ne payez rien.

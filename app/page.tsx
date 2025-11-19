@@ -10,8 +10,10 @@ import { useTheme } from 'next-themes';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AuthButton } from '@/components/auth-button';
 import { DarkHero } from '@/components/home/dark-hero';
+import { TechStackBanner } from '@/components/home/tech-stack-banner';
 import { DarkBentoFeatures } from '@/components/home/dark-bento-features';
 import { ProofSection } from '@/components/home/ProofSection';
+import { ReviewsSection } from '@/components/home/reviews-section';
 import { DarkPricing } from '@/components/home/dark-pricing';
 import { DarkFaq } from '@/components/home/dark-faq';
 import { LightHero } from '@/components/home/light-hero';
@@ -148,10 +150,12 @@ export default function HomePage() {
 
       <main>
         <DarkHero onGetStarted={handleGetStarted} />
+        <TechStackBanner />
         <div id="features">
           <DarkBentoFeatures />
         </div>
         <ProofSection />
+        <ReviewsSection />
         <DarkPricing />
         <DarkFaq />
       </main>

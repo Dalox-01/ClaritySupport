@@ -118,8 +118,7 @@ export function ProofSection() {
             >
               <Button
                 size="lg"
-                variant="outline"
-                className="group relative h-12 overflow-hidden rounded-full border-gray-300 px-8 text-base font-medium transition-all hover:border-gray-400 hover:bg-gray-50 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:bg-gray-900"
+                className="group relative h-12 overflow-hidden rounded-full bg-blue-600 px-8 text-base font-medium text-white transition-all hover:bg-blue-700 hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <span className="relative z-10 flex items-center">
                   Découvrir toutes les fonctionnalités

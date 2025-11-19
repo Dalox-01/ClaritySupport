@@ -407,7 +407,7 @@ Ignore le texte marketing, les introductions et les formules de politesse.
 
 Transforme chaque politique en règle : 'SI [Condition] ALORS [Action/Réponse]'.
 
-Si des délais sont mentionnés, sois précis (ex: '14 jours').
+Si des délais sont mentionnés, sois précis (ex: '7 jours').
 
 Groupe par catégorie : [LIVRAISON], [RETOURS], [REMBOURSEMENT].
 

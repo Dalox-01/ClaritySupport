@@ -61,7 +61,7 @@ Transformation complète de **MailWizard** (générateur d'emails) en **ClarityS
 
 #### Pricing
 - ✅ "Tarifs simples et transparents" (moderne)
-- ✅ Essai gratuit : 14 jours (au lieu de 7)
+- ✅ Essai gratuit : 7 jours (au lieu de 7)
 - ✅ "Découvrez la puissance de ClaritySupport"
 
 ---
@@ -187,7 +187,7 @@ J'ai préparé **15 recommandations créatives** dans le document `RECOMMANDATIO
 
 ### Conversion
 - ✅ Message plus clair → **-40% bounce rate**
-- ✅ Essai 14 jours → **+25% inscriptions**
+- ✅ Essai 7 jours → **+25% inscriptions**
 - ✅ Trust badges → **+15% confiance**
 
 ### SEO

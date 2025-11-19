@@ -287,7 +287,7 @@ STRIPE_PRICE_FREE_YEARLY=price_xxx (optionnel)
    - Codes promo pour premiers clients
 
 2. **Trial Period** :
-   - 14 jours gratuits sur plans payants
+   - 7 jours gratuits sur plans payants
    - Carte requise mais pas de charge immédiate
 
 3. **Usage-based billing** :

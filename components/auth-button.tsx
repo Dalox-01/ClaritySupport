@@ -19,8 +19,7 @@ export function AuthButton() {
   return (
     <Button
       onClick={() => signIn('google', { callbackUrl: '/mail-center' })}
-      variant="outline"
-      className="gap-2"
+      className="gap-2 bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
     >
       <svg className="h-4 w-4" viewBox="0 0 24 24">
         <path

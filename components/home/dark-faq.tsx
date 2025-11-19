@@ -33,7 +33,7 @@ const faqs = [
   {
     question: 'Puis-je essayer avant de payer ?',
     answer:
-      'Oui, vous avez 14 jours d\'essai gratuit avec toutes les fonctionnalités PRO. Aucune carte bancaire n\'est requise pour commencer.',
+      'Oui, vous avez 7 jours d\'essai gratuit avec toutes les fonctionnalités PRO. Aucune carte bancaire n\'est requise pour commencer.',
   },
 ];
 
