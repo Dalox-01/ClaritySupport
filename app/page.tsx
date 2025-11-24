@@ -90,11 +90,11 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0E27] transition-colors duration-300">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm dark:border-blue-500/10 dark:bg-[#0A0E27]/95">
-        <div className="mx-auto flex h-14 xxs:h-16 sm:h-16 max-w-7xl items-center justify-between px-4 xxs:px-5 xs:px-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-14 xxs:h-16 sm:h-16 3xl:h-20 4xl:h-24 max-w-7xl 3xl:max-w-[1600px] 4xl:max-w-[1800px] items-center justify-between px-4 xxs:px-5 xs:px-6 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16">
           <div>
             <Link href="/" className="flex items-center gap-1.5 xxs:gap-2 font-bold text-gray-900 transition-opacity hover:opacity-80 dark:text-white">
-              <Mail className="h-5 w-5 xxs:h-6 xxs:w-6 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm xxs:text-base hidden xs:inline">ClaritySupport</span>
+              <Mail className="h-5 w-5 xxs:h-6 xxs:w-6 3xl:h-7 3xl:w-7 4xl:h-8 4xl:w-8 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm xxs:text-base 3xl:text-lg 4xl:text-xl hidden xs:inline">ClaritySupport</span>
             </Link>
           </div>
           

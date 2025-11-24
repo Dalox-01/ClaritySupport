@@ -90,6 +90,19 @@
     }
   }
   
+  /* Optimisations grands écrans (Mac, PC ultrawide) */
+  @media (min-width: 1920px) {
+    html {
+      font-size: 106.25%; /* 17px base sur Full HD */
+    }
+  }
+  
+  @media (min-width: 2560px) {
+    html {
+      font-size: 112.5%; /* 18px base sur 2K/4K */
+    }
+  }
+  
   * {
     @apply border-border;
   }
@@ -434,6 +447,29 @@
   .gpu-accelerate {
     transform: translateZ(0);
     will-change: transform;
+  }
+  
+  /* Optimisations pour grands écrans (Mac 5K, PC ultrawide, 4K) */
+  @media (min-width: 1920px) {
+    .container-ultrawide {
+      max-width: 1600px;
+    }
+    
+    .text-responsive-3xl {
+      font-size: 1.125rem; /* 18px */
+      line-height: 1.75rem;
+    }
+  }
+  
+  @media (min-width: 2560px) {
+    .container-ultrawide {
+      max-width: 1800px;
+    }
+    
+    .text-responsive-4xl {
+      font-size: 1.25rem; /* 20px */
+      line-height: 1.875rem;
+    }
   }
 
   /* Reduce motion for accessibility */

@@ -152,7 +152,7 @@ export function DarkBentoFeatures() {
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 xxs:px-5 xs:px-6 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl 3xl:max-w-[1600px] 4xl:max-w-[1800px] px-4 xxs:px-5 xs:px-6 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16">
         {/* Header */}
         <div className="mb-10 xxs:mb-12 sm:mb-16 text-center">
           <motion.div
@@ -199,14 +199,14 @@ export function DarkBentoFeatures() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mx-auto mt-4 xxs:mt-5 sm:mt-6 max-w-2xl text-base xxs:text-lg sm:text-xl text-gray-600 dark:text-slate-300"
+            className="mx-auto mt-4 xxs:mt-5 sm:mt-6 max-w-2xl 3xl:max-w-3xl text-base xxs:text-lg sm:text-xl 3xl:text-2xl text-gray-600 dark:text-slate-300"
           >
             Chaque minute d'attente est une vente perdue. ClaritySupport répond instantanément pour sécuriser le panier.
           </motion.p>
         </div>
 
         {/* Bento Grid - Main Features */}
-        <div className="grid gap-4 xxs:gap-5 sm:gap-6 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 xxs:gap-5 sm:gap-6 3xl:gap-8 4xl:gap-10 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
           {mainFeatures.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -229,7 +229,7 @@ export function DarkBentoFeatures() {
                 className="group relative"
                 style={{ transformStyle: 'preserve-3d' }}
               >
-                <div className="relative h-full overflow-hidden rounded-2xl xxs:rounded-3xl border border-gray-200 bg-white p-5 xxs:p-6 sm:p-8 shadow-lg transition-all duration-300 group-hover:border-blue-500/30 group-hover:shadow-xl dark:border-blue-500/10 dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] dark:shadow-none">
+                <div className="relative h-full overflow-hidden rounded-2xl xxs:rounded-3xl border border-gray-200 bg-white p-5 xxs:p-6 sm:p-8 3xl:p-10 4xl:p-12 shadow-lg transition-all duration-300 group-hover:border-blue-500/30 group-hover:shadow-xl dark:border-blue-500/10 dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] dark:shadow-none">
                   {/* Animated gradient border on hover */}
                   <motion.div
                     className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100"

@@ -26,8 +26,8 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
         <div className="absolute right-0 bottom-0 h-[36rem] w-[36rem] rounded-full bg-blue-100/40 blur-[160px] dark:bg-blue-600/15" />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 xxs:px-5 xs:px-6 sm:px-8 lg:px-12 py-12 xxs:py-16 sm:py-20">
-        <div className="grid items-center gap-8 xxs:gap-10 sm:gap-14 lg:grid-cols-2">
+      <div className="relative z-10 mx-auto w-full max-w-7xl 3xl:max-w-[1600px] 4xl:max-w-[1800px] px-4 xxs:px-5 xs:px-6 sm:px-8 lg:px-12 3xl:px-16 4xl:px-20 py-12 xxs:py-16 sm:py-20 3xl:py-28 4xl:py-32">
+        <div className="grid items-center gap-8 xxs:gap-10 sm:gap-14 3xl:gap-20 4xl:gap-28 lg:grid-cols-2">
 
           {/* Left Content */}
           <div className="relative z-20 flex flex-col items-start text-left">
@@ -37,7 +37,7 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-4 xxs:mb-5 sm:mb-6 text-3xl xxs:text-4xl xs:text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight text-gray-900 dark:text-slate-50"
+              className="mb-4 xxs:mb-5 sm:mb-6 text-3xl xxs:text-4xl xs:text-5xl sm:text-6xl lg:text-7xl 3xl:text-8xl 4xl:text-9xl font-bold leading-tight text-gray-900 dark:text-slate-50"
             >
               Votre équipe <br/>
               <span className="text-gray-500 dark:text-slate-400">support client </span>
@@ -49,7 +49,7 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="mb-6 xxs:mb-8 sm:mb-10 max-w-xl text-base xxs:text-lg sm:text-lg leading-relaxed text-gray-600 dark:text-slate-300"
+              className="mb-6 xxs:mb-8 sm:mb-10 max-w-xl 3xl:max-w-2xl 4xl:max-w-3xl text-base xxs:text-lg sm:text-lg 3xl:text-xl 4xl:text-2xl leading-relaxed text-gray-600 dark:text-slate-300"
             >
               ClaritySupport automatise vos réponses emails avec une IA de pointe, 
               analyse le sentiment client en temps réel, et booste votre productivité — 

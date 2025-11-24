@@ -277,7 +277,7 @@ export function DarkPricing() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl 3xl:max-w-[1600px] 4xl:max-w-[1800px] px-4 sm:px-6 lg:px-8 3xl:px-12 4xl:px-16">
         {/* Header */}
         <div className="mb-16 text-center">
           <motion.h2
@@ -297,7 +297,7 @@ export function DarkPricing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400"
+            className="mx-auto mt-6 max-w-2xl 3xl:max-w-3xl text-lg 3xl:text-xl text-gray-600 dark:text-gray-400"
           >
             Une qualité de réponse irréprochable, 24/7. L'outil indispensable pour les e-commerçants qui visent la perfection.
           </motion.p>
@@ -358,7 +358,7 @@ export function DarkPricing() {
                 rotateY: { duration: 0.3 },
                 opacity: { duration: 0.2 },
               }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-6"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-3 gap-6 md:gap-8 lg:gap-6 3xl:gap-10 4xl:gap-12"
               style={{
                 transformStyle: 'preserve-3d',
               }}
