@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MailWiz</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Écran de connexion -->
+  <div id="login-screen" class="screen">
+    <div class="header">
+      <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="6" fill="#2D6A4F"/>
+        <path d="M8 11L16 17L24 11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="7" y="10" width="18" height="12" rx="1" stroke="white" stroke-width="2"/>
+      </svg>
+      <h1>MailWiz</h1>
+    </div>
+    
+    <div class="content">
+      <p class="subtitle">Générez des emails professionnels avec l'IA</p>
+      
+      <button id="login-btn" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
+        </svg>
+        Se connecter à MailWiz
+      </button>
+      
+      <p class="info-text">Vous serez redirigé vers mailwiz.app pour vous connecter</p>
+    </div>
+  </div>
+
+  <!-- Écran principal -->
+  <div id="main-screen" class="screen hidden">
+    <div class="header">
+      <div class="header-left">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="6" fill="#2D6A4F"/>
+          <path d="M8 11L16 17L24 11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="7" y="10" width="18" height="12" rx="1" stroke="white" stroke-width="2"/>
+        </svg>
+        <span class="logo-text">MailWiz</span>
+      </div>
+      <div class="header-actions">
+        <span id="plan-badge" class="plan-badge-pill">FREE</span>
+        <button id="theme-toggle" class="btn-icon" title="Changer de thème">
+          <svg id="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Déconnexion">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quota info -->
+    <div class="quota-bar">
+      <span id="quota-text" class="quota-text">10 / 10 utilisés</span>
+    </div>
+
+    <!-- Formulaire de génération -->
+    <div class="content">
+      <div class="form-group">
+        <label for="email-type">Type d'email</label>
+        <select id="email-type" class="select-input">
+          <option value="reponse">Réponse</option>
+          <option value="candidature">Candidature</option>
+          <option value="relance">Relance</option>
+          <option value="prospection">Prospection</option>
+          <option value="support">Support client</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="tone">Ton</label>
+        <select id="tone" class="select-input">
+          <option value="pro">Professionnel</option>
+          <option value="amical">Amical</option>
+          <option value="formel">Formel</option>
+          <option value="enthousiaste">Enthousiaste</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="original-email">Email d'origine (optionnel)</label>
+        <textarea 
+          id="original-email" 
+          class="textarea-input" 
+          rows="3" 
+          placeholder="Collez ici l'email auquel vous voulez répondre..."
+        ></textarea>
+        <small class="help-text">Si vous répondez à un email, collez-le ici pour une réponse contextuelle</small>
+      </div>
+
+      <div class="form-group">
+        <label for="context">Contexte / Instructions *</label>
+        <textarea 
+          id="context" 
+          class="textarea-input" 
+          rows="4" 
+          placeholder="Décrivez le contexte de votre email ou donnez des instructions..."
+          required
+        ></textarea>
+      </div>
+
+      <button id="generate-btn" class="btn-primary btn-generate">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span>Générer l'email</span>
+      </button>
+    </div>
+
+    <!-- Résultat -->
+    <div id="result-container" class="result-container hidden">
+      <div class="result-header">
+        <button id="back-btn" class="btn-icon" title="Retour">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <h3>Email généré</h3>
+        <button id="copy-btn" class="btn-icon" title="Copier">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="email-result">
+        <div class="email-subject">
+          <label>Objet</label>
+          <p id="result-subject"></p>
+        </div>
+        <div class="email-body">
+          <label>Corps</label>
+          <div id="result-text"></div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <div class="dock-panel">
+          <button id="send-gmail-btn" class="dock-item primary" title="Envoyer dans Gmail">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>Envoyer</span>
+            <span class="dock-label">Envoyer dans Gmail</span>
+          </button>
+          
+          <button id="edit-btn" class="dock-item" title="Modifier">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span class="dock-label">Modifier</span>
+          </button>
+          
+          <button id="save-btn" class="dock-item" title="Enregistrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span class="dock-label">Enregistrer</span>
+          </button>
+          
+          <button id="download-btn" class="dock-item" title="Télécharger">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span class="dock-label">Télécharger</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="loader hidden">
+      <div class="spinner"></div>
+      <p>Génération en cours...</p>
+    </div>
+
+    <!-- Upgrade prompt -->
+    <div id="upgrade-prompt" class="upgrade-prompt hidden">
+      <p>❌ Quota épuisé</p>
+      <button id="upgrade-btn" class="btn-upgrade">
+        Passer au plan PRO
+      </button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
