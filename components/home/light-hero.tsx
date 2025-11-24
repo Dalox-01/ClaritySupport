@@ -114,17 +114,25 @@ export function LightHero({ onGetStarted }: LightHeroProps) {
           </motion.div>
         </div>
 
-        {/* Mockup style Apple - ultra clean */}
+        {/* Mockup style Apple - ultra clean - AGRANDI ET INCLINÉ */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="relative mx-auto max-w-6xl"
+          className="relative mx-auto max-w-7xl 3xl:max-w-[100rem] 4xl:max-w-[120rem]"
+          style={{ perspective: '2500px' }}
         >
           {/* Shadow portée subtile */}
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-b from-gray-100/50 to-gray-200/50 blur-2xl" />
+          <div className="absolute -inset-8 lg:-inset-12 rounded-[40px] bg-gradient-to-b from-gray-100/50 to-gray-200/50 blur-3xl" />
           
-          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+          <div 
+            className="relative overflow-hidden rounded-2xl lg:rounded-3xl border border-gray-200 bg-white shadow-2xl"
+            style={{
+              transform: 'rotateY(-8deg) rotateX(2deg) scale(1.15) lg:scale(1.3) 3xl:scale(1.5)',
+              transformStyle: 'preserve-3d',
+              transformOrigin: 'center center'
+            }}
+          >
             {/* Barre de fenêtre minimaliste */}
             <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-6 py-4">
               <div className="flex gap-2">

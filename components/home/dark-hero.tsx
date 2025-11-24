@@ -108,18 +108,18 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               opacity
             }}
           >
-            {/* Modern Window - Clean & Professional */}
-            <div className="relative w-full max-w-[90rem] hidden xs:block" style={{ perspective: '2000px' }}>
+            {/* Modern Window - Clean & Professional - AGRANDI */}
+            <div className="relative w-full max-w-[120rem] 3xl:max-w-[140rem] 4xl:max-w-[160rem] hidden xs:block" style={{ perspective: '2500px' }}>
               {/* Glow effect behind */}
               <div 
-                className="pointer-events-none absolute -inset-6 rounded-[32px] bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl dark:from-blue-500/25 dark:to-blue-600/20" 
-                style={{ transform: 'rotateY(-12deg) rotateX(2deg) scale(1.1)' }}
+                className="pointer-events-none absolute -inset-8 lg:-inset-12 rounded-[40px] bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-3xl dark:from-blue-500/30 dark:to-blue-600/25" 
+                style={{ transform: 'rotateY(-18deg) rotateX(3deg) scale(1.15)' }}
               />
               
               <div 
-                className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700/50 dark:bg-slate-900 dark:shadow-[0_45px_120px_-40px_rgba(59,130,246,0.5)]"
+                className="relative overflow-hidden rounded-2xl lg:rounded-3xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700/50 dark:bg-slate-900 dark:shadow-[0_50px_140px_-45px_rgba(59,130,246,0.6)]"
                 style={{ 
-                  transform: 'rotateY(-12deg) rotateX(2deg) scale(1.1) sm:scale(1.2) lg:scale(1.35) translateX(0) lg:translateX(-20px)', 
+                  transform: 'rotateY(-18deg) rotateX(3deg) scale(1.3) sm:scale(1.5) lg:scale(1.75) 3xl:scale(2) 4xl:scale(2.2) translateX(0) lg:translateX(-40px) 3xl:translateX(-60px)', 
                   transformStyle: 'preserve-3d',
                   transformOrigin: 'center left'
                 }}
@@ -157,8 +157,8 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               </div>
               
               {/* Decorative elements */}
-              <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-blue-200/30 blur-[100px] dark:bg-blue-500/20 dark:blur-[120px]" />
-              <div className="absolute bottom-10 -left-16 h-56 w-56 rounded-full bg-cyan-200/30 blur-[80px] dark:bg-blue-600/15 dark:blur-[100px]" />
+              <div className="absolute -top-32 -right-32 h-80 w-80 lg:h-96 lg:w-96 rounded-full bg-blue-200/30 blur-[120px] dark:bg-blue-500/25 dark:blur-[140px]" />
+              <div className="absolute bottom-16 -left-24 h-72 w-72 lg:h-80 lg:w-80 rounded-full bg-cyan-200/30 blur-[100px] dark:bg-blue-600/20 dark:blur-[120px]" />
             </div>
           </motion.div>
 
