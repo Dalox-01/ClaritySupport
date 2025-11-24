@@ -9,7 +9,7 @@ import { Mail, Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { AuthButton } from '@/components/auth-button';
-import { DarkHero } from '@/components/home/dark-hero';
+import { SpatialHero } from '@/components/home/spatial-hero';
 import { TechStackBanner } from '@/components/home/tech-stack-banner';
 import { DarkBentoFeatures } from '@/components/home/dark-bento-features';
 import { ProofSection } from '@/components/home/ProofSection';
@@ -149,7 +149,7 @@ export default function HomePage() {
       </header>
 
       <main>
-        <DarkHero onGetStarted={handleGetStarted} />
+        <SpatialHero onGetStarted={handleGetStarted} />
         <TechStackBanner />
         <div id="features">
           <DarkBentoFeatures />
