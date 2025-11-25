@@ -7,11 +7,11 @@ import { Inbox, ShoppingCart, CheckCircle, BarChart3 } from 'lucide-react';
 import Dock, { type DockItemData } from '@/components/ui/dock/Dock';
 
 type MailCenterDockProps = {
-  currentView: 'inbox' | 'boutique' | 'validation' | 'stats';
-  onViewChange: (view: 'inbox' | 'boutique' | 'validation' | 'stats') => void;
+  currentView: 'inbox' | 'shops' | 'pending' | 'analytics';
+  onViewChange: (view: 'inbox' | 'shops' | 'pending' | 'analytics') => void;
 };
 
-export default function MailCenterDock({ currentView, onViewChange }: MailCenterDockProps) {
+export function MailCenterDock({ currentView, onViewChange }: MailCenterDockProps) {
   const items: DockItemData[] = [
     {
       icon: <Inbox size={20} />,
@@ -22,20 +22,20 @@ export default function MailCenterDock({ currentView, onViewChange }: MailCenter
     {
       icon: <ShoppingCart size={20} />,
       label: 'Boutique',
-      onClick: () => onViewChange('boutique'),
-      className: currentView === 'boutique' ? 'dock-item-active' : '',
+      onClick: () => onViewChange('shops'),
+      className: currentView === 'shops' ? 'dock-item-active' : '',
     },
     {
       icon: <CheckCircle size={20} />,
       label: 'Validation',
-      onClick: () => onViewChange('validation'),
-      className: currentView === 'validation' ? 'dock-item-active' : '',
+      onClick: () => onViewChange('pending'),
+      className: currentView === 'pending' ? 'dock-item-active' : '',
     },
     {
       icon: <BarChart3 size={20} />,
       label: 'Stats',
-      onClick: () => onViewChange('stats'),
-      className: currentView === 'stats' ? 'dock-item-active' : '',
+      onClick: () => onViewChange('analytics'),
+      className: currentView === 'analytics' ? 'dock-item-active' : '',
     },
   ];
 

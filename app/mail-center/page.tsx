@@ -53,6 +53,7 @@ import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced
 import { ShopifyConnectPanel } from '@/components/mail-center/ShopifyConnectPanel';
 import { ShopifyQuickConnect } from '@/components/mail-center/ShopifyQuickConnect';
 import { ShopifyDashboard } from '@/components/mail-center/ShopifyDashboard';
+import { MailCenterDock } from '@/components/mail-center-dock';
 
 // Composant Card optimisé - Tilt effect simplifié avec CSS
 const TiltCard = React.memo(({ children, className, glow = false }: { 
@@ -1029,73 +1030,6 @@ export default function MailCenterPage() {
               )
             )}
           >
-            {/* Navigation */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className={cn(
-                "p-4 border backdrop-blur-3xl transition-all duration-700 shadow-lg overflow-hidden group",
-                isLightMode 
-                  ? "border-gray-200 bg-white shadow-gray-100/50 hover:shadow-lg" 
-                  : "border-slate-700/40 bg-slate-900/30 shadow-black/20 hover:bg-slate-900/40 hover:border-slate-600/50"
-              )}>
-                {/* Effet de brillance au survol */}
-                <div className={cn(
-                  "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
-                  "bg-gradient-to-br",
-                  isLightMode 
-                    ? "from-gray-50/50 via-transparent to-gray-50/50"
-                    : "from-blue-500/5 via-transparent to-indigo-500/5"
-                )} />
-                
-                <h3 className={cn(
-                  "font-semibold mb-4 text-xs uppercase tracking-wide flex items-center gap-2 relative z-10",
-                  isLightMode ? "text-gray-700" : "text-slate-200"
-                )}>
-                  <Zap className={cn("w-4 h-4", isLightMode ? "text-gray-600" : "text-blue-400")} />
-                  Navigation
-                </h3>
-                <nav className="space-y-2">
-                  {[
-                    { id: 'inbox', label: 'Inbox', icon: Inbox, count: emails.filter(e => !archivedEmails.includes(e.id)).length },
-                    { id: 'shops', label: 'Boutique', icon: Store, count: null },
-                    { id: 'pending', label: 'Validation', icon: Clock, count: pendingReplies.length },
-                    { id: 'analytics', label: 'Stats', icon: BarChart3, count: null },
-                  ].map((tab) => (
-                    <div
-                      key={tab.id}
-                      className="transition-all duration-200 hover:translate-x-1"
-                    >
-                      <Button
-                        variant={activeTab === tab.id ? 'secondary' : 'ghost'}
-                        className={cn(
-                          "w-full justify-start gap-3 transition-all h-11",
-                          isLightMode 
-                            ? activeTab === tab.id 
-                              ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30" 
-                              : "text-gray-700 hover:bg-gray-100"
-                            : activeTab === tab.id 
-                              ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 shadow-md" 
-                              : "text-gray-300 hover:bg-blue-500/10 hover:text-blue-400"
-                        )}
-                        onClick={() => setActiveTab(tab.id as any)}
-                      >
-                        <tab.icon className="w-5 h-5" />
-                        <span className="flex-1 text-left font-medium">{tab.label}</span>
-                        {tab.count !== null && tab.count > 0 && (
-                          <Badge className={`${colors.badge} text-white shadow-sm`}>
-                            {tab.count}
-                          </Badge>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
-                </nav>
-              </Card>
-            </motion.div>
-
             {/* Filtres */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1881,6 +1815,12 @@ export default function MailCenterPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Dock de navigation fixe en bas */}
+      <MailCenterDock
+        currentView={activeTab}
+        onViewChange={(view) => setActiveTab(view as any)}
+      />
     </div>
   );
 }
