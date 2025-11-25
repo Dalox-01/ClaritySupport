@@ -102,14 +102,6 @@ const nextConfig = {
       config.performance = {
         hints: false,
       };
-
-      // Résolution optimisée
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Éviter les duplications
-        react: require.resolve('react'),
-        'react-dom': require.resolve('react-dom'),
-      };
     }
 
     return config;
