@@ -2,16 +2,24 @@
 
 import {
   motion,
-  MotionValue,
+  type MotionValue,
   useMotionValue,
   useSpring,
   useTransform,
-  type SpringOptions,
   AnimatePresence
-} from 'motion/react';
+} from 'framer-motion';
 import React, { Children, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 
 import './Dock.css';
+
+// Type pour les options de spring (framer-motion)
+type SpringOptions = {
+  mass?: number;
+  stiffness?: number;
+  damping?: number;
+  restDelta?: number;
+  restSpeed?: number;
+};
 
 export type DockItemData = {
   icon: React.ReactNode;
