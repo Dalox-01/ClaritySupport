@@ -59,7 +59,10 @@ const nextConfig = {
             lib: {
               test: /[\\/]node_modules[\\/]/,
               name(module) {
-                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)(?:[\\/]|$)/)[1];
+                if (!module.context) return 'lib.vendor';
+                const match = module.context.match(/[\\/]node_modules[\\/](.*?)(?:[\\/]|$)/);
+                if (!match || !match[1]) return 'lib.vendor';
+                const packageName = match[1];
                 return `lib.${packageName.replace('@', '')}`;
               },
               priority: 30,

@@ -159,7 +159,7 @@ export function HyperluminaHero({ onGetStarted }: HyperluminaHeroProps) {
                 <Mail className="h-5 w-5 transition-transform duration-500 group-hover:rotate-12" />
                 Générer mon premier email
               </span>
-              <span className="absolute inset-0 translate-y-[120%] bg-white/25 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-[-20%]" />
+              <span className="absolute inset-0 translate-y-[120%] bg-white/25 transition-transform duration-500 ease-out group-hover:translate-y-[-20%]" />
             </Button>
 
             <Button
