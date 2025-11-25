@@ -437,9 +437,75 @@
   .gpu-accelerate {
     transform: translateZ(0);
     will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
   
-  /* Fond animé subtil bleuté - Mode clair */
+  /* Optimisations de performance critiques (Google PageSpeed) */
+  .performance-optimized {
+    content-visibility: auto;
+    contain-intrinsic-size: 500px;
+  }
+  
+  .lazy-image {
+    content-visibility: auto;
+  }
+  
+  /* Optimisation des images */
+  img {
+    content-visibility: auto;
+  }
+  
+  /* Contain pour isoler le rendu */
+  .contain-layout {
+    contain: layout;
+  }
+  
+  .contain-paint {
+    contain: paint;
+  }
+  
+  .contain-strict {
+    contain: strict;
+  }
+  
+  /* Will-change pour animations prévisibles */
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .will-change-opacity {
+    will-change: opacity;
+  }
+  
+  .will-change-auto {
+    will-change: auto;
+  }
+  
+  /* Optimisation des transitions */
+  .hardware-accelerated {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+  
+  /* Lazy rendering pour sections hors viewport */
+  .lazy-render {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
+  
+  /* Optimisation scroll */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prévenir le layout shift */
+  .prevent-layout-shift {
+    min-height: 1px;
+  }
+  
+  /* Fond animé subtil bleué - Mode clair */
   .subtle-bg-light {
     position: relative;
     background: linear-gradient(135deg, 

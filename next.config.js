@@ -34,7 +34,82 @@ const nextConfig = {
   
   // Optimisations de build
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+  },
+  
+  // Webpack optimisations avancées (Google/Vercel-level)
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      // Code splitting agressif
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        runtimeChunk: 'single',
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            // Framework (React, Next.js) - Priorité maximale
+            framework: {
+              test: /[\\/]node_modules[\\/](react|react-dom|next|scheduler)[\\/]/,
+              name: 'framework',
+              priority: 40,
+              enforce: true,
+            },
+            // Bibliothèques volumineuses (>160KB)
+            lib: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)(?:[\\/]|$)/)[1];
+                return `lib.${packageName.replace('@', '')}`;
+              },
+              priority: 30,
+              minSize: 160000,
+              maxSize: 244000,
+            },
+            // Code commun partagé
+            commons: {
+              name: 'commons',
+              minChunks: 2,
+              priority: 20,
+            },
+            // Code partagé entre pages
+            shared: {
+              name(module, chunks) {
+                return (
+                  'shared.' +
+                  chunks
+                    .map((chunk) => chunk.name)
+                    .join('~')
+                    .replace(/[^a-z0-9]/gi, '-')
+                );
+              },
+              priority: 10,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+        // Minimisation agressive
+        minimize: true,
+        usedExports: true,
+        sideEffects: false,
+      };
+
+      // Performance hints désactivés pour éviter les warnings
+      config.performance = {
+        hints: false,
+      };
+
+      // Résolution optimisée
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        // Éviter les duplications
+        react: require.resolve('react'),
+        'react-dom': require.resolve('react-dom'),
+      };
+    }
+
+    return config;
   },
   
   // Headers de sécurité
