@@ -8,6 +8,9 @@ const nextConfig = {
   images: {
     unoptimized: false, // Activer l'optimisation d'images
     formats: ['image/avif', 'image/webp'], // Formats modernes
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31536000, // Cache 1 an
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,6 +28,15 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   // Optimisation des polyfills
   swcMinify: true,
+  // Optimisations supplémentaires
+  reactStrictMode: true,
+  poweredByHeader: false,
+  
+  // Optimisations de build
+  experimental: {
+    optimizeCss: true, // Optimiser CSS
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
   
   // Headers de sécurité
   async headers() {

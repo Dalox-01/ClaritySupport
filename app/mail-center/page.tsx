@@ -611,88 +611,12 @@ export default function MailCenterPage() {
       ref={containerRef} 
       className={cn(
         "min-h-screen relative overflow-hidden transition-all duration-700",
-        // Thème blanc pur avec animations subtiles
+        // Fond animé subtil bleuté selon le thème
         isLightMode 
-          ? "bg-white"
-          : "bg-gradient-to-br from-[#0A0E27] via-[#0d1435] to-[#0A0E27]"
+          ? "subtle-bg-light"
+          : "subtle-bg-dark"
       )}
     >
-      {/* Animations d'arrière-plan - Particules flottantes */}
-      {isLightMode && (
-        <>
-          {/* Grille subtile */}
-          <div className="absolute inset-0 opacity-[0.02]">
-            <div
-              className="h-full w-full"
-              style={{
-                backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(59, 130, 246) 1px, transparent 0)',
-                backgroundSize: '50px 50px',
-              }}
-            />
-          </div>
-
-          {/* Particules flottantes animées */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-blue-400/20 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  y: [0, -30, 0],
-                  x: [0, Math.random() * 20 - 10, 0],
-                  opacity: [0.2, 0.5, 0.2],
-                  scale: [1, 1.5, 1],
-                }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Vagues lumineuses animées */}
-          <motion.div
-            className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-5"
-            style={{
-              background: 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1), transparent 50%)',
-            }}
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 5, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          <motion.div
-            className="absolute bottom-0 right-0 w-full h-full pointer-events-none opacity-5"
-            style={{
-              background: 'radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1), transparent 50%)',
-            }}
-            animate={{
-              scale: [1, 1.3, 1],
-              rotate: [0, -5, 0],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2,
-            }}
-          />
-        </>
-      )}
-
       {/* Header avec glassmorphism moderne */}
       <motion.header 
         className={cn(
@@ -706,7 +630,7 @@ export default function MailCenterPage() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 w-full items-center justify-between px-6 sm:px-8 lg:px-12 xl:px-16">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -1011,7 +935,7 @@ export default function MailCenterPage() {
       </motion.header>
 
       {/* Main Content avec design innovant */}
-      <main className="relative mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 py-6 pt-24 sm:py-8 sm:pt-28">
+      <main className="relative w-full px-6 sm:px-8 lg:px-12 xl:px-16 py-6 pt-24 sm:py-8 sm:pt-28">
         <div className="flex gap-6">
           {/* Sidebar fixe à gauche - Navigation/Filtres/Comptes */}
           <motion.aside

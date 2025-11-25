@@ -89,11 +89,14 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0A0E27] transition-colors duration-300 overflow-x-hidden relative">
-      <MeshGradient />
-
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-sm dark:border-blue-500/10 dark:bg-[#0A0E27]/95">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen transition-colors duration-300 overflow-x-hidden relative">
+      {/* Fond animé subtil bleuté selon le thème */}
+      <div className={theme === 'light' ? 'subtle-bg-light' : 'subtle-bg-dark'} style={{ position: 'fixed', inset: 0, zIndex: 0 }} />
+      
+      {/* Contenu au-dessus du fond */}
+      <div className="relative z-10">
+        <header className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-blue-500/10 dark:bg-[#0A0E27]/80">
+          <div className="mx-auto flex h-16 w-full items-center justify-between px-6 sm:px-8 lg:px-12 xl:px-16">{/* Header content */}
           <div>
             <Link href="/" className="flex items-center gap-2 font-bold text-gray-900 transition-opacity hover:opacity-80 dark:text-white">
               <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -225,6 +228,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
