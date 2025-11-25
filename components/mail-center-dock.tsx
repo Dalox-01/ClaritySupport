@@ -7,7 +7,7 @@ import { Inbox, ShoppingCart, CheckCircle, BarChart3 } from 'lucide-react';
 import Dock, { type DockItemData } from '@/components/ui/dock/Dock';
 
 type MailCenterDockProps = {
-  currentView: 'inbox' | 'shops' | 'pending' | 'analytics';
+  currentView: 'inbox' | 'shops' | 'pending' | 'analytics' | 'sent' | 'rules' | 'favorites' | 'archives';
   onViewChange: (view: 'inbox' | 'shops' | 'pending' | 'analytics') => void;
 };
 
