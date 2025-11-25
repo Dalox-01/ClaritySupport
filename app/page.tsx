@@ -20,7 +20,6 @@ import { LightHero } from '@/components/home/light-hero';
 import { LightFeatures } from '@/components/home/light-features';
 import { LightPricing } from '@/components/home/light-pricing';
 import { LightFaq } from '@/components/home/light-faq';
-import { MeshGradient } from '@/components/ui/mesh-gradient';
 
 export default function HomePage() {
   const router = useRouter();
