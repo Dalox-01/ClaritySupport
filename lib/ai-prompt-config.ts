@@ -28,6 +28,10 @@ export interface AIPromptConfig {
   // Se traduit en température OpenAI: 0.3 - 1.0
   creativity?: number; // 0.0 - 1.0
   
+  // Tokens maximum (300 par défaut, 1000 max)
+  // Le modèle est sélectionné automatiquement: ≤400 tokens = gpt-4o-mini, >400 tokens = gpt-4o
+  maxTokens?: number; // 100 - 1000
+  
   // Informations entreprise pour le contexte
   companyName: string;
   companyValues?: string[];
@@ -69,6 +73,13 @@ export interface AIPromptConfig {
     date: boolean;
     customFields: Record<string, string>;
   };
+  
+  // RGPD et Sécurité
+  security?: {
+    auditLog?: boolean; // Logs d'audit (décoché par défaut)
+    maskPersonalData?: boolean; // Masquer données personnelles (décoché par défaut)
+    dataRetentionDays?: number;
+  };
 }
 
 export const DEFAULT_AI_CONFIG: AIPromptConfig = {
@@ -77,6 +88,7 @@ export const DEFAULT_AI_CONFIG: AIPromptConfig = {
   length: 'moyen',
   language: 'fr',
   creativity: 0.5, // Valeur par défaut: équilibre entre précision et créativité
+  maxTokens: 300, // 300 tokens → utilisera automatiquement gpt-4o-mini (économique)
   companyName: 'Mon Entreprise',
   companyValues: [
     'Satisfaction client prioritaire',
@@ -194,6 +206,11 @@ Analysez le contenu et fournissez une réponse appropriée et professionnelle.`
     ticketNumber: true,
     date: true,
     customFields: {}
+  },
+  security: {
+    auditLog: false, // Décoché par défaut
+    maskPersonalData: false, // Décoché par défaut
+    dataRetentionDays: 30
   }
 };
 

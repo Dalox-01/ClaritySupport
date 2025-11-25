@@ -93,11 +93,41 @@ export async function POST(req: NextRequest) {
     }
 
     // Récupérer la configuration IA de l'utilisateur
-    const { data: aiConfig } = await supabase
+    const { data: aiConfigRow } = await supabase
       .from('ai_configurations')
       .select('*')
       .eq('user_id', userId)
       .single();
+    
+    // Récupérer le nom de l'utilisateur pour la signature
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', userId)
+      .single();
+    
+    const userName = userData?.name || 'Notre équipe';
+    
+    // 🔧 Construire l'objet AIPromptConfig à partir de la DB
+    const aiConfig = aiConfigRow ? {
+      maxTokens: aiConfigRow.max_tokens || 300, // Le modèle sera sélectionné automatiquement
+      creativity: aiConfigRow.creativity || 0.5,
+      style: aiConfigRow.style || 'professionnel',
+      tone: aiConfigRow.tone || 'professionnel',
+      length: aiConfigRow.length || 'moyen',
+      language: aiConfigRow.language || 'fr',
+      categoryTemplates: aiConfigRow.category_templates || {},
+      security: {
+        auditLog: aiConfigRow.security_audit_log || false,
+        maskPersonalData: aiConfigRow.security_mask_personal_data || false,
+        dataRetentionDays: aiConfigRow.security_data_retention_days || 30,
+      },
+      // Garder aussi la config par catégorie
+      config: aiConfigRow.config || {},
+    } : null;
+    
+    // 🎯 Récupérer la config compressée (économise ~80% tokens)
+    const compactConfig = aiConfigRow?.compact_config || null;
 
     // Déterminer si on doit traiter cet email
     const categoryConfig = aiConfig?.config?.[email.category];
@@ -181,11 +211,13 @@ export async function POST(req: NextRequest) {
       template_body: template,
       custom_prompt: categoryConfig.customPrompt,
       user_context: {
-        company_name: session.user.name || 'Notre équipe',
-        signature: '---\nCordialement,\n' + (session.user.name || 'L\'équipe'),
+        company_name: userName,
+        signature: '---\nCordialement,\n' + userName,
       },
       tone: categoryConfig.tone,
       language: 'fr',
+      aiConfig: aiConfig as any, // ✅ Passer la config IA complète (model, maxTokens, categoryTemplates, etc.)
+      compactConfig: compactConfig as any, // 🎯 Config compressée (économise ~80% tokens)
     });
 
     // Sauvegarder la réponse générée

@@ -5,6 +5,7 @@ import { EmailCategory, EmailSentiment, type EmailCache } from './mail-center-ty
 import { SupportCategory } from './support-categories';
 import { AIPromptConfig, AIPromptBuilder, DEFAULT_AI_CONFIG, SYSTEM_PROMPT_RUNTIME } from './ai-prompt-config';
 import { minifyShopifyOrder, type ShopifyOrder } from './shopify-minifier';
+import { generateCompactPrompt, type CompactAIConfig } from './ai-config-compressor';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -41,6 +42,7 @@ export type ReplyGenerationOptions = {
   };
   tone?: 'professionnel' | 'amical' | 'formel';
   aiConfig?: AIPromptConfig; // Configuration du prompt IA (créativité, style, etc.)
+  compactConfig?: CompactAIConfig; // 🎯 Version compressée (économise 80% des tokens)
   language?: 'fr' | 'en';
   knowledgeBaseContext?: string; // 📚 Contexte de la base de connaissances (RAG)
   shopifyContext?: any; // 🛒 Contexte Shopify (commande, livraison, tracking)
@@ -381,6 +383,7 @@ export async function generateReplyWithAI(
     tone = 'professionnel',
     language = 'fr',
     aiConfig, // Configuration IA de l'utilisateur
+    compactConfig, // 🎯 Version compressée (économise 80% des tokens)
     knowledgeBaseContext, // 📚 Base de connaissances
     shopifyContext, // 🛒 Contexte Shopify (commande / colis)
   } = options;
@@ -395,9 +398,40 @@ export async function generateReplyWithAI(
     // INTÉGRATION DU SYSTÈME AIPromptBuilder
     let systemPrompt: string;
     let userPrompt: string;
+    
+    // 🎯 PRIORITÉ 1: Utiliser la config compressée si disponible (économise ~80% tokens)
+    const useCompactMode = !!compactConfig && !shopifyContext && !knowledgeBaseContext;
 
-    // NOUVELLE LOGIQUE : MASTER PROMPT (Si contexte Shopify présent)
-    if (shopifyContext || knowledgeBaseContext) {
+    if (useCompactMode) {
+      console.log('🎯 Mode COMPACT activé - Économie de tokens optimale');
+      
+      const category = email.support_category || email.category || 'autre';
+      const compactPrompt = generateCompactPrompt(compactConfig, category);
+      
+      systemPrompt = `Tu es un assistant IA professionnel pour le support client.
+
+${compactPrompt}
+
+FORMATAGE:
+- Pas d'emojis ni symboles spéciaux
+- Texte simple avec ponctuation standard`;
+
+      userPrompt = `EMAIL REÇU:
+De: ${email.from_name || email.from_email}
+Objet: ${email.subject || '(sans objet)'}
+Contenu:
+${email.body_text?.substring(0, 1500) || email.snippet || ''}
+
+${template_body ? `TEMPLATE:\n${template_body}\n\n` : ''}
+
+Réponds UNIQUEMENT en JSON:
+{
+  "subject": "Re: ${email.subject || 'Votre message'}",
+  "body_text": "...",
+  "body_html": "..."
+}`;
+      
+    } else if (shopifyContext || knowledgeBaseContext) {
       console.log('🚀 Utilisation du Master Prompt V2 (Shopify/KB)');
       
       // 1. Minification de la commande
@@ -417,6 +451,20 @@ export async function generateReplyWithAI(
         .replace('{{ORDER_CONTEXT}}', orderContext)
         .replace('{{TONE}}', toneStr)
         .replace('{{CUSTOMER_EMAIL}}', email.body_text || email.snippet || '');
+      
+      // 📏 CONTRAINTE DE LONGUEUR DYNAMIQUE basée sur maxTokens
+      const maxTokens = Math.min(Math.max(aiConfig?.maxTokens || 300, 100), 1000);
+      let lengthGuideline = '';
+      if (maxTokens <= 200) {
+        lengthGuideline = 'Sois TRÈS BREF et concis (1-2 paragraphes maximum). Va droit au but.';
+      } else if (maxTokens <= 400) {
+        lengthGuideline = 'Sois concis mais complet (2-3 paragraphes). Réponds de manière structurée.';
+      } else if (maxTokens <= 600) {
+        lengthGuideline = 'Fournis une réponse détaillée (3-4 paragraphes). Explique clairement.';
+      } else {
+        lengthGuideline = 'Fournis une réponse complète et exhaustive. Tu peux être détaillé et pédagogue.';
+      }
+      systemPrompt += `\n\nCONTRAINTE DE LONGUEUR:\n${lengthGuideline}`;
 
       // Le prompt système contient déjà l'email client, donc le user prompt est simple
       userPrompt = `Génère la réponse maintenant pour le client ${senderName}.`;
@@ -424,7 +472,9 @@ export async function generateReplyWithAI(
     } else if (aiConfig) {
       // Utiliser AIPromptBuilder avec la config utilisateur (LEGACY / STANDARD)
       const builder = new AIPromptBuilder(aiConfig);
-      const category = email.category || 'support_ticket';
+      
+      // ✅ UTILISER support_category pour les prompts contextuels (commande, remboursement, etc.)
+      const category = email.support_category || email.category || 'autre';
       
       // 📚 GÉNÉRER le prompt système avec la config complète + base de connaissances
       let contextParts: string[] = [];
@@ -449,6 +499,20 @@ export async function generateReplyWithAI(
 - N'utilise AUCUN emoji ou caractère spécial (✓, ✗, •, →, etc.)
 - Utilise uniquement des lettres, chiffres, ponctuation standard (. , ! ? : ; - " ')
 - Évite les symboles Unicode et les caractères de formatage spéciaux`;
+      
+      // 📏 CONTRAINTE DE LONGUEUR DYNAMIQUE basée sur maxTokens
+      const maxTokens = Math.min(Math.max(aiConfig?.maxTokens || 300, 100), 1000);
+      let lengthGuideline = '';
+      if (maxTokens <= 200) {
+        lengthGuideline = 'Sois TRÈS BREF et concis (1-2 paragraphes maximum). Va droit au but.';
+      } else if (maxTokens <= 400) {
+        lengthGuideline = 'Sois concis mais complet (2-3 paragraphes). Réponds de manière structurée.';
+      } else if (maxTokens <= 600) {
+        lengthGuideline = 'Fournis une réponse détaillée (3-4 paragraphes). Explique clairement.';
+      } else {
+        lengthGuideline = 'Fournis une réponse complète et exhaustive. Tu peux être détaillé et pédagogue.';
+      }
+      systemPrompt += `\n\nCONTRAINTE DE LONGUEUR:\n${lengthGuideline}`;
 
       userPrompt = `EMAIL REÇU:
 De: ${email.from_name || email.from_email}
@@ -506,18 +570,26 @@ Génère une réponse appropriée. Réponds UNIQUEMENT avec un JSON valide:
     // MAPPING CRÉATIVITÉ → TEMPERATURE OPENAI
     // creativity: 0 (précis/brut) → temp: 0.3
     // creativity: 1 (créatif) → temp: 1.0
-    const creativity = aiConfig?.creativity ?? 0.7;
+    const creativity = aiConfig?.creativity ?? 0.5;
     const temperature = 0.3 + (creativity * 0.7); // Range: 0.3 - 1.0
 
+    // SÉLECTION AUTOMATIQUE DU MODÈLE LE PLUS ÉCONOMIQUE
+    const maxTokens = Math.min(Math.max(aiConfig?.maxTokens || 300, 100), 1000); // Entre 100 et 1000, défaut 300
+    
+    // Optimisation coût : gpt-4o-mini pour réponses courtes, gpt-4o pour réponses longues
+    const model = maxTokens <= 400 ? 'gpt-4o-mini' : 'gpt-4o';
+
     console.log(`🎨 AI Config - Creativity: ${creativity} → Temperature: ${temperature.toFixed(2)}`);
+    console.log(`💰 Auto-selected model: ${model} (optimized for ${maxTokens} tokens)`);
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o', // Modèle plus puissant pour la génération
+      model, // MODÈLE AUTOMATIQUE optimisé pour le coût
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
       temperature, // TEMPÉRATURE DYNAMIQUE basée sur la créativité
+      max_tokens: maxTokens, // MAX TOKENS DYNAMIQUE depuis la config
       response_format: { type: 'json_object' },
     });
 
@@ -555,14 +627,14 @@ Génère une réponse appropriée. Réponds UNIQUEMENT avec un JSON valide:
     const processingTime = Date.now() - startTime;
     const tokensUsed = response.usage?.total_tokens || 0;
 
-    console.log(`✅ Reply generated in ${processingTime}ms - Tokens: ${tokensUsed}`);
+    console.log(`✅ Reply generated in ${processingTime}ms - Tokens: ${tokensUsed} (limit: ${maxTokens})`);
 
     return {
       subject: cleanText(reply.subject),
       body_text: cleanText(reply.body_text),
       body_html: cleanText(reply.body_html),
       tokens_used: tokensUsed,
-      model_used: 'gpt-4o',
+      model_used: model, // Retourne le modèle utilisé
     };
   } catch (error) {
     console.error('❌ Error generating reply:', error);
