@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailWiz - Nouveaux Plans Tarifaires</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1E6F5C 0%, #2C8C75 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+        
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .plan {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        .plan.highlight {
+            border: 3px solid #1E6F5C;
+            transform: scale(1.05);
+        }
+        
+        .plan.highlight::before {
+            content: "LE PLUS POPULAIRE";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #1E6F5C;
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .plan.highlight .plan-content {
+            margin-top: 30px;
+        }
+        
+        .plan-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2C2F33;
+            margin-bottom: 10px;
+        }
+        
+        .plan-price {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1E6F5C;
+            margin-bottom: 5px;
+        }
+        
+        .plan-price span {
+            font-size: 18px;
+            color: #6B4F3A;
+        }
+        
+        .plan-description {
+            color: #6B6B6B;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .features li:last-child {
+            border-bottom: none;
+        }
+        
+        .features li::before {
+            content: "✓";
+            color: #1E6F5C;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .features li.disabled {
+            opacity: 0.4;
+        }
+        
+        .features li.disabled::before {
+            content: "✕";
+            color: #999;
+        }
+        
+        .cta {
+            background: #1E6F5C;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+        
+        .cta:hover {
+            background: #2C8C75;
+        }
+        
+        .cta.secondary {
+            background: transparent;
+            border: 2px solid #1E6F5C;
+            color: #1E6F5C;
+        }
+        
+        .cta.secondary:hover {
+            background: #f5f5f5;
+        }
+        
+        .info-box {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .info-box h2 {
+            color: #1E6F5C;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box ol {
+            margin-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .info-box code {
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .comparison {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        
+        .comparison h2 {
+            color: #1E6F5C;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        th {
+            background: #1E6F5C;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .check {
+            color: #1E6F5C;
+            font-weight: bold;
+        }
+        
+        .cross {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 MailWiz - Nouveaux Plans</h1>
+            <p>3 formules adaptées à toutes les boutiques en ligne</p>
+        </div>
+        
+        <div class="plans">
+            <!-- FREE -->
+            <div class="plan">
+                <div class="plan-content">
+                    <div class="plan-name">✨ Gratuit</div>
+                    <div class="plan-price">0€</div>
+                    <div class="plan-description">Pour découvrir MailWiz</div>
+                    <ul class="features">
+                        <li>10 générations par mois</li>
+                        <li>Templates par défaut uniquement</li>
+                        <li>Export PDF avec watermark</li>
+                        <li>Support communautaire</li>
+                        <li class="disabled">Pas de signatures</li>
+                        <li class="disabled">Pas de variables</li>
+                        <li class="disabled">Pas de templates perso</li>
+                        <li class="disabled">Pas de dictée vocale</li>
+                        <li class="disabled">Pas de chatbot IA</li>
+                    </ul>
+                    <button class="cta secondary">Plan de base</button>
+                </div>
+            </div>
+            
+            <!-- STARTER -->
+            <div class="plan">
+                <div class="plan-content">
+                    <div class="plan-name">⚡ Starter</div>
+                    <div class="plan-price">7.99€ <span>/mois</span></div>
+                    <div class="plan-description">Pour les professionnels</div>
+                    <ul class="features">
+                        <li>100 générations par mois</li>
+                        <li>3 signatures personnalisées</li>
+                        <li>Variables auto-remplissables</li>
+                        <li>10 templates personnalisés</li>
+                        <li>Dictée vocale activée</li>
+                        <li>Export PDF sans watermark</li>
+                        <li>Historique 30 jours</li>
+                        <li class="disabled">Pas de chatbot IA</li>
+                    </ul>
+                    <button class="cta">Passer à Starter</button>
+                </div>
+            </div>
+            
+            <!-- PRO -->
+            <div class="plan highlight">
+                <div class="plan-content">
+                    <div class="plan-name">👑 Pro</div>
+                    <div class="plan-price">18.99€ <span>/mois</span></div>
+                    <div class="plan-description">Pour les power users</div>
+                    <ul class="features">
+                        <li>1000 générations par mois</li>
+                        <li>Signatures illimitées</li>
+                        <li>Variables auto-remplissables</li>
+                        <li>Templates illimités</li>
+                        <li>Dictée vocale activée</li>
+                        <li>Chatbot IA pour améliorer emails</li>
+                        <li>Export PDF sans watermark</li>
+                        <li>Historique illimité</li>
+                        <li>Support prioritaire</li>
+                        <li>Accès anticipé nouvelles features</li>
+                    </ul>
+                    <button class="cta">Passer à Pro</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="comparison">
+            <h2>📊 Tableau comparatif</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fonctionnalité</th>
+                        <th>FREE</th>
+                        <th>STARTER</th>
+                        <th>PRO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Générations/mois</strong></td>
+                        <td>10</td>
+                        <td>100</td>
+                        <td>1000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Signatures personnalisées</strong></td>
+                        <td class="cross">✕</td>
+                        <td>3 max</td>
+                        <td class="check">Illimitées</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Variables auto-remplissables</strong></td>
+                        <td class="cross">✕</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Templates personnalisés</strong></td>
+                        <td class="cross">✕</td>
+                        <td>10 max</td>
+                        <td class="check">Illimités</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dictée vocale</strong></td>
+                        <td class="cross">✕</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Export PDF</strong></td>
+                        <td>Avec watermark</td>
+                        <td>Sans watermark</td>
+                        <td>Sans watermark</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Historique</strong></td>
+                        <td>30 jours</td>
+                        <td>30 jours</td>
+                        <td class="check">Illimité</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Support</strong></td>
+                        <td>Communautaire</td>
+                        <td>Standard</td>
+                        <td class="check">Prioritaire</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chatbot IA</strong></td>
+                        <td class="cross">✕</td>
+                        <td class="cross">✕</td>
+                        <td class="check">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="info-box" style="margin-top: 30px;">
+            <h2>🚀 Prochaines étapes</h2>
+            <ol>
+                <li>
+                    <strong>Exécuter la migration SQL</strong> dans Supabase :
+                    <code>supabase/migrations/20251031_add_starter_plan.sql</code>
+                </li>
+                <li>
+                    <strong>Créer les produits Stripe</strong> :
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>STARTER : 7.99€/mois → Récupérer le <code>price_id</code></li>
+                        <li>PRO : 18.99€/mois → Récupérer le <code>price_id</code></li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Ajouter les variables d'environnement</strong> :
+                    <code>STRIPE_PRICE_STARTER_MONTHLY</code> et mettre à jour <code>STRIPE_PRICE_PRO_MONTHLY</code>
+                </li>
+                <li>
+                    <strong>Tester les restrictions</strong> : Créer signatures/templates avec chaque plan
+                </li>
+                <li>
+                    <strong>Accéder à la page pricing</strong> : <code>/dashboard/pricing</code>
+                </li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

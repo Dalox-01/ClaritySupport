@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "installCommand": "npm install --legacy-peer-deps --maxsockets=1 --fetch-retries=5 --fetch-retry-mintimeout=20000",
+  "framework": "nextjs",
+  "regions": ["cdg1"],
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 60
+    }
+  }
+}
