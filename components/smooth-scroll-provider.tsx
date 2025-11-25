@@ -8,13 +8,15 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Custom easing
+      duration: 0.8, // Plus fluide (0.8 au lieu de 1.2)
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Easing Apple-style
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
+      wheelMultiplier: 0.8, // Scroll moins agressif
+      touchMultiplier: 1.5, // Touch optimisé
+      infinite: false,
+      autoResize: true,
     });
 
     lenisRef.current = lenis;

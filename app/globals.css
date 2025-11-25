@@ -73,20 +73,31 @@
 }
 
 @layer base {
+  /* Scroll ultra-fluide optimisé */
   html {
-    zoom: 0.9;
     font-size: 100%;
     scroll-behavior: smooth;
+    /* Optimisations critiques pour fluidité */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
+  
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     margin: 0;
     padding: 0;
     width: 100%;
     overflow-x: hidden;
+    /* Scroll ultra-fluide (iOS/Android style) */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+    /* Suppression des saccades au scroll */
+    scroll-padding-top: 0;
   }
   
   /* Conteneurs full-width */
@@ -517,6 +528,10 @@
     );
     background-size: 200% 200%;
     animation: bg-gradient-shift 15s ease infinite;
+    /* Optimisations GPU critiques pour scroll fluide */
+    will-change: auto;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
   .subtle-bg-light::before {
@@ -530,9 +545,13 @@
                 radial-gradient(circle at 70% 60%, rgba(96, 165, 250, 0.1) 0%, transparent 50%);
     animation: subtle-float 20s ease-in-out infinite;
     pointer-events: none;
+    /* Optimisations GPU pour éviter saccades */
+    will-change: auto;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
-  /* Fond animé subtil bleuté - Mode sombre */
+  /* Fond animé subtil bleuté - Mode sombre (optimisé GPU) */
   .subtle-bg-dark {
     position: relative;
     background: linear-gradient(135deg,
@@ -544,6 +563,10 @@
     );
     background-size: 200% 200%;
     animation: bg-gradient-shift 18s ease infinite;
+    /* Optimisations GPU critiques */
+    will-change: auto;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
   .subtle-bg-dark::before {
@@ -557,6 +580,10 @@
                 radial-gradient(circle at 75% 65%, rgba(37, 99, 235, 0.06) 0%, transparent 50%);
     animation: subtle-float 25s ease-in-out infinite reverse;
     pointer-events: none;
+    /* Optimisations GPU */
+    will-change: auto;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   
   /* Particules flottantes subtiles */
