@@ -24,6 +24,12 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
+.dock-panel.light {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
 .dock-item {
   position: relative;
   display: inline-flex;
@@ -40,8 +46,17 @@
   transition: background-color 0.2s;
 }
 
+.dock-item.light {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
 .dock-item:hover {
   background-color: #1a1a2e;
+}
+
+.dock-item.light:hover {
+  background-color: #f3f4f6;
 }
 
 .dock-item:focus-visible {
@@ -54,11 +69,24 @@
   border-color: #4a90e2 !important;
 }
 
+.dock-item-active.light {
+  background-color: #3b82f6 !important;
+  border-color: #2563eb !important;
+}
+
 .dock-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
+}
+
+.dock-icon.light {
+  color: #374151;
+}
+
+.dock-item-active .dock-icon.light {
+  color: #ffffff;
 }
 
 .dock-label {
@@ -75,4 +103,11 @@
   color: #fff;
   transform: translateX(-50%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dock-label.light {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

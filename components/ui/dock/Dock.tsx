@@ -37,6 +37,7 @@ export type DockProps = {
   dockHeight?: number;
   magnification?: number;
   spring?: SpringOptions;
+  isLightMode?: boolean;
 };
 
 type DockItemProps = {
@@ -48,6 +49,7 @@ type DockItemProps = {
   distance: number;
   baseItemSize: number;
   magnification: number;
+  isLightMode?: boolean;
 };
 
 function DockItem({
@@ -58,7 +60,8 @@ function DockItem({
   spring,
   distance,
   magnification,
-  baseItemSize
+  baseItemSize,
+  isLightMode = false
 }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isHovered = useMotionValue(0);
@@ -86,7 +89,7 @@ function DockItem({
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`dock-item ${className}`}
+      className={`dock-item ${isLightMode ? 'light' : ''} ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -104,9 +107,10 @@ type DockLabelProps = {
   className?: string;
   children: React.ReactNode;
   isHovered?: MotionValue<number>;
+  isLightMode?: boolean;
 };
 
-function DockLabel({ children, className = '', isHovered }: DockLabelProps) {
+function DockLabel({ children, className = '', isHovered, isLightMode = false }: DockLabelProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -125,7 +129,7 @@ function DockLabel({ children, className = '', isHovered }: DockLabelProps) {
           animate={{ opacity: 1, y: -10 }}
           exit={{ opacity: 0, y: 0 }}
           transition={{ duration: 0.2 }}
-          className={`dock-label ${className}`}
+          className={`dock-label ${isLightMode ? 'light' : ''} ${className}`}
           role="tooltip"
           style={{ x: '-50%' }}
         >
@@ -140,10 +144,11 @@ type DockIconProps = {
   className?: string;
   children: React.ReactNode;
   isHovered?: MotionValue<number>;
+  isLightMode?: boolean;
 };
 
-function DockIcon({ children, className = '' }: DockIconProps) {
-  return <div className={`dock-icon ${className}`}>{children}</div>;
+function DockIcon({ children, className = '', isLightMode = false }: DockIconProps) {
+  return <div className={`dock-icon ${isLightMode ? 'light' : ''} ${className}`}>{children}</div>;
 }
 
 export default function Dock({
@@ -154,7 +159,8 @@ export default function Dock({
   distance = 200,
   panelHeight = 68,
   dockHeight = 256,
-  baseItemSize = 50
+  baseItemSize = 50,
+  isLightMode = false
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
@@ -177,7 +183,7 @@ export default function Dock({
           isHovered.set(0);
           mouseX.set(Infinity);
         }}
-        className={`dock-panel ${className}`}
+        className={`dock-panel ${isLightMode ? 'light' : ''} ${className}`}
         style={{ height: panelHeight }}
         role="toolbar"
         aria-label="Application dock"
@@ -192,9 +198,10 @@ export default function Dock({
             distance={distance}
             magnification={magnification}
             baseItemSize={baseItemSize}
+            isLightMode={isLightMode}
           >
-            <DockIcon>{item.icon}</DockIcon>
-            <DockLabel>{item.label}</DockLabel>
+            <DockIcon isLightMode={isLightMode}>{item.icon}</DockIcon>
+            <DockLabel isLightMode={isLightMode}>{item.label}</DockLabel>
           </DockItem>
         ))}
       </motion.div>

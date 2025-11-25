@@ -3,16 +3,25 @@
 
 'use client';
 
-import { Inbox, ShoppingCart, CheckCircle, BarChart3 } from 'lucide-react';
+import { Inbox, ShoppingCart, CheckCircle, BarChart3, Home } from 'lucide-react';
 import Dock, { type DockItemData } from '@/components/ui/dock/Dock';
+import { useRouter } from 'next/navigation';
 
 type MailCenterDockProps = {
   currentView: 'inbox' | 'shops' | 'pending' | 'analytics' | 'sent' | 'rules' | 'favorites' | 'archives';
   onViewChange: (view: 'inbox' | 'shops' | 'pending' | 'analytics') => void;
+  isLightMode?: boolean;
 };
 
-export function MailCenterDock({ currentView, onViewChange }: MailCenterDockProps) {
+export function MailCenterDock({ currentView, onViewChange, isLightMode = false }: MailCenterDockProps) {
+  const router = useRouter();
   const items: DockItemData[] = [
+    {
+      icon: <Home size={20} />,
+      label: 'Accueil',
+      onClick: () => router.push('/'),
+      className: '',
+    },
     {
       icon: <Inbox size={20} />,
       label: 'Inbox',
@@ -46,6 +55,7 @@ export function MailCenterDock({ currentView, onViewChange }: MailCenterDockProp
       baseItemSize={50}
       magnification={70}
       distance={200}
+      isLightMode={isLightMode}
     />
   );
 }

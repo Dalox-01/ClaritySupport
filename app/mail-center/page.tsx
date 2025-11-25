@@ -1089,7 +1089,13 @@ export default function MailCenterPage() {
                                 ? "text-gray-700 hover:bg-gray-100"
                                 : "text-gray-300 hover:bg-blue-500/10 hover:text-blue-400"
                           )}
-                          onClick={() => setFilterCategory(filter.id)}
+                          onClick={() => {
+                            setFilterCategory(filter.id);
+                            // Si on est pas sur inbox et qu'on clique sur un filtre, basculer vers inbox
+                            if (activeTab !== 'inbox' && filter.id !== 'inbox') {
+                              setActiveTab('inbox');
+                            }
+                          }}
                         >
                           {filter.id === 'inbox' ? (
                             <Inbox className="w-4 h-4 mr-2" />
@@ -1820,6 +1826,7 @@ export default function MailCenterPage() {
       <MailCenterDock
         currentView={activeTab}
         onViewChange={(view) => setActiveTab(view as any)}
+        isLightMode={isLightMode}
       />
     </div>
   );
