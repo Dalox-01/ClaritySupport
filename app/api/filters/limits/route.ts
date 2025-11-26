@@ -35,6 +35,21 @@ interface LimitCheckResult {
   plan: string;
 }
 
+const UNLIMITED_PLANS = new Set(['ADMIN', 'ENTERPRISE', 'SCALE']);
+
+function normalizeLimitCheck(result: LimitCheckResult): LimitCheckResult {
+  const normalizedPlan = (result.plan || 'FREE').toUpperCase();
+  const isUnlimited = UNLIMITED_PLANS.has(normalizedPlan);
+  const maxAllowed = isUnlimited ? 999999 : (result.max_allowed ?? 0);
+
+  return {
+    ...result,
+    plan: normalizedPlan,
+    max_allowed: maxAllowed,
+    can_create: isUnlimited ? true : (result.can_create ?? (result.current_count < maxAllowed)),
+  };
+}
+
 /**
  * GET - Récupérer les limites et statistiques d'utilisation
  */
@@ -71,7 +86,7 @@ export async function GET(req: NextRequest) {
       // Limites hardcodées (fallback)
       let maxAllowed = 0;
       if (plan === 'PRO') maxAllowed = 5;
-      if (plan === 'ENTERPRISE' || plan === 'SCALE') maxAllowed = 999999;
+      if (plan === 'ENTERPRISE' || plan === 'SCALE' || plan === 'ADMIN') maxAllowed = 999999;
       
       const { count } = await supabase
         .from('user_filters')
@@ -82,15 +97,15 @@ export async function GET(req: NextRequest) {
         
       const currentCount = count || 0;
       
-      limitCheck = {
+      limitCheck = normalizeLimitCheck({
         can_create: currentCount < maxAllowed,
         current_count: currentCount,
         max_allowed: maxAllowed,
-        plan: plan
-      };
+        plan,
+      });
     } else {
       if (!data) throw new Error('Failed to check filter limits');
-      limitCheck = data as LimitCheckResult;
+      limitCheck = normalizeLimitCheck(data as LimitCheckResult);
     }
 
     // Récupérer statistiques d'usage

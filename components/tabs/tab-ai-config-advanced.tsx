@@ -39,7 +39,7 @@ import { getPlanLimits, PlanName } from '@/lib/plan-limits';
 export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
 
 interface TabAIConfigAdvancedProps {
-  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE';
+  userPlan?: PlanName | 'ADMIN';
   initialSection?: AIConfigSectionId;
   subscriptionStatus?: string | null;
 }
@@ -298,7 +298,7 @@ interface AlertConfig {
 }
 
 export function TabAIConfigAdvanced({
-  userPlan = 'FREE',
+  userPlan = 'STARTER',
   initialSection = 'models',
   subscriptionStatus
 }: TabAIConfigAdvancedProps) {
@@ -307,7 +307,9 @@ export function TabAIConfigAdvanced({
   const [isSaving, setIsSaving] = useState(false);
 
   // Mode lecture seule si en période d'essai
-  const isReadOnly = subscriptionStatus === 'trialing';
+  const normalizedStatus = (subscriptionStatus || '').toLowerCase();
+  const isReadOnly = normalizedStatus === 'trial' || normalizedStatus === 'trialing';
+  const isSubscriptionLocked = normalizedStatus === 'expired';
 
   useEffect(() => {
     setActiveSection(initialSection);
@@ -353,8 +355,7 @@ export function TabAIConfigAdvanced({
   };
 
   const handleTabChange = (sectionId: AIConfigSectionId) => {
-    // Mapping pour gérer 'ENTERPRISE' qui n'est pas dans PlanName
-    const normalizedPlan = (userPlan === 'ENTERPRISE' ? 'SCALE' : userPlan) as PlanName;
+    const normalizedPlan = (userPlan === 'ADMIN' ? 'SCALE' : userPlan) as PlanName;
     const limits = getPlanLimits(normalizedPlan);
     
     // Sections nécessitant le niveau 'full' (PRO ou SCALE)
@@ -506,6 +507,13 @@ export function TabAIConfigAdvanced({
     },
   });
 
+  const clampMaxTokens = (value: number) => {
+    if (!Number.isFinite(value)) {
+      return 100;
+    }
+    return Math.min(Math.max(value, 100), 1000);
+  };
+
   const [showAdvanced, setShowAdvanced] = useState<Record<string, boolean>>({});
 
   const sections: Array<{ id: AIConfigSectionId; name: string; icon: any; color: string }> = [
@@ -566,7 +574,7 @@ export function TabAIConfigAdvanced({
                     {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
                     {/* Lock icon for restricted sections */}
                     {['models', 'prompts', 'rag', 'testing', 'security'].includes(section.id) && 
-                     getPlanLimits((userPlan === 'ENTERPRISE' ? 'SCALE' : userPlan) as PlanName).aiCustomizationLevel !== 'full' && (
+                     getPlanLimits(((userPlan === 'ADMIN') ? 'SCALE' : userPlan) as PlanName).aiCustomizationLevel !== 'full' && (
                       <Lock className="w-3 h-3 ml-2 text-slate-400" />
                     )}
                   </button>
@@ -578,19 +586,28 @@ export function TabAIConfigAdvanced({
       </div>
 
       {/* Banner Mode Essai */}
-      {isReadOnly && (
+      {isReadOnly && !isSubscriptionLocked && (
         <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-400">
           <Lock className="w-4 h-4" />
-          <span>Mode lecture seule : La configuration est désactivée pendant la période d'essai.</span>
-          <Button variant="link" size="sm" className="h-auto p-0 text-amber-800 dark:text-amber-300 underline">
+          <span>Mode lecture seule : la configuration IA est gelée pendant votre période d'essai.</span>
+          <Button variant="link" size="sm" className="h-auto p-0 text-amber-800 dark:text-amber-300 underline" onClick={() => window.location.href = '/pricing'}>
             Passer au plan complet
+          </Button>
+        </div>
+      )}
+      {isSubscriptionLocked && (
+        <div className="bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center justify-center gap-2 text-sm text-red-700 dark:text-red-400">
+          <Lock className="w-4 h-4" />
+          <span>Abonnement expiré : choisissez un plan Starter, Pro ou Scale pour modifier cette configuration.</span>
+          <Button variant="link" size="sm" className="h-auto p-0 text-red-800 dark:text-red-300 underline" onClick={() => window.location.href = '/pricing'}>
+            Voir les plans
           </Button>
         </div>
       )}
 
       {/* Contenu scrollable */}
       <ScrollArea className="flex-1">
-        <div className={cn("p-6 space-y-6", isReadOnly && "opacity-80 pointer-events-none")}>
+        <div className={cn("p-6 space-y-6", (isReadOnly || isSubscriptionLocked) && "opacity-80 pointer-events-none") }>
           <AnimatePresence mode="wait">
             {activeSection === 'models' && (
               <ModelConfigSection key="models" config={config} setConfig={setConfig} />
@@ -621,14 +638,14 @@ export function TabAIConfigAdvanced({
       {/* Footer avec actions */}
       <div className="flex-none p-4 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={isReadOnly || isSaving}>
+          <Button variant="outline" size="sm" disabled={isReadOnly || isSubscriptionLocked || isSaving}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Réinitialiser
           </Button>
           <Button 
             size="sm" 
             className="ml-auto bg-gradient-to-r from-blue-600 to-blue-600" 
-            disabled={isReadOnly || isSaving}
+            disabled={isReadOnly || isSubscriptionLocked || isSaving}
             onClick={handleSave}
           >
             {isSaving ? (
@@ -755,23 +772,25 @@ function ModelConfigSection({ config, setConfig }: any) {
               </Label>
               <Input
                 type="number"
+                min={100}
+                max={1000}
                 value={config.models.primary.maxTokens}
                 onChange={(e) => setConfig({
                   ...config,
-                  models: { ...config.models, primary: { ...config.models.primary, maxTokens: parseInt(e.target.value) }}
+                  models: { ...config.models, primary: { ...config.models.primary, maxTokens: clampMaxTokens(parseInt(e.target.value)) }}
                 })}
                 className="w-24 h-8 text-xs"
               />
             </div>
             <Slider
-              value={[config.models.primary.maxTokens]}
+              value={[clampMaxTokens(config.models.primary.maxTokens)]}
               onValueChange={([value]) => setConfig({
                 ...config,
-                models: { ...config.models, primary: { ...config.models.primary, maxTokens: value }}
+                models: { ...config.models, primary: { ...config.models.primary, maxTokens: clampMaxTokens(value) }}
               })}
               min={100}
-              max={8000}
-              step={100}
+              max={1000}
+              step={50}
               className="w-full"
             />
           </div>
@@ -1356,7 +1375,7 @@ function RAGConfigSection({ config, setConfig, userPlan }: any) {
   const [isUploading, setIsUploading] = useState(false);
   
   // Limites selon le plan
-  const normalizedPlan = (userPlan === 'ENTERPRISE' ? 'SCALE' : userPlan) as PlanName;
+  const normalizedPlan = (userPlan === 'ADMIN' ? 'SCALE' : userPlan) as PlanName;
   const limits = getPlanLimits(normalizedPlan);
   const maxFiles = limits.ragFileLimit === -1 ? Infinity : limits.ragFileLimit;
   const canUploadMore = uploadedFiles.length < maxFiles;
@@ -2022,11 +2041,11 @@ function SecurityConfigSection({ config, setConfig }: any) {
 }
 
 interface FiltersSectionProps {
-  userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE';
+  userPlan: PlanName | 'ADMIN';
 }
 
 function FiltersSection({ userPlan }: FiltersSectionProps) {
-  const canManageFilters = userPlan === 'PRO' || userPlan === 'ENTERPRISE' || userPlan === 'SCALE';
+  const canManageFilters = userPlan === 'PRO' || userPlan === 'SCALE' || userPlan === 'ADMIN';
 
   if (!canManageFilters) {
     return (
@@ -2046,7 +2065,7 @@ function FiltersSection({ userPlan }: FiltersSectionProps) {
                 Gérez vos filtres avec le plan PRO
               </h3>
               <p className="text-sm text-blue-800/80 dark:text-blue-200/80">
-                Les filtres IA personnalisés (création, suppression des filtres de base, consignes dédiées) sont réservés aux plans PRO et ENTERPRISE.
+                Les filtres IA personnalisés (création, suppression des filtres de base, consignes dédiées) sont réservés aux plans PRO et SCALE.
               </p>
               <ul className="text-sm space-y-1 text-blue-900/70 dark:text-blue-100/70 list-disc list-inside">
                 <li>Ajout illimité de mots-clés par filtre</li>

@@ -61,12 +61,12 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
       .single();
 
     // Normaliser le plan (compatibilité ancien/nouveau système)
-    const userPlan = userData?.plan || 'FREE';
+    const userPlan = userData?.plan || 'STARTER';
     const normalizedPlan = normalizePlanName(userPlan);
 
     return {
       user_id: userId,
-      plan: normalizedPlan as PlanType,
+      plan: normalizedPlan,
       status: 'active',
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -78,7 +78,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
   // Normaliser le plan récupéré de la table subscriptions
   return {
     ...data,
-    plan: normalizePlanName(data.plan) as PlanType,
+    plan: normalizePlanName(data.plan),
   } as UserSubscription;
 }
 
@@ -87,21 +87,12 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
  * Nouveaux plans: STARTER, PRO, SCALE, SOLO, UNLIMITED, FREE
  * Anciens plans: starter, pro, enterprise, free
  */
-function normalizePlanName(plan: string): string {
-  const planUpper = (plan || 'FREE').toUpperCase();
-  
-  // Mapping ancien → nouveau
-  const planMapping: Record<string, string> = {
-    'STARTER': 'starter',   // Nouveau → Ancien pour subscription-limits.ts
-    'PRO': 'pro',
-    'SCALE': 'enterprise',  // SCALE équivaut à enterprise
-    'SOLO': 'starter',      // SOLO équivaut à starter (niveau similaire)
-    'UNLIMITED': 'enterprise', // UNLIMITED équivaut à enterprise
-    'FREE': 'free',
-    'ENTERPRISE': 'enterprise',
-  };
+function normalizePlanName(plan: string): PlanType {
+  const planUpper = (plan || 'STARTER').toUpperCase();
 
-  return planMapping[planUpper] || 'free';
+  if (planUpper === 'PRO') return 'pro';
+  if (['SCALE', 'ENTERPRISE', 'ADMIN', 'UNLIMITED'].includes(planUpper)) return 'scale';
+  return 'starter';
 }
 
 /**
@@ -167,7 +158,7 @@ export async function canAddEmailAccountWithSubscription(userId: string): Promis
       reason: `Vous avez atteint la limite de ${planLimits.emailAccounts} compte(s) email pour le plan ${subscription.plan}`,
       currentUsage: usage.emailAccountsCount,
       limit: planLimits.emailAccounts,
-      upgradePlans: ['pro' as PlanType, 'enterprise' as PlanType],
+      upgradePlans: ['pro', 'scale'],
     };
   }
 
@@ -193,11 +184,12 @@ export async function canProcessEmail(userId: string): Promise<LimitCheckResult>
       reason: `Vous avez atteint la limite de ${plan.features.emailsPerMonth} emails/mois pour le plan ${plan.name}`,
       currentUsage: usage.emailsThisMonth,
       limit: plan.features.emailsPerMonth,
-      upgradePlans: subscription.plan === 'free' 
-        ? ['starter', 'pro', 'enterprise']
-        : subscription.plan === 'starter'
-        ? ['pro', 'enterprise']
-        : ['enterprise'],
+      upgradePlans:
+        subscription.plan === 'starter'
+          ? ['pro', 'scale']
+          : subscription.plan === 'pro'
+            ? ['scale']
+            : [],
     };
   }
 
@@ -229,7 +221,7 @@ export async function canSendAutoReplyWithSubscription(userId: string): Promise<
       reason: `Vous avez atteint la limite de ${planLimits.autoRepliesPerMonth} réponses automatiques/mois pour le plan ${subscription.plan}`,
       currentUsage: usage.autoRepliesThisMonth,
       limit: planLimits.autoRepliesPerMonth,
-      upgradePlans: ['pro' as PlanType, 'enterprise' as PlanType],
+      upgradePlans: ['pro', 'scale'],
     };
   }
 
@@ -241,7 +233,7 @@ export async function canSendAutoReplyWithSubscription(userId: string): Promise<
  */
 export async function canAccessFeature(
   userId: string,
-  feature: keyof typeof PRICING_PLANS.free.features
+  feature: keyof typeof PRICING_PLANS.starter.features
 ): Promise<LimitCheckResult> {
   const subscription = await getUserSubscription(userId);
   if (!subscription) {

@@ -3,7 +3,7 @@
  * Plans optimisés pour rendre le plan Pro (139€) le plus attractif
  */
 
-export type PlanType = 'free' | 'starter' | 'pro' | 'enterprise';
+export type PlanType = 'starter' | 'pro' | 'scale';
 
 export interface PlanFeatures {
   // Comptes email
@@ -69,63 +69,6 @@ export interface PricingPlan {
 }
 
 export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
-  free: {
-    id: 'free',
-    name: 'Essai Gratuit',
-    tagline: 'Testez ClaritySupport',
-    price: {
-      monthly: 0,
-      yearly: 0,
-      currency: '€',
-    },
-    prices: {
-      monthly: 0,
-      yearly: 0,
-    },
-    limits: {
-      emailsPerMonth: 10,
-      autoRepliesPerMonth: 10,
-      emailAccounts: 1,
-      templates: 3,
-    },
-    description: 'Découvrez la puissance de l\'IA pour votre support client',
-    featureList: [
-      '1 compte email',
-      '10 réponses IA/mois',
-      'IA de base',
-      'Support communautaire',
-    ],
-    features: {
-      maxEmailAccounts: 1,
-      emailsPerMonth: 10,
-      autoRepliesPerMonth: 10,
-      aiEnabled: true,
-      customAIConfig: false,
-      knowledgeBase: false,
-      advancedAnalytics: false,
-      supportLevel: 'community',
-      responseTime: '48-72h',
-      multiLanguage: false,
-      customBranding: false,
-      apiAccess: false,
-      teamMembers: 1,
-      customTemplates: 3,
-      automationRules: 1,
-      dataRetention: '7',
-      exportData: false,
-    },
-    highlighted: false,
-    popular: false,
-    cta: 'Essayer gratuitement',
-    limitations: [
-      '1 seul compte email',
-      '10 réponses automatiques/semaine max',
-      'Pas de base de connaissances',
-      'Support communautaire uniquement',
-      'Analytics basiques',
-    ],
-  },
-  
   starter: {
     id: 'starter',
     name: 'Starter',
@@ -240,8 +183,8 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
     cta: 'Choisir Pro - Recommandé',
   },
   
-  enterprise: {
-    id: 'enterprise',
+  scale: {
+    id: 'scale',
     name: 'Scale',
     tagline: 'Pour les entreprises e-commerce établies',
     price: {
@@ -293,7 +236,7 @@ export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
     },
     highlighted: false,
     popular: false,
-    cta: 'Passer à Enterprise',
+    cta: 'Passer à Scale',
   },
 };
 
@@ -308,7 +251,7 @@ export function getPlanByType(type: PlanType): PricingPlan {
  * Obtenir les plans supérieurs disponibles pour un upgrade
  */
 export function getUpgradePlans(currentPlan: PlanType): PricingPlan[] {
-  const planOrder: PlanType[] = ['free', 'starter', 'pro', 'enterprise'];
+  const planOrder: PlanType[] = ['starter', 'pro', 'scale'];
   const currentIndex = planOrder.indexOf(currentPlan);
   
   return planOrder
@@ -320,7 +263,7 @@ export function getUpgradePlans(currentPlan: PlanType): PricingPlan[] {
  * Comparer deux plans
  */
 export function comparePlans(planA: PlanType, planB: PlanType): number {
-  const planOrder: PlanType[] = ['free', 'starter', 'pro', 'enterprise'];
+  const planOrder: PlanType[] = ['starter', 'pro', 'scale'];
   return planOrder.indexOf(planA) - planOrder.indexOf(planB);
 }
 

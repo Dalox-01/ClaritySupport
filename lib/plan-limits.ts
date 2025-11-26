@@ -1,10 +1,24 @@
 /**
  * Limites et fonctionnalités par plan
- * 4 PLANS DISTINCTS : 3 E-commerce + 1 Gratuit
+ * Plans actifs : STARTER, PRO, SCALE
  */
 
-export type PlanName = 
-  | 'STARTER' | 'PRO' | 'SCALE' | 'FREE';
+export type PlanName = 'STARTER' | 'PRO' | 'SCALE';
+
+const DEFAULT_PLAN: PlanName = 'STARTER';
+const VALID_PLAN_NAMES: PlanName[] = ['STARTER', 'PRO', 'SCALE'];
+
+export function normalizePlanName(planName: string | null | undefined): PlanName {
+  let normalized = (planName?.toUpperCase() || DEFAULT_PLAN) as string;
+
+  if (normalized === 'ENTERPRISE' || normalized === 'ADMIN' || normalized === 'UNLIMITED') {
+    normalized = 'SCALE';
+  } else if (normalized === 'SOLO' || normalized === 'FREE' || normalized === 'TRIAL') {
+    normalized = 'STARTER';
+  }
+
+  return (VALID_PLAN_NAMES as string[]).includes(normalized) ? (normalized as PlanName) : DEFAULT_PLAN;
+}
 
 export interface PlanLimits {
   // Limites emails
@@ -80,36 +94,14 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     aiCustomizationLevel: 'full',
     ragFileLimit: -1,
   },
-  
-  FREE: {
-    emailAccounts: 1,
-    autoRepliesPerMonth: 100,
-    aiTemplates: false,
-    prioritySupport: false,
-    analytics: false,
-    multiShops: 0,
-    whiteLabel: false,
-    customApi: false,
-    signatureDynamique: false,
-    upsellAuto: false,
-    orderTracking: false,
-    aiCustomizationLevel: 'none',
-    ragFileLimit: 0,
-  },
 };
 
 /**
  * Récupérer les limites d'un plan
  */
 export function getPlanLimits(planName: string | null | undefined): PlanLimits {
-  let normalized = (planName?.toUpperCase() || 'FREE');
-  
-  // Alias pour compatibilité
-  if (normalized === 'ENTERPRISE') normalized = 'SCALE';
-  if (normalized === 'UNLIMITED') normalized = 'SCALE';
-  if (normalized === 'SOLO') normalized = 'STARTER';
-
-  return PLAN_LIMITS[normalized as PlanName] || PLAN_LIMITS.FREE;
+  const normalized = normalizePlanName(planName);
+  return PLAN_LIMITS[normalized];
 }
 
 /**

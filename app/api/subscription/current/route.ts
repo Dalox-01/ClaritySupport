@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/db';
+import { normalizePlanName, type PlanName } from '@/lib/plan-limits';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -11,6 +12,80 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export const dynamic = 'force-dynamic';
+
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const TRIAL_DURATION_DAYS = 7;
+
+function calculateTrialWindow(createdAt?: string | null) {
+  const start = createdAt ? new Date(createdAt) : new Date();
+  const trialEnd = new Date(start.getTime() + TRIAL_DURATION_DAYS * DAY_IN_MS);
+  const now = Date.now();
+  const isActive = now < trialEnd.getTime();
+  const daysLeft = isActive ? Math.max(0, Math.ceil((trialEnd.getTime() - now) / DAY_IN_MS)) : 0;
+
+  return {
+    start,
+    end: trialEnd,
+    isActive,
+    daysLeft,
+  };
+}
+
+function buildManualSubscriptionPayload(params: {
+  userId: string;
+  plan: PlanName;
+  status?: 'active' | 'cancelled' | 'expired' | 'trial';
+  stripeCustomerId?: string | null;
+  createdAt?: string | null;
+}) {
+  const baseStart = params.createdAt ? new Date(params.createdAt) : new Date();
+  const periodEnd = new Date(baseStart.getTime() + 30 * DAY_IN_MS);
+
+  return {
+    id: 'user-plan',
+    user_id: params.userId,
+    plan: params.plan,
+    status: params.status || 'active',
+    stripe_customer_id: params.stripeCustomerId || null,
+    stripe_subscription_id: null,
+    stripe_price_id: null,
+    current_period_start: baseStart.toISOString(),
+    current_period_end: periodEnd.toISOString(),
+    billing_period: 'monthly',
+    cancel_at_period_end: false,
+    trial_end: params.status === 'trial' ? periodEnd.toISOString() : null,
+    trial_days_left: params.status === 'trial' ? Math.max(0, Math.ceil((periodEnd.getTime() - Date.now()) / DAY_IN_MS)) : null,
+    is_trial: params.status === 'trial',
+    canceled_at: null,
+  };
+}
+
+function buildTrialSubscriptionPayload(params: {
+  userId: string;
+  plan: PlanName;
+  stripeCustomerId?: string | null;
+  createdAt?: string | null;
+}) {
+  const { start, end, isActive, daysLeft } = calculateTrialWindow(params.createdAt);
+
+  return {
+    id: 'user-plan',
+    user_id: params.userId,
+    plan: params.plan,
+    status: isActive ? 'trial' : 'expired',
+    stripe_customer_id: params.stripeCustomerId || null,
+    stripe_subscription_id: null,
+    stripe_price_id: null,
+    current_period_start: start.toISOString(),
+    current_period_end: end.toISOString(),
+    billing_period: 'monthly',
+    cancel_at_period_end: false,
+    trial_end: end.toISOString(),
+    trial_days_left: daysLeft,
+    is_trial: isActive,
+    canceled_at: null,
+  };
+}
 
 /**
  * GET /api/subscription/current
@@ -27,27 +102,32 @@ export async function GET(req: NextRequest) {
     // Récupérer le stripe_customer_id de l'utilisateur
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('stripe_customer_id, plan')
+      .select('stripe_customer_id, plan, created_at')
       .eq('id', session.user.id)
       .single();
 
+    const normalizedPlan = normalizePlanName(userData?.plan || 'STARTER');
+    const rawPlan = (userData?.plan || '').toUpperCase();
+    const isFreePlan = !rawPlan || rawPlan === 'FREE';
+
     if (userError || !userData?.stripe_customer_id) {
       console.error('Erreur récupération utilisateur ou pas de stripe_customer_id:', userError);
-      return NextResponse.json({ 
-        subscription: {
-          id: 'user-plan',
-          user_id: session.user.id,
-          plan: userData?.plan || 'FREE',
-          status: 'active',
-          stripe_customer_id: null,
-          stripe_subscription_id: null,
-          stripe_price_id: null,
-          current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          billing_period: 'monthly',
-          cancel_at_period_end: false,
-        }
-      });
+      const payload = isFreePlan
+        ? buildTrialSubscriptionPayload({
+            userId: session.user.id,
+            plan: normalizedPlan,
+            stripeCustomerId: userData?.stripe_customer_id,
+            createdAt: userData?.created_at || null,
+          })
+        : buildManualSubscriptionPayload({
+            userId: session.user.id,
+            plan: normalizedPlan,
+            stripeCustomerId: userData?.stripe_customer_id,
+            status: 'active',
+            createdAt: userData?.created_at || null,
+          });
+
+      return NextResponse.json({ subscription: payload });
     }
 
     // Récupérer TOUS les abonnements Stripe du customer
@@ -69,21 +149,22 @@ export async function GET(req: NextRequest) {
       );
 
       if (stripeSubscriptions.data.length === 0) {
-        return NextResponse.json({ 
-          subscription: {
-            id: 'user-plan',
-            user_id: session.user.id,
-            plan: userData.plan || 'FREE',
-            status: 'active',
-            stripe_customer_id: userData.stripe_customer_id,
-            stripe_subscription_id: null,
-            stripe_price_id: null,
-            current_period_start: new Date().toISOString(),
-            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            billing_period: 'monthly',
-            cancel_at_period_end: false,
-          }
-        });
+        const payload = isFreePlan
+          ? buildTrialSubscriptionPayload({
+              userId: session.user.id,
+              plan: normalizedPlan,
+              stripeCustomerId: userData.stripe_customer_id,
+              createdAt: userData.created_at || null,
+            })
+          : buildManualSubscriptionPayload({
+              userId: session.user.id,
+              plan: normalizedPlan,
+              stripeCustomerId: userData.stripe_customer_id,
+              status: 'active',
+              createdAt: userData.created_at || null,
+            });
+
+        return NextResponse.json({ subscription: payload });
       }
 
       // Prioriser les abonnements dans cet ordre:
@@ -119,26 +200,33 @@ export async function GET(req: NextRequest) {
       const { getPlanTypeFromPriceId } = await import('@/lib/stripe');
       const priceId = stripeSub.items.data[0]?.price.id;
       
-      let plan = userData.plan || 'FREE';
+      let plan = normalizedPlan;
       if (priceId) {
         const planInfo = getPlanTypeFromPriceId(priceId);
         if (planInfo) {
-          plan = typeof planInfo.planType === 'string' ? planInfo.planType : 'FREE';
+          plan = normalizePlanName(planInfo.planType as string);
         }
       }
 
       // Récupérer l'ID de la DB si existe
       const { data: dbSub } = await supabase
         .from('subscriptions')
-        .select('id')
+        .select('id, trial_end')
         .eq('stripe_subscription_id', stripeSub.id)
         .single();
+
+      const stripeTrialEnd = (stripeSub as any).trial_end
+        ? new Date((stripeSub as any).trial_end * 1000).toISOString()
+        : dbSub?.trial_end || null;
+      const trialDaysLeft = stripeTrialEnd
+        ? Math.max(0, Math.ceil((new Date(stripeTrialEnd).getTime() - Date.now()) / DAY_IN_MS))
+        : null;
 
       return NextResponse.json({ 
         subscription: {
           id: dbSub?.id || stripeSub.id,
           user_id: session.user.id,
-          plan: plan || 'FREE',
+          plan: plan || normalizedPlan,
           status: stripeSub.status,
           stripe_customer_id: userData.stripe_customer_id,
           stripe_subscription_id: stripeSub.id,
@@ -148,6 +236,9 @@ export async function GET(req: NextRequest) {
           billing_period: stripeSub.items.data[0]?.price.recurring?.interval || 'month',
           cancel_at_period_end: stripeSub.cancel_at_period_end || false,
           canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
+          trial_end: stripeTrialEnd,
+          trial_days_left: trialDaysLeft,
+          is_trial: stripeSub.status === 'trialing' || stripeSub.status === 'trial',
         }
       });
     } catch (stripeError) {

@@ -15,7 +15,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { getPlanLimits, PlanName } from './plan-limits';
+import { getPlanLimits, PlanName, normalizePlanName } from './plan-limits';
 import { PRICING_SEGMENTS, SegmentType } from './constants/pricing';
 
 const supabase = createClient(
@@ -69,7 +69,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
 
   if (subscription) {
     const segment: SegmentType = 'shopify';
-    const unifiedPlanName = (subscription.plan || 'FREE').toUpperCase() as PlanName;
+    const unifiedPlanName = normalizePlanName(subscription.plan);
     
     return {
       userId,
@@ -92,7 +92,7 @@ export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
     .eq('id', userId)
     .single();
 
-  const planName = (user?.plan || 'FREE').toUpperCase() as PlanName;
+  const planName = normalizePlanName(user?.plan);
 
   return {
     userId,
@@ -361,7 +361,6 @@ export function getHumanReadablePlanName(planName: PlanName): string {
     STARTER: 'STARTER E-commerce',
     PRO: 'PRO E-commerce',
     SCALE: 'SCALE E-commerce',
-    FREE: 'Gratuit',
   };
   
   return mapping[planName] || planName;
@@ -468,7 +467,7 @@ export async function getUsageSummary(userId: string): Promise<UsageSummary> {
  */
 export async function isPremiumUser(userId: string): Promise<boolean> {
   const planInfo = await getUserPlanInfo(userId);
-  return !['FREE', 'SOLO'].includes(planInfo.plan);
+  return planInfo.plan !== 'STARTER';
 }
 
 /**
@@ -476,5 +475,5 @@ export async function isPremiumUser(userId: string): Promise<boolean> {
  */
 export async function hasActiveSubscription(userId: string): Promise<boolean> {
   const planInfo = await getUserPlanInfo(userId);
-  return planInfo.isActive && planInfo.plan !== 'FREE';
+  return planInfo.isActive;
 }

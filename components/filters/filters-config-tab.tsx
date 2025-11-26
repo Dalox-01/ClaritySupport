@@ -5,6 +5,7 @@ import { Plus, X, Trash2, Edit2, Check } from 'lucide-react';
 import { UserFilter, FilterLimits, FilterPlan } from '@/types/filters';
 import { toast } from 'sonner';
 import { SUPPORT_CATEGORIES } from '@/lib/support-categories';
+import { type PlanName } from '@/lib/plan-limits';
 
 const slugifyFilterKey = (value: string) =>
   value
@@ -45,7 +46,7 @@ const DEFAULT_PROMPTS: Record<string, string> = {
 };
 
 interface FiltersConfigTabProps {
-  userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE';
+  userPlan: PlanName | 'ADMIN';
   isLightMode?: boolean;
 }
 
@@ -62,8 +63,10 @@ export function FiltersConfigTab({ userPlan, isLightMode = false }: FiltersConfi
   const [allFilters, setAllFilters] = useState<Array<UserFilter & { isVirtual?: boolean }>>([]);
 
   const effectivePlan: FilterPlan = (limits?.plan as FilterPlan) || userPlan;
-  const customFiltersLimit = limits?.max ?? (effectivePlan === 'PRO' ? 5 : effectivePlan === 'ENTERPRISE' ? 999999 : 0);
-  const hasUnlimitedCustomFilters = customFiltersLimit >= 999999;
+  const unlimitedPlans = new Set<FilterPlan>(['ENTERPRISE', 'SCALE', 'ADMIN']);
+  const fallbackLimit = effectivePlan === 'PRO' ? 5 : unlimitedPlans.has(effectivePlan) ? 999999 : 0;
+  const customFiltersLimit = limits?.max ?? fallbackLimit;
+  const hasUnlimitedCustomFilters = unlimitedPlans.has(effectivePlan) || customFiltersLimit >= 999999;
 
   useEffect(() => {
     fetchFilters();

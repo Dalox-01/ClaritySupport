@@ -1,6 +1,6 @@
 // Types pour le système de filtres personnalisés
 
-export type FilterPlan = 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+export type FilterPlan = 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE' | 'ADMIN';
 
 export interface DetectionRules {
   matchMode: 'any' | 'all';

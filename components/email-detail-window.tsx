@@ -35,6 +35,8 @@ interface EmailDetailWindowProps {
   isFavorite?: boolean;
   zIndex?: number;
   onFocus?: () => void;
+  isReadOnly?: boolean;
+  onRestrictedAction?: () => void;
 }
 
 export function EmailDetailWindow({
@@ -48,8 +50,18 @@ export function EmailDetailWindow({
   isFavorite = false,
   zIndex = 50,
   onFocus,
+  isReadOnly = false,
+  onRestrictedAction,
 }: EmailDetailWindowProps) {
   if (!email) return null;
+
+  const handleAction = (callback?: () => void) => {
+    if (isReadOnly) {
+      onRestrictedAction?.();
+      return;
+    }
+    callback?.();
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -153,7 +165,8 @@ export function EmailDetailWindow({
           <div className="flex items-center gap-2 pt-2">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                onClick={() => onGenerateReply(email)}
+                onClick={() => handleAction(() => onGenerateReply(email))}
+                disabled={isReadOnly}
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/20"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
@@ -167,6 +180,7 @@ export function EmailDetailWindow({
               <Button 
                 variant="outline" 
                 size="sm"
+                disabled={isReadOnly}
                 className="border-blue-500/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-500/50 dark:text-blue-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
               >
                 <Reply className="w-4 h-4 mr-2" />
@@ -178,6 +192,7 @@ export function EmailDetailWindow({
               <Button 
                 variant="outline" 
                 size="sm"
+                disabled={isReadOnly}
                 className="border-blue-500/30 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-500/50 dark:text-blue-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
               >
                 <Forward className="w-4 h-4 mr-2" />
@@ -191,7 +206,8 @@ export function EmailDetailWindow({
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => onToggleFavorite && onToggleFavorite(email.id)}
+                onClick={() => handleAction(() => onToggleFavorite && onToggleFavorite(email.id))}
+                disabled={isReadOnly}
                 className={cn(
                   "transition-colors",
                   isFavorite 
@@ -207,7 +223,8 @@ export function EmailDetailWindow({
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => onArchive && onArchive(email.id)}
+                onClick={() => handleAction(() => onArchive && onArchive(email.id))}
+                disabled={isReadOnly}
                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-500/10"
               >
                 <Archive className="w-4 h-4" />
@@ -218,7 +235,8 @@ export function EmailDetailWindow({
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => onDelete && onDelete(email.id)}
+                onClick={() => handleAction(() => onDelete && onDelete(email.id))}
+                disabled={isReadOnly}
                 className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-500/10"
               >
                 <Trash2 className="w-4 h-4" />

@@ -19,7 +19,7 @@ export type User = {
   role: 'USER' | 'ADMIN';
   provider: string;
   stripe_customer_id: string | null;
-  plan: 'FREE' | 'STARTER' | 'PRO' | 'ADMIN';
+  plan: 'FREE' | 'STARTER' | 'PRO' | 'SCALE' | 'ADMIN';
   usage_month: number;
   usage_count: number;
   tokens_used: number;
@@ -132,10 +132,15 @@ export async function getUserQuota(userId: string): Promise<{
   console.log(`📊 [DB] User found - Plan: ${user.plan}, Usage: ${user.usage_count}`);
 
   // Convertir le plan DB (uppercase) en PlanType (lowercase)
-  const planType = user.plan.toLowerCase() as PlanType;
+  const planType: PlanType = (() => {
+    const value = (user.plan || 'STARTER').toUpperCase();
+    if (value === 'PRO') return 'pro';
+    if (['SCALE', 'ENTERPRISE', 'ADMIN'].includes(value)) return 'scale';
+    return 'starter';
+  })();
   
   // Récupérer les limites depuis pricing-plans.ts
-  const planConfig = PRICING_PLANS[planType] || PRICING_PLANS.free;
+  const planConfig = PRICING_PLANS[planType] || PRICING_PLANS.starter;
   const limit = planConfig.limits.emailsPerMonth;
   
   const used = user.usage_count || 0;

@@ -155,7 +155,7 @@ declare module 'next-auth' {
       name?: string | null;
       image?: string | null;
       role: 'USER' | 'ADMIN';
-      plan: 'FREE' | 'STARTER' | 'PRO' | 'ADMIN';
+      plan: 'FREE' | 'STARTER' | 'PRO' | 'SCALE' | 'ADMIN';
       stripeCustomerId?: string | null;
     };
   }

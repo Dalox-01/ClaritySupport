@@ -5,13 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TabAIConfigAdvanced, AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
+import type { PlanName } from '@/lib/plan-limits';
 
 interface SupportConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: 'ai-config' | 'filters';
   initialSection?: AIConfigSectionId;
-  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE';
+  userPlan?: PlanName | 'ADMIN';
   zIndex?: number;
   onFocus?: () => void;
 }

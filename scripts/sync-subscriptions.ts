@@ -57,8 +57,8 @@ async function syncSubscriptions() {
           plan = 'STARTER';
         } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO) {
           plan = 'PRO';
-        } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE) {
-          plan = 'ENTERPRISE';
+        } else if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_SCALE) {
+          plan = 'SCALE';
         }
 
         const subscriptionData = {

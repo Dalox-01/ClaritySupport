@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { normalizePlanName } from './plan-limits';
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY!;
 const SHOPIFY_API_SECRET = process.env.SHOPIFY_API_SECRET!;
@@ -59,9 +60,9 @@ export async function checkShopifyAccess(userId: string): Promise<ShopifyLimits>
   const isSuperAdmin = userData?.email === 'clarityteamfr@gmail.com';
 
   // Default to FREE if no subscription found
-  let plan = sub?.plan || 'FREE';
+  let plan = normalizePlanName(sub?.plan);
   if (isSuperAdmin) {
-    plan = 'ENTERPRISE';
+    plan = 'SCALE';
   }
   const segment = sub?.segment || 'freelance';
 
@@ -93,7 +94,7 @@ export async function checkShopifyAccess(userId: string): Promise<ShopifyLimits>
   } else if (plan === 'PRO') {
     maxShops = 3;
     hasAccess = true;
-  } else if (plan === 'SCALE' || plan === 'ENTERPRISE') {
+  } else if (plan === 'SCALE') {
     maxShops = -1; // Unlimited
     hasAccess = true;
   }

@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,7 @@ import {
   HelpCircle, Package, DollarSign, Truck, Wrench, Info, Receipt,
   Laptop, AlertTriangle, Database, BookOpen, Edit, Save, Store,
   LayoutGrid, List, SlidersHorizontal, ShoppingBag, ChevronDown,
-  MoreVertical, Search as SearchIcon, PanelLeftClose, PanelLeft
+  MoreVertical, Search as SearchIcon, PanelLeftClose, PanelLeft, Lock
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,11 @@ import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
 import { TabAIConfigAdvanced, type AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
 import { ShopifyDashboard } from '@/components/mail-center/ShopifyDashboard';
 import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
+import { UpgradeModal } from '@/components/upgrade-modal';
+import { normalizePlanName, type PlanName } from '@/lib/plan-limits';
+import type { PlanType } from '@/lib/pricing-plans';
+
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 export default function MailCenterPage() {
   const router = useRouter();
@@ -95,8 +100,58 @@ export default function MailCenterPage() {
   const [supportConfigInitialSection, setSupportConfigInitialSection] = useState<AIConfigSectionId>('models');
   
   // User plan & Subscription
-  const [userPlan, setUserPlan] = useState<'FREE' | 'STARTER' | 'PRO' | 'SCALE' | 'ENTERPRISE'>('FREE');
+  const [userPlan, setUserPlan] = useState<PlanName>('STARTER');
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>('active');
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const normalizedSubscriptionStatus = (subscriptionStatus || 'active').toLowerCase();
+  const isTrialReadOnly = normalizedSubscriptionStatus === 'trial' || normalizedSubscriptionStatus === 'trialing';
+  const isTrialExpired = normalizedSubscriptionStatus === 'expired';
+  const isActionRestricted = isTrialReadOnly || isTrialExpired;
+  const isMailCenterLocked = isTrialExpired;
+  const planTypeForModal: PlanType = userPlan === 'PRO' ? 'pro' : userPlan === 'SCALE' ? 'scale' : 'starter';
+  const trialCountdownLabel = React.useMemo(() => {
+    if (typeof trialDaysLeft === 'number') {
+      if (trialDaysLeft <= 0 && trialEndsAt) {
+        const diffMs = new Date(trialEndsAt).getTime() - Date.now();
+        if (diffMs > 0) {
+          const hoursLeft = Math.max(0, Math.ceil(diffMs / (60 * 60 * 1000)));
+          if (hoursLeft > 0) {
+            return `${hoursLeft}h restante${hoursLeft > 1 ? 's' : ''}`;
+          }
+        }
+        return 'Moins d\'1h restante';
+      }
+      return `${trialDaysLeft} jour${trialDaysLeft > 1 ? 's' : ''} restant${trialDaysLeft > 1 ? 's' : ''}`;
+    }
+    if (trialEndsAt) {
+      const diffMs = new Date(trialEndsAt).getTime() - Date.now();
+      if (diffMs > 0) {
+        const days = Math.max(0, Math.ceil(diffMs / DAY_IN_MS));
+        return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`;
+      }
+    }
+    return null;
+  }, [trialDaysLeft, trialEndsAt]);
+
+  const handleTrialRestriction = () => {
+    const message = isTrialExpired
+      ? 'Votre période d\'essai de 7 jours est terminée. Passez à Starter pour continuer à utiliser le Mail Center.'
+      : trialCountdownLabel
+        ? `Mode lecture seule pendant l'essai (${trialCountdownLabel}). Passez à Starter pour activer toutes les actions.`
+        : 'Mode lecture seule pendant la période d\'essai. Passez à Starter pour activer toutes les actions.';
+    toast.error(message);
+    setShowUpgradeModal(true);
+  };
+
+  const canModify = () => {
+    if (isActionRestricted) {
+      handleTrialRestriction();
+      return false;
+    }
+    return true;
+  };
   
   // State pour le thème
   const [isLightMode, setIsLightMode] = useState(true);
@@ -124,9 +179,16 @@ export default function MailCenterPage() {
   };
 
   const openReplyGenerator = (email: EmailCache) => {
+    if (!canModify()) return;
     setEmailForReply(email);
     setReplyGeneratorOpen(true);
     bringToFront('replyGenerator');
+  };
+
+  const openSupportConfigModal = () => {
+    if (!canModify()) return;
+    setIsSupportConfigOpen(true);
+    bringToFront('supportConfig');
   };
 
   useEffect(() => {
@@ -180,7 +242,23 @@ export default function MailCenterPage() {
     }
   }, [status, isAIActive]);
 
-  const triggerAutoReply = async () => {
+  useEffect(() => {
+    if (!isActionRestricted) return;
+    if (replyDialogOpen) {
+      setReplyDialogOpen(false);
+      setEmailToReply(null);
+    }
+    if (replyGeneratorOpen) {
+      setReplyGeneratorOpen(false);
+      setEmailForReply(null);
+    }
+    if (isSupportConfigOpen) {
+      setIsSupportConfigOpen(false);
+    }
+  }, [isActionRestricted, replyDialogOpen, replyGeneratorOpen, isSupportConfigOpen]);
+
+  const triggerAutoReply = async (force = false) => {
+    if (!force && !canModify()) return;
     try {
       const response = await fetch('/api/mail-center/auto-reply', {
         method: 'POST',
@@ -200,6 +278,7 @@ export default function MailCenterPage() {
   };
 
   const toggleAI = async (enabled: boolean) => {
+    if (!canModify()) return;
     setIsAIActive(enabled);
     setIsAILoading(true);
     try {
@@ -227,15 +306,28 @@ export default function MailCenterPage() {
   const loadInitialData = async (triggerSync = false) => {
     setIsLoading(true);
     try {
+      let nextStatus = subscriptionStatus;
       // Charger l'abonnement
       const subRes = await fetch('/api/subscription/current');
       if (subRes.ok) {
         const subData = await subRes.json();
         if (subData.subscription) {
-          setUserPlan(subData.subscription.plan as any);
-          setSubscriptionStatus(subData.subscription.status);
+          const normalizedPlan = normalizePlanName(subData.subscription.plan);
+          const status = (subData.subscription.status || 'active').toLowerCase();
+          nextStatus = status;
+          setUserPlan(normalizedPlan);
+          setSubscriptionStatus(status);
+          setTrialEndsAt(subData.subscription.trial_end || null);
+          setTrialDaysLeft(
+            typeof subData.subscription.trial_days_left === 'number'
+              ? subData.subscription.trial_days_left
+              : null
+          );
         }
       }
+
+      const nextIsReadOnly = nextStatus === 'trial' || nextStatus === 'trialing';
+      const nextIsExpired = nextStatus === 'expired';
 
       const accountsRes = await fetch('/api/mail-center/accounts');
       if (accountsRes.ok) {
@@ -246,8 +338,14 @@ export default function MailCenterPage() {
       const aiSettingsRes = await fetch('/api/mail-center/ai-settings');
       if (aiSettingsRes.ok) {
         const aiSettings = await aiSettingsRes.json();
-        setIsAIActive(aiSettings.enabled || false);
-        if (aiSettings.enabled) triggerAutoReply();
+        if (nextIsReadOnly || nextIsExpired) {
+          setIsAIActive(false);
+        } else if (aiSettings.enabled) {
+          setIsAIActive(true);
+            triggerAutoReply(true);
+        } else {
+          setIsAIActive(false);
+        }
       }
 
       if (triggerSync) {
@@ -275,11 +373,16 @@ export default function MailCenterPage() {
   };
 
   const handleDeleteAccount = async (accountId: string, accountEmail: string) => {
+    if (!canModify()) return;
     setAccountToDelete({ id: accountId, email: accountEmail });
   };
 
   const confirmDeleteAccount = async () => {
     if (!accountToDelete) return;
+    if (!canModify()) {
+      setAccountToDelete(null);
+      return;
+    }
     setIsDeletingAccount(true);
     try {
       const response = await fetch(`/api/mail-center/accounts/${accountToDelete.id}`, { method: 'DELETE' });
@@ -320,14 +423,17 @@ export default function MailCenterPage() {
   };
 
   const toggleFavorite = (emailId: string) => {
+    if (!canModify()) return;
     setFavoriteEmails(prev => prev.includes(emailId) ? prev.filter(id => id !== emailId) : [...prev, emailId]);
   };
 
   const archiveEmail = (emailId: string) => {
+    if (!canModify()) return;
     if (!archivedEmails.includes(emailId)) setArchivedEmails(prev => [...prev, emailId]);
   };
 
   const deleteEmail = async (emailId: string) => {
+    if (!canModify()) return;
     try {
       setEmails(prev => prev.filter(email => email.id !== emailId));
       setFavoriteEmails(prev => prev.filter(id => id !== emailId));
@@ -340,6 +446,7 @@ export default function MailCenterPage() {
   };
 
   const connectAccount = async (provider: 'gmail' | 'outlook') => {
+    if (!canModify()) return;
     try {
       const res = await fetch(`/api/mail-center/${provider}/auth`);
       const data = await res.json();
@@ -410,7 +517,7 @@ export default function MailCenterPage() {
 
   return (
     <div className={cn(
-      "flex h-screen w-full overflow-hidden transition-colors duration-300 font-sans",
+      "relative flex h-screen w-full overflow-hidden transition-colors duration-300 font-sans",
       isLightMode ? "bg-[#f4f5fa]" : "bg-[#0f111a]"
     )}>
       {/* Sidebar */}
@@ -630,7 +737,7 @@ export default function MailCenterPage() {
               <Switch 
                 checked={isAIActive} 
                 onCheckedChange={toggleAI}
-                disabled={isAILoading}
+                disabled={isAILoading || isActionRestricted}
                 className="data-[state=checked]:bg-blue-500"
               />
             </div>
@@ -687,7 +794,7 @@ export default function MailCenterPage() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsSupportConfigOpen(true)}>
+                <DropdownMenuItem onClick={openSupportConfigModal}>
                   <Settings className="w-4 h-4 mr-2" /> Paramètres
                 </DropdownMenuItem>
                 <DropdownMenuItem>
@@ -704,6 +811,31 @@ export default function MailCenterPage() {
             </DropdownMenu>
           </div>
         </header>
+
+        {isTrialReadOnly && !isMailCenterLocked && (
+          <div className={cn(
+            "px-6 py-3 border-b flex items-center justify-between text-sm",
+            isLightMode
+              ? "bg-amber-50 border-amber-200 text-amber-900"
+              : "bg-amber-900/30 border-amber-700 text-amber-100"
+          )}>
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4" />
+              <span>Mode lecture seule pendant l&apos;essai.</span>
+              {trialCountdownLabel && (
+                <span className="font-semibold">{trialCountdownLabel}</span>
+              )}
+            </div>
+            <Button
+              variant="link"
+              size="sm"
+              className={cn("h-auto", isLightMode ? "text-amber-900" : "text-amber-200")}
+              onClick={() => setShowUpgradeModal(true)}
+            >
+              Choisir un plan
+            </Button>
+          </div>
+        )}
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden p-6">
@@ -802,11 +934,13 @@ export default function MailCenterPage() {
                               getCategoryColor={getCategoryColor}
                               getSentimentIcon={getSentimentIcon}
                               onReply={(email) => {
-                                setEmailToReply(email);
-                                setReplyDialogOpen(true);
+                                  if (!canModify()) return;
+                                  setEmailToReply(email);
+                                  setReplyDialogOpen(true);
                               }}
                               onDelete={(emailId) => deleteEmail(emailId)}
                               isLightMode={isLightMode}
+                                isReadOnly={isActionRestricted}
                             />
                           ))}
                         </AnimatePresence>
@@ -832,6 +966,8 @@ export default function MailCenterPage() {
         isFavorite={selectedEmailForDetail ? favoriteEmails.includes(selectedEmailForDetail.id) : false}
         zIndex={windowZIndexes.emailDetail}
         onFocus={() => bringToFront('emailDetail')}
+        isReadOnly={isActionRestricted}
+        onRestrictedAction={handleTrialRestriction}
       />
       
       <ReplyGeneratorWindow
@@ -865,6 +1001,28 @@ export default function MailCenterPage() {
         />
       )}
 
+      {isMailCenterLocked && (
+        <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm px-6">
+          <Card className={cn("w-full max-w-lg text-center space-y-4 p-8", isLightMode ? "bg-white" : "bg-[#1a1f3a]") }>
+            <div className="flex flex-col items-center gap-2">
+              <Lock className="w-10 h-10 text-amber-500" />
+              <h3 className="text-2xl font-semibold">Essai expiré</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Votre période d&apos;essai de 7 jours est terminée. Passez à Starter, Pro ou Scale pour continuer à répondre à vos emails et automatiser votre support.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button className="w-full" onClick={() => setShowUpgradeModal(true)}>
+                Voir les plans disponibles
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => router.push('/pricing')}>
+                Découvrir la tarification
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Delete Account Confirmation */}
       <AnimatePresence>
         {accountToDelete && (
@@ -894,6 +1052,15 @@ export default function MailCenterPage() {
           </div>
         )}
       </AnimatePresence>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentPlan={planTypeForModal}
+        reason={isMailCenterLocked
+          ? 'Votre période d\'essai est terminée. Passez sur un plan payant pour continuer à agir.'
+          : 'Passez sur Starter, Pro ou Scale pour débloquer toutes les actions du Mail Center.'}
+      />
     </div>
   );
 }
@@ -906,7 +1073,8 @@ function EmailRow({
   getSentimentIcon,
   onReply,
   onDelete,
-  isLightMode
+  isLightMode,
+  isReadOnly = false,
 }: { 
   email: EmailCache;
   onClick: () => void;
@@ -915,6 +1083,7 @@ function EmailRow({
   onReply?: (email: EmailCache) => void;
   onDelete?: (emailId: string) => void;
   isLightMode: boolean;
+  isReadOnly?: boolean;
 }) {
   const initials = email.from_name
     ?.split(' ')
@@ -990,14 +1159,29 @@ function EmailRow({
             isLightMode ? "text-gray-400" : "text-gray-500"
           )}>{timeAgo}</span>
           
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className={cn(
+            "flex items-center gap-1 transition-opacity",
+            isReadOnly ? "opacity-40" : "opacity-0 group-hover:opacity-100"
+          )}>
             {onReply && (
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onReply(email); }}>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8"
+                disabled={isReadOnly}
+                onClick={(e) => { e.stopPropagation(); onReply(email); }}
+              >
                 <Reply className="w-4 h-4" />
               </Button>
             )}
             {onDelete && (
-              <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDelete(email.id); }}>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 text-red-500 hover:text-red-600"
+                disabled={isReadOnly}
+                onClick={(e) => { e.stopPropagation(); onDelete(email.id); }}
+              >
                 <Trash2 className="w-4 h-4" />
               </Button>
             )}
