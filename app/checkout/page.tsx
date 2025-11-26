@@ -32,7 +32,7 @@ export default function CheckoutPage() {
     const plan = searchParams.get('plan') as PlanType;
     const period = searchParams.get('period') as 'monthly' | 'yearly';
 
-    if (plan && (plan === 'starter' || plan === 'pro' || plan === 'enterprise')) {
+    if (plan && (plan === 'starter' || plan === 'pro' || plan === 'scale')) {
       setPlanType(plan);
     }
     if (period && (period === 'monthly' || period === 'yearly')) {
