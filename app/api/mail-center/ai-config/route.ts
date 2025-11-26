@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { supabase } from '@/lib/db';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +15,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     // Récupérer la configuration IA de l'utilisateur
     const { data, error } = await supabase
       .from('automation_rules')
@@ -23,13 +28,14 @@ export async function GET(req: NextRequest) {
       .order('priority', { ascending: true });
 
     if (error) {
-      return NextResponse.json({ error: 'Erreur récupération config' }, { status: 500 });
+      console.error('Supabase error fetching config:', error);
+      return NextResponse.json({ error: 'Erreur récupération config', details: error.message }, { status: 500 });
     }
 
     return NextResponse.json(data || []);
   } catch (error) {
     console.error('Error fetching AI config:', error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur serveur', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -40,6 +46,11 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     const config = await req.json();
 
@@ -83,6 +94,7 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error(`Error saving rule for ${category}:`, error);
+        // Continue to next category instead of failing completely, but log error
       }
 
       // Créer ou mettre à jour le template de réponse
@@ -107,6 +119,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: 'Configuration sauvegardée' });
   } catch (error) {
     console.error('Error saving AI config:', error);
-    return NextResponse.json({ error: 'Erreur sauvegarde' }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur sauvegarde', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

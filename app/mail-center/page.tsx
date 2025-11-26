@@ -147,7 +147,11 @@ export default function MailCenterPage() {
     if (status === 'authenticated' && accounts.length > 0) {
       const loadEmails = async () => {
         try {
-          const response = await fetch('/api/mail-center/emails?limit=100');
+          const url = searchQuery 
+            ? `/api/mail-center/emails?limit=100&search=${encodeURIComponent(searchQuery)}`
+            : '/api/mail-center/emails?limit=100';
+            
+          const response = await fetch(url);
           if (response.ok) {
             const data = await response.json();
             setEmails(data.emails || []);
@@ -156,9 +160,15 @@ export default function MailCenterPage() {
           console.error('Erreur chargement emails:', error);
         }
       };
-      loadEmails();
+      
+      // Debounce search
+      const timeoutId = setTimeout(() => {
+        loadEmails();
+      }, 500);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [status, accounts.length]);
+  }, [status, accounts.length, searchQuery]);
 
   useEffect(() => {
     if (status === 'authenticated' && isAIActive) {
@@ -400,8 +410,8 @@ export default function MailCenterPage() {
       )}>
         {/* Logo Area */}
         <div className="h-16 flex items-center px-6 gap-3 border-b border-transparent">
-          <div className="bg-blue-600 p-1.5 rounded-lg flex-shrink-0">
-            <Mail className="w-6 h-6 text-white" />
+          <div className="flex-shrink-0">
+            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
           </div>
           {sidebarOpen && (
             <span className={cn(

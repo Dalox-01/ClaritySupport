@@ -1818,7 +1818,7 @@ function SecurityConfigSection({ config, setConfig }: any) {
                 <span>6 mois</span>
                 <span>1 an</span>
               </div>
-              <div className="p-2 bg-orange-50 dark:bg-orange-950/20 rounded text-xs text-orange-700 dark:text-orange-300">
+              <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-xs text-blue-700 dark:text-blue-300">
                 ⚠️ Après {dataRetentionDays} jours, les données seront automatiquement supprimées
               </div>
             </div>

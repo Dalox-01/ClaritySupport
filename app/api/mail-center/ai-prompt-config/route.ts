@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { supabase } from '@/lib/db';
+import { createClient } from '@supabase/supabase-js';
 import { AIPromptConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +19,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     // Récupérer la config depuis la table users (colonne ai_prompt_config)
     const { data, error } = await supabase
       .from('users')
@@ -26,7 +31,19 @@ export async function GET(req: NextRequest) {
       .eq('id', session.user.id)
       .single();
 
-    if (error || !data || !data.ai_prompt_config) {
+    if (error) {
+      console.error('Supabase error fetching prompt config:', error);
+      // If error is not found, return default
+      if (error.code === 'PGRST116') {
+         return NextResponse.json({ 
+          success: true,
+          config: DEFAULT_AI_CONFIG 
+        });
+      }
+      return NextResponse.json({ error: 'Erreur DB', details: error.message }, { status: 500 });
+    }
+
+    if (!data || !data.ai_prompt_config) {
       // Retourner la config par défaut si pas encore sauvegardée
       return NextResponse.json({ 
         success: true,
@@ -58,6 +75,11 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     const { config } = await req.json();
 

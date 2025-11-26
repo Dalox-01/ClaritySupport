@@ -95,7 +95,7 @@ export default function HomePage() {
           <div className="mx-auto flex h-16 w-full items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8">{/* Header content */}
           <div>
             <Link href="/" className="flex items-center gap-2 font-bold text-gray-900 transition-opacity hover:opacity-80 dark:text-white">
-              <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <img src="/logo.png" alt="ClaritySupport Logo" className="h-8 w-8" />
               <span className="hidden sm:inline">ClaritySupport</span>
             </Link>
           </div>
@@ -170,7 +170,7 @@ export default function HomePage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div className="sm:col-span-2">
               <Link href="/" className="mb-4 inline-flex items-center gap-2 font-bold text-gray-900 transition-opacity hover:opacity-80 dark:text-white">
-                <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <img src="/logo.png" alt="ClaritySupport Logo" className="h-8 w-8" />
                 <span>ClaritySupport</span>
               </Link>
               <p className="text-sm text-gray-600 dark:text-gray-400">

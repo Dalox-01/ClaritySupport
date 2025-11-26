@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,14 +16,23 @@ export async function GET() {
         count: 0
       });
     }
+
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get('search');
     
     const supabase = createClient(url, key);
     
-    const { data, error } = await supabase
+    let query = supabase
       .from('emails_cache')
       .select('*')
       .order('received_at', { ascending: false })
       .limit(50);
+
+    if (search) {
+      query = query.or(`subject.ilike.%${search}%,from_email.ilike.%${search}%,from_name.ilike.%${search}%,body_text.ilike.%${search}%`);
+    }
+    
+    const { data, error } = await query;
     
     if (error) {
       return NextResponse.json({
