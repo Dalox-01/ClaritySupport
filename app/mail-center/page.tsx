@@ -35,6 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import type { EmailCache, MailAccount, PendingReply } from '@/lib/mail-center-types';
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
@@ -183,6 +184,31 @@ export default function MailCenterPage() {
       }
     } catch (error) {
       console.error('Erreur auto-reply:', error);
+    }
+  };
+
+  const toggleAI = async (enabled: boolean) => {
+    setIsAIActive(enabled);
+    setIsAILoading(true);
+    try {
+      const response = await fetch('/api/mail-center/ai-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      
+      if (response.ok) {
+        toast.success(enabled ? 'IA activée 24/7 🤖' : 'IA désactivée zzz');
+        if (enabled) triggerAutoReply();
+      } else {
+        throw new Error('Failed to update settings');
+      }
+    } catch (error) {
+      console.error('Error toggling AI:', error);
+      toast.error('Erreur lors de la modification de l\'IA');
+      setIsAIActive(!enabled); // Revert
+    } finally {
+      setIsAILoading(false);
     }
   };
 
@@ -555,6 +581,37 @@ export default function MailCenterPage() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            {/* AI Toggle */}
+            <div className={cn(
+              "flex items-center gap-3 px-4 py-2 rounded-full border transition-all mr-2 hidden md:flex",
+              isAIActive 
+                ? "bg-blue-500/10 border-blue-500/20" 
+                : isLightMode ? "bg-gray-100 border-transparent" : "bg-white/5 border-transparent"
+            )}>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Bot className={cn("w-5 h-5", isAIActive ? "text-blue-500" : "text-gray-400")} />
+                  {isAIActive && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className={cn("text-xs font-bold leading-none", isLightMode ? "text-gray-900" : "text-white")}>
+                    IA Autopilot
+                  </span>
+                  <span className={cn("text-[10px] leading-none", isAIActive ? "text-blue-500" : "text-gray-500")}>
+                    {isAIActive ? "Active 24/7" : "Désactivée"}
+                  </span>
+                </div>
+              </div>
+              <Switch 
+                checked={isAIActive} 
+                onCheckedChange={toggleAI}
+                disabled={isAILoading}
+                className="data-[state=checked]:bg-blue-500"
+              />
+            </div>
+
             <Select value={selectedAccount} onValueChange={setSelectedAccount}>
               <SelectTrigger className={cn(
                 "w-[180px] h-9 rounded-full border-none shadow-sm hidden sm:flex",
