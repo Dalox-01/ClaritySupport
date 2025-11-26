@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,8 @@ import {
   Bell, FileText, Sun, Moon, Home, LogOut, UserCircle, CreditCard,
   HelpCircle, Package, DollarSign, Truck, Wrench, Info, Receipt,
   Laptop, AlertTriangle, Database, BookOpen, Edit, Save, Store,
-  LayoutGrid, List, SlidersHorizontal
+  LayoutGrid, List, SlidersHorizontal, ShoppingBag, ChevronDown,
+  MoreVertical, Search as SearchIcon, PanelLeftClose, PanelLeft
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,48 +42,18 @@ import { PendingRepliesPanel } from '@/components/pending-replies-panel';
 import { ReplyEmailDialog } from '@/components/reply-email-dialog';
 import { EmailDetailWindow } from '@/components/email-detail-window';
 import { ReplyGeneratorWindow } from '@/components/reply-generator-window';
-import { QuotaDisplay } from '@/components/quota-display';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { SUPPORT_CATEGORIES, getCategoryColor, getCategoryConfig } from '@/lib/support-categories';
-import { KnowledgeBaseManager, loadKnowledgeBase, saveKnowledgeBase } from '@/lib/product-knowledge';
-import { AIPromptBuilder, loadAIConfig, saveAIConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-prompt-config';
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
 import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
-import { ShopifyConnectPanel } from '@/components/mail-center/ShopifyConnectPanel';
-import { ShopifyQuickConnect } from '@/components/mail-center/ShopifyQuickConnect';
 import { ShopifyDashboard } from '@/components/mail-center/ShopifyDashboard';
-import { MailCenterDock } from '@/components/mail-center-dock';
-
-// Composant Card optimisé - Tilt effect simplifié avec CSS
-const TiltCard = React.memo(({ children, className, glow = false }: { 
-  children: React.ReactNode; 
-  className?: string; 
-  glow?: boolean 
-}) => {
-  return (
-    <div
-      className={cn(
-        "relative transition-all duration-300 ease-out",
-        "hover:scale-[1.02] hover:-translate-y-1",
-        glow && "hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-});
-
-TiltCard.displayName = 'TiltCard';
 
 export default function MailCenterPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { theme, colors } = useMailCenterTheme();
-  const containerRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'inbox' | 'pending' | 'sent' | 'rules' | 'analytics' | 'favorites' | 'archives' | 'shops'>('inbox');
   
   const [selectedEmail, setSelectedEmail] = useState<EmailCache | null>(null);
@@ -94,16 +65,16 @@ export default function MailCenterPage() {
   const [filterCategory, setFilterCategory] = useState<string>('inbox');
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [hoveredCardIndex, setHoveredCardIndex] = useState<number | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(true);
   
   // State pour la réponse rapide
   const [replyDialogOpen, setReplyDialogOpen] = useState(false);
   const [emailToReply, setEmailToReply] = useState<EmailCache | null>(null);
   
   // States pour favoris et archives
-  const [favoriteEmails, setFavoriteEmails] = useState<string[]>([]); // IDs des emails favoris
-  const [archivedEmails, setArchivedEmails] = useState<string[]>([]); // IDs des emails archivés
+  const [favoriteEmails, setFavoriteEmails] = useState<string[]>([]);
+  const [archivedEmails, setArchivedEmails] = useState<string[]>([]);
   
   // States pour les fenêtres draggables
   const [emailDetailOpen, setEmailDetailOpen] = useState(false);
@@ -121,16 +92,13 @@ export default function MailCenterPage() {
   const [supportConfigInitialTab, setSupportConfigInitialTab] = useState<'ai-config' | 'filters'>('ai-config');
   const [supportConfigInitialSection, setSupportConfigInitialSection] = useState<AIConfigSectionId>('models');
   
-  // State pour afficher tous les filtres
-  const [showAllFilters, setShowAllFilters] = useState(false);
-  
-  // User plan - TODO: Fetch from subscription/session
+  // User plan
   const [userPlan] = useState<'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE'>('PRO');
   
-  // State pour le thème - Par défaut en mode clair
+  // State pour le thème
   const [isLightMode, setIsLightMode] = useState(true);
   
-  // State pour l'IA active/inactive - INACTIVE PAR DÉFAUT
+  // State pour l'IA
   const [isAIActive, setIsAIActive] = useState(false);
   const [isAILoading, setIsAILoading] = useState(false);
 
@@ -138,7 +106,6 @@ export default function MailCenterPage() {
   const [accountToDelete, setAccountToDelete] = useState<{ id: string; email: string } | null>(null);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
-  // Fonction pour mettre une fenêtre au premier plan
   const bringToFront = (windowName: keyof typeof windowZIndexes) => {
     const maxZ = Math.max(...Object.values(windowZIndexes));
     setWindowZIndexes(prev => ({
@@ -147,21 +114,18 @@ export default function MailCenterPage() {
     }));
   };
 
-  // Ouvrir le détail d'un email
   const openEmailDetail = (email: EmailCache) => {
     setSelectedEmailForDetail(email);
     setEmailDetailOpen(true);
     bringToFront('emailDetail');
   };
 
-  // Ouvrir le générateur de réponse
   const openReplyGenerator = (email: EmailCache) => {
     setEmailForReply(email);
     setReplyGeneratorOpen(true);
     bringToFront('replyGenerator');
   };
 
-  // Vérifier l'authentification
   useEffect(() => {
     if (status === 'unauthenticated') {
       toast.error('Vous devez être connecté pour accéder au Mail Center');
@@ -169,7 +133,6 @@ export default function MailCenterPage() {
     }
   }, [status]);
 
-  // Charger les données initiales
   useEffect(() => {
     if (status === 'authenticated') {
       loadInitialData();
@@ -178,7 +141,6 @@ export default function MailCenterPage() {
     }
   }, [status]);
   
-  // Recharger les emails quand les comptes changent
   useEffect(() => {
     if (status === 'authenticated' && accounts.length > 0) {
       const loadEmails = async () => {
@@ -196,7 +158,6 @@ export default function MailCenterPage() {
     }
   }, [status, accounts.length]);
 
-  // Auto-reply automatique
   useEffect(() => {
     if (status === 'authenticated' && isAIActive) {
       const autoReplyInterval = setInterval(() => {
@@ -205,22 +166,6 @@ export default function MailCenterPage() {
       return () => clearInterval(autoReplyInterval);
     }
   }, [status, isAIActive]);
-
-  // Vérifier si connexion réussie
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get('success');
-    const error = urlParams.get('error');
-
-    if (success === 'gmail_connected' || success === 'outlook_connected') {
-      toast.success(`🎉 Compte ${success === 'gmail_connected' ? 'Gmail' : 'Outlook'} connecté avec succès !`);
-      window.history.replaceState({}, '', '/mail-center');
-      loadInitialData(true);
-    } else if (error) {
-      toast.error('❌ Erreur de connexion');
-      window.history.replaceState({}, '', '/mail-center');
-    }
-  }, []);
 
   const triggerAutoReply = async () => {
     try {
@@ -278,32 +223,6 @@ export default function MailCenterPage() {
       toast.error('Erreur de connexion au serveur');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const toggleAI = async () => {
-    setIsAILoading(true);
-    try {
-      const newState = !isAIActive;
-      const response = await fetch('/api/mail-center/ai-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: newState })
-      });
-
-      if (response.ok) {
-        setIsAIActive(newState);
-        if (newState) {
-          toast.success('IA activée - Réponses automatiques 24/7');
-          triggerAutoReply();
-        } else {
-          toast.info('IA désactivée');
-        }
-      }
-    } catch (error) {
-      toast.error('Erreur lors de l\'activation de l\'IA');
-    } finally {
-      setIsAILoading(false);
     }
   };
 
@@ -421,238 +340,272 @@ export default function MailCenterPage() {
     );
   }
 
-  const stats = [
-    { label: 'Total', value: emails.length, icon: Mail, color: 'blue' },
-    { label: 'Non lus', value: emails.filter(e => !e.is_read).length, icon: Inbox, color: 'orange' },
-    { label: 'En attente', value: pendingReplies.length, icon: Clock, color: 'yellow' },
-    { label: 'Comptes', value: accounts.length, icon: Users, color: 'purple' },
+  const navItems = [
+    { id: 'inbox', label: 'Boîte de réception', icon: Inbox, count: emails.filter(e => !e.is_read).length },
+    { id: 'pending', label: 'En attente', icon: Clock, count: pendingReplies.length },
+    { id: 'sent', label: 'Envoyés', icon: Send },
+    { id: 'favorites', label: 'Favoris', icon: Star, count: favoriteEmails.length },
+    { id: 'archives', label: 'Archives', icon: Archive, count: archivedEmails.length },
+    { id: 'shops', label: 'Boutiques', icon: ShoppingBag },
+    { id: 'analytics', label: 'Analytique', icon: BarChart3 },
+    { id: 'rules', label: 'Règles', icon: SlidersHorizontal },
   ];
 
   return (
-    <div 
-      ref={containerRef} 
-      className={cn(
-        "h-screen w-full relative overflow-hidden transition-colors duration-700",
-        isLightMode ? "bg-[#f8fafc]" : "bg-[#050505]"
-      )}
-    >
-      {/* Background Ambient Glow */}
-      <div className={cn(
-        "absolute inset-0 pointer-events-none transition-opacity duration-1000",
-        isLightMode ? "opacity-40" : "opacity-20"
+    <div className={cn(
+      "flex h-screen w-full overflow-hidden transition-colors duration-300 font-sans",
+      isLightMode ? "bg-[#f4f5fa]" : "bg-[#0f111a]"
+    )}>
+      {/* Sidebar */}
+      <aside className={cn(
+        "flex-shrink-0 flex flex-col border-r transition-all duration-300 z-30",
+        isLightMode ? "bg-white border-gray-200" : "bg-[#1a1f3a] border-white/5",
+        sidebarOpen ? "w-[260px]" : "w-[80px]"
       )}>
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/20 blur-[120px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/20 blur-[120px]" />
-      </div>
-
-      {/* Top Header - Minimalist & Floating */}
-      <header className={cn(
-        "absolute top-0 left-0 right-0 h-16 z-40 px-6 flex items-center justify-between backdrop-blur-md border-b transition-all duration-500",
-        isLightMode ? "bg-white/60 border-gray-200/50" : "bg-black/40 border-white/5"
-      )}>
-        {/* Left: Brand */}
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className={cn(
-              "p-2 rounded-xl transition-all duration-300 group-hover:scale-110",
-              isLightMode ? "bg-blue-50 text-blue-600" : "bg-blue-500/10 text-blue-400"
-            )}>
-              <Mail className="w-5 h-5" />
-            </div>
+        {/* Logo Area */}
+        <div className="h-16 flex items-center px-6 gap-3 border-b border-transparent">
+          <div className="bg-blue-600 p-1.5 rounded-lg flex-shrink-0">
+            <Mail className="w-6 h-6 text-white" />
+          </div>
+          {sidebarOpen && (
             <span className={cn(
-              "font-bold text-lg tracking-tight hidden sm:block",
-              isLightMode ? "text-gray-900" : "text-white"
+              "text-xl font-bold tracking-tight whitespace-nowrap",
+              isLightMode ? "text-gray-800" : "text-white"
             )}>
               Clarity Mail
             </span>
-          </Link>
+          )}
         </div>
 
-        {/* Center: Search Bar (Floating) */}
-        <div className="hidden md:flex flex-1 max-w-xl mx-4">
-          <div className="relative w-full group">
-            <Search className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
-              isLightMode ? "text-gray-400 group-hover:text-blue-500" : "text-gray-500 group-hover:text-blue-400"
-            )} />
-            <Input
-              placeholder="Rechercher dans vos emails..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                "pl-10 pr-4 h-10 rounded-full border transition-all duration-300",
-                isLightMode
-                  ? "bg-white/80 border-gray-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
-                  : "bg-white/5 border-white/10 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 text-white placeholder:text-gray-500"
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
-          {/* Account Selector */}
-          <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-            <SelectTrigger className={cn(
-              "w-[180px] h-9 rounded-full border transition-all hidden sm:flex",
-              isLightMode 
-                ? "bg-white/80 border-gray-200 text-gray-700" 
-                : "bg-white/5 border-white/10 text-gray-200"
-            )}>
-              <SelectValue placeholder="Tous les comptes" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les comptes</SelectItem>
-              {accounts.map(acc => (
-                <SelectItem key={acc.id} value={acc.id}>{acc.email}</SelectItem>
-              ))}
-              <DropdownMenuSeparator />
-              <div className="p-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start text-xs h-8"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    connectAccount('gmail');
-                  }}
-                >
-                  <Plus className="w-3 h-3 mr-2" /> Ajouter
-                </Button>
-              </div>
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={syncEmails}
-            disabled={isSyncing}
-            className={cn(
-              "rounded-full transition-all",
-              isSyncing && "animate-spin",
-              isLightMode ? "hover:bg-gray-100 text-gray-600" : "hover:bg-white/10 text-gray-300"
-            )}
-          >
-            <RefreshCw className="w-5 h-5" />
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsLightMode(!isLightMode)}
-            className={cn(
-              "rounded-full transition-all",
-              isLightMode ? "hover:bg-gray-100 text-gray-600" : "hover:bg-white/10 text-yellow-400"
-            )}
-          >
-            {isLightMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full p-0 w-9 h-9 overflow-hidden border-2 border-transparent hover:border-blue-500 transition-all">
-                <Avatar className="w-full h-full">
-                  <AvatarImage src={session?.user?.image || undefined} />
-                  <AvatarFallback>{session?.user?.name?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsSupportConfigOpen(true)}>
-                <Settings className="w-4 h-4 mr-2" /> Configuration
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600" onClick={() => window.location.href = '/api/auth/signout'}>
-                <LogOut className="w-4 h-4 mr-2" /> Déconnexion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-
-      {/* Main Workspace */}
-      <main className="absolute top-16 bottom-0 left-0 right-0 p-4 pb-28 flex gap-4 overflow-hidden">
-        
-        {/* Central Content Area */}
-        <div className="flex-1 flex flex-col h-full min-w-0 relative z-10 max-w-7xl mx-auto w-full">
-           
-           {/* Top Bar: Stats & Filters */}
-           <div className="flex flex-col gap-4 mb-4 flex-shrink-0">
-              {/* Stats Row (Compact) */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {stats.map((stat, i) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-xl border backdrop-blur-md transition-all hover:scale-[1.02]",
-                      isLightMode 
-                        ? "bg-white/60 border-gray-200/50 shadow-sm" 
-                        : "bg-white/5 border-white/10 shadow-lg"
-                    )}
-                  >
-                    <div className={cn(
-                      "p-2 rounded-lg",
-                      isLightMode ? `bg-${stat.color}-100 text-${stat.color}-600` : `bg-${stat.color}-500/20 text-${stat.color}-400`
-                    )}>
-                      <stat.icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className={cn("text-xs font-medium uppercase tracking-wider", isLightMode ? "text-gray-500" : "text-gray-400")}>{stat.label}</p>
-                      <p className={cn("text-lg font-bold leading-none", isLightMode ? "text-gray-900" : "text-white")}>{stat.value}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Filters Row (Horizontal Scroll) */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                <Button
-                  variant={filterCategory === 'inbox' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterCategory('inbox')}
-                  className={cn(
-                    "rounded-full px-4 h-8 text-xs font-medium transition-all whitespace-nowrap",
-                    filterCategory === 'inbox' 
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700" 
-                      : isLightMode ? "bg-white text-gray-600 border-gray-200" : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
-                  )}
-                >
-                  <Inbox className="w-3.5 h-3.5 mr-2" />
-                  Tous les messages
-                </Button>
+        {/* Navigation */}
+        <ScrollArea className="flex-1 px-3 py-4">
+          <div className="space-y-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id as any)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                  activeTab === item.id
+                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-500/20"
+                    : isLightMode 
+                      ? "text-gray-600 hover:bg-gray-100" 
+                      : "text-gray-400 hover:bg-white/5 hover:text-white"
+                )}
+                title={!sidebarOpen ? item.label : undefined}
+              >
+                <item.icon className={cn(
+                  "w-5 h-5 flex-shrink-0",
+                  activeTab === item.id ? "text-white" : "text-current"
+                )} />
                 
-                {SUPPORT_CATEGORIES.map(cat => (
-                  <Button
-                    key={cat.id}
-                    variant={filterCategory === cat.id ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFilterCategory(cat.id)}
-                    className={cn(
-                      "rounded-full px-4 h-8 text-xs font-medium transition-all whitespace-nowrap",
-                      filterCategory === cat.id
-                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700"
-                        : isLightMode ? "bg-white text-gray-600 border-gray-200" : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                {sidebarOpen && (
+                  <>
+                    <span className="flex-1 text-left truncate">{item.label}</span>
+                    {item.count !== undefined && item.count > 0 && (
+                      <Badge 
+                        variant="secondary" 
+                        className={cn(
+                          "ml-auto h-5 min-w-[20px] flex items-center justify-center px-1.5 text-[10px]",
+                          activeTab === item.id 
+                            ? "bg-white/20 text-white" 
+                            : isLightMode ? "bg-blue-100 text-blue-700" : "bg-blue-500/20 text-blue-400"
+                        )}
+                      >
+                        {item.count}
+                      </Badge>
                     )}
-                  >
-                    {cat.icon && <cat.icon className="w-3.5 h-3.5 mr-2" />}
-                    {cat.label}
-                  </Button>
-                ))}
-              </div>
-           </div>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
 
-           {/* Content Area (Maximized) */}
-           <div className={cn(
-             "flex-1 relative rounded-2xl overflow-hidden border backdrop-blur-md shadow-2xl transition-all duration-500",
-             isLightMode 
-               ? "bg-white/80 border-gray-200/50" 
-               : "bg-[#0A0A0A]/80 border-white/10"
-           )}>
+          {/* Filters Section */}
+          <div className="mt-6">
+            {sidebarOpen && (
+              <button 
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider mb-2",
+                  isLightMode ? "text-gray-400 hover:text-gray-600" : "text-gray-500 hover:text-gray-300"
+                )}
+              >
+                <span>Filtres</span>
+                <ChevronDown className={cn("w-3 h-3 transition-transform", !filtersOpen && "-rotate-90")} />
+              </button>
+            )}
+            
+            <AnimatePresence>
+              {(filtersOpen || !sidebarOpen) && (
+                <motion.div 
+                  initial={false}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="space-y-1 overflow-hidden"
+                >
+                  <button
+                    onClick={() => setFilterCategory('inbox')}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                      filterCategory === 'inbox'
+                        ? isLightMode ? "bg-gray-100 text-gray-900 font-medium" : "bg-white/10 text-white font-medium"
+                        : isLightMode ? "text-gray-600 hover:bg-gray-50" : "text-gray-400 hover:bg-white/5"
+                    )}
+                    title={!sidebarOpen ? "Tous les messages" : undefined}
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full bg-gray-400 flex-shrink-0" />
+                    {sidebarOpen && <span>Tous</span>}
+                  </button>
+
+                  {SUPPORT_CATEGORIES.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setFilterCategory(cat.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                        filterCategory === cat.id
+                          ? isLightMode ? "bg-gray-100 text-gray-900 font-medium" : "bg-white/10 text-white font-medium"
+                          : isLightMode ? "text-gray-600 hover:bg-gray-50" : "text-gray-400 hover:bg-white/5"
+                      )}
+                      title={!sidebarOpen ? cat.label : undefined}
+                    >
+                      <div className={cn("w-2.5 h-2.5 rounded-full flex-shrink-0", getCategoryColor(cat.id).replace('bg-', 'bg-').replace('/10', ''))} />
+                      {sidebarOpen && <span className="truncate">{cat.label}</span>}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </ScrollArea>
+
+        {/* Sidebar Footer */}
+        <div className={cn(
+          "p-4 border-t",
+          isLightMode ? "border-gray-200" : "border-white/5"
+        )}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? <PanelLeftClose className="w-4 h-4 mr-2" /> : <PanelLeft className="w-4 h-4" />}
+            {sidebarOpen && "Réduire"}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 relative">
+        {/* Top Header */}
+        <header className={cn(
+          "h-16 px-6 flex items-center justify-between gap-4 sticky top-0 z-20 backdrop-blur-xl border-b transition-colors",
+          isLightMode ? "bg-white/80 border-gray-200" : "bg-[#0f111a]/80 border-white/5"
+        )}>
+          {/* Search Bar */}
+          <div className="flex-1 max-w-xl">
+            <div className="relative group">
+              <SearchIcon className={cn(
+                "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
+                isLightMode ? "text-gray-400 group-hover:text-blue-500" : "text-gray-500 group-hover:text-blue-400"
+              )} />
+              <Input
+                placeholder="Rechercher (Ctrl+K)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "pl-10 h-10 rounded-full border-none shadow-sm transition-all",
+                  isLightMode 
+                    ? "bg-white focus:bg-white focus:ring-2 focus:ring-blue-500/20" 
+                    : "bg-[#1a1f3a] focus:bg-[#1a1f3a] focus:ring-2 focus:ring-blue-500/20"
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-2">
+            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+              <SelectTrigger className={cn(
+                "w-[180px] h-9 rounded-full border-none shadow-sm hidden sm:flex",
+                isLightMode ? "bg-white" : "bg-[#1a1f3a]"
+              )}>
+                <SelectValue placeholder="Tous les comptes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les comptes</SelectItem>
+                {accounts.map(acc => (
+                  <SelectItem key={acc.id} value={acc.id}>{acc.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsLightMode(!isLightMode)}
+              className="rounded-full"
+            >
+              {isLightMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={syncEmails}
+              disabled={isSyncing}
+              className={cn("rounded-full", isSyncing && "animate-spin")}
+            >
+              <RefreshCw className="w-5 h-5" />
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="rounded-full pl-2 pr-4 gap-2 h-10 ml-2 hover:bg-transparent">
+                  <Avatar className="w-8 h-8 border border-gray-200 dark:border-white/10">
+                    <AvatarImage src={session?.user?.image || undefined} />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-start text-xs hidden md:flex">
+                    <span className={cn("font-semibold", isLightMode ? "text-gray-900" : "text-white")}>
+                      {session?.user?.name?.split(' ')[0]}
+                    </span>
+                    <span className={cn(isLightMode ? "text-gray-500" : "text-gray-400")}>Admin</span>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsSupportConfigOpen(true)}>
+                  <Settings className="w-4 h-4 mr-2" /> Paramètres
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CreditCard className="w-4 h-4 mr-2" /> Abonnement
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <HelpCircle className="w-4 h-4 mr-2" /> Aide
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600" onClick={() => window.location.href = '/api/auth/signout'}>
+                  <LogOut className="w-4 h-4 mr-2" /> Déconnexion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-hidden p-6">
+          <div className="h-full flex flex-col gap-6 max-w-[1800px] mx-auto">
+            
+            {/* View Content */}
+            <Card className={cn(
+              "flex-1 overflow-hidden border-none shadow-sm flex flex-col rounded-xl",
+              isLightMode ? "bg-white" : "bg-[#1a1f3a]"
+            )}>
               {activeTab === 'analytics' ? (
                 <ScrollArea className="h-full">
                   <div className="p-6">
@@ -675,57 +628,73 @@ export default function MailCenterPage() {
                   </div>
                 </ScrollArea>
               ) : (
-                <ScrollArea className="h-full">
-                  <div className="p-4 space-y-3">
-                    {isLoading ? (
-                      <div className="flex justify-center py-20">
-                        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-                      </div>
-                    ) : filteredEmails.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
-                        <Mail className="w-16 h-16 mb-4" />
-                        <p className="text-lg font-medium">Aucun email trouvé</p>
-                      </div>
-                    ) : (
-                      <AnimatePresence mode="popLayout">
-                        {filteredEmails.map((email, index) => (
-                          <EmailCard
-                            key={email.id}
-                            email={email}
-                            index={index}
-                            isSelected={false}
-                            onClick={() => openEmailDetail(email)}
-                            getCategoryColor={getCategoryColor}
-                            getSentimentIcon={getSentimentIcon}
-                            onReply={(email) => {
-                              setEmailToReply(email);
-                              setReplyDialogOpen(true);
-                            }}
-                            onDelete={(emailId) => deleteEmail(emailId)}
-                            isLightMode={isLightMode}
-                            theme={theme}
-                            colors={colors}
-                          />
-                        ))}
-                      </AnimatePresence>
-                    )}
+                <div className="flex flex-col h-full">
+                  {/* List Header */}
+                  <div className={cn(
+                    "p-4 border-b flex items-center justify-between",
+                    isLightMode ? "border-gray-100" : "border-white/5"
+                  )}>
+                    <div className="flex items-center gap-3">
+                      <h2 className={cn("text-lg font-semibold", isLightMode ? "text-gray-900" : "text-white")}>
+                        {activeTab === 'inbox' ? 'Boîte de réception' : 
+                         activeTab === 'favorites' ? 'Favoris' : 
+                         activeTab === 'archives' ? 'Archives' : 'Emails'}
+                      </h2>
+                      <Badge variant="secondary" className="rounded-full px-2.5">
+                        {filteredEmails.length}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-8">
+                        <Filter className="w-3.5 h-3.5 mr-2" />
+                        Filtrer
+                      </Button>
+                    </div>
                   </div>
-                </ScrollArea>
-              )}
-           </div>
-        </div>
-      </main>
 
-      {/* Bottom Dock (Superimposed) */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50">
-        <MailCenterDock
-          currentView={activeTab}
-          onViewChange={(view) => setActiveTab(view as any)}
-          isLightMode={isLightMode}
-        />
+                  {/* Email List */}
+                  <ScrollArea className="flex-1">
+                    <div className="divide-y divide-gray-100 dark:divide-white/5">
+                      {isLoading ? (
+                        <div className="flex justify-center py-20">
+                          <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
+                        </div>
+                      ) : filteredEmails.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
+                          <Mail className="w-16 h-16 mb-4 text-gray-300" />
+                          <p className="text-lg font-medium">Aucun email trouvé</p>
+                          <p className="text-sm text-gray-500">Modifiez vos filtres pour voir plus de résultats</p>
+                        </div>
+                      ) : (
+                        <AnimatePresence mode="popLayout">
+                          {filteredEmails.map((email, index) => (
+                            <EmailRow
+                              key={email.id}
+                              email={email}
+                              onClick={() => openEmailDetail(email)}
+                              getCategoryColor={getCategoryColor}
+                              getSentimentIcon={getSentimentIcon}
+                              onReply={(email) => {
+                                setEmailToReply(email);
+                                setReplyDialogOpen(true);
+                              }}
+                              onDelete={(emailId) => deleteEmail(emailId)}
+                              isLightMode={isLightMode}
+                            />
+                          ))}
+                        </AnimatePresence>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+            </Card>
+          </div>
+        </main>
       </div>
 
-      {/* Windows/Modals */}
+      {/* Modals & Windows */}
       <EmailDetailWindow
         email={selectedEmailForDetail}
         isOpen={emailDetailOpen}
@@ -770,58 +739,57 @@ export default function MailCenterPage() {
         />
       )}
 
+      {/* Delete Account Confirmation */}
       <AnimatePresence>
         {accountToDelete && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={() => !isDeletingAccount && setAccountToDelete(null)}
-          >
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-xl max-w-md w-full" onClick={e => e.stopPropagation()}>
-              <h3 className="text-lg font-bold mb-2">Supprimer ce compte ?</h3>
-              <p className="text-gray-500 mb-6">Cette action est irréversible.</p>
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => setAccountToDelete(null)}>Annuler</Button>
-                <Button variant="destructive" className="flex-1" onClick={confirmDeleteAccount}>Supprimer</Button>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className={cn(
+                "w-full max-w-md p-6 rounded-xl shadow-2xl",
+                isLightMode ? "bg-white" : "bg-[#1a1f3a] border border-white/10"
+              )}
+            >
+              <h3 className={cn("text-lg font-bold mb-2", isLightMode ? "text-gray-900" : "text-white")}>
+                Supprimer ce compte ?
+              </h3>
+              <p className={cn("mb-6", isLightMode ? "text-gray-600" : "text-gray-400")}>
+                Êtes-vous sûr de vouloir supprimer le compte <span className="font-semibold">{accountToDelete.email}</span> ? Cette action est irréversible.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setAccountToDelete(null)}>Annuler</Button>
+                <Button variant="destructive" onClick={confirmDeleteAccount} disabled={isDeletingAccount}>
+                  {isDeletingAccount ? "Suppression..." : "Supprimer"}
+                </Button>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-// Composant EmailCard avec animations vraiment innovantes
-function EmailCard({ 
+// Composant EmailRow (Style Liste Moderne)
+function EmailRow({ 
   email, 
-  index, 
-  isSelected, 
   onClick, 
   getCategoryColor, 
   getSentimentIcon,
   onReply,
   onDelete,
-  isLightMode = false,
-  theme,
-  colors
+  isLightMode
 }: { 
   email: EmailCache;
-  index: number;
-  isSelected: boolean;
   onClick: () => void;
   getCategoryColor: (cat: string | null) => string;
   getSentimentIcon: (sent: string | null, urg: number) => React.ReactNode;
   onReply?: (email: EmailCache) => void;
   onDelete?: (emailId: string) => void;
-  isLightMode?: boolean;
-  theme: string;
-  colors: any;
+  isLightMode: boolean;
 }) {
-  const [isHovered, setIsHovered] = useState(false);
-
   const initials = email.from_name
     ?.split(' ')
     .slice(0, 2)
@@ -833,86 +801,80 @@ function EmailCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ delay: index * 0.03, duration: 0.2 }}
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        'relative p-4 rounded-xl border cursor-pointer transition-all duration-300 overflow-hidden group backdrop-blur-3xl shadow-sm',
-        'hover:scale-[1.01] hover:-translate-y-0.5 hover:shadow-md',
-        isLightMode
-          ? 'border-gray-100 bg-white hover:border-blue-200'
-          : 'border-white/5 bg-white/5 hover:border-blue-500/30 hover:bg-white/10',
-        !email.is_read && (isLightMode 
-          ? 'font-semibold border-l-4 border-l-blue-500 bg-blue-50/30' 
-          : 'font-semibold border-l-4 border-l-blue-400 bg-blue-500/5')
+        "group flex items-center gap-4 p-4 cursor-pointer transition-all border-l-4",
+        isLightMode 
+          ? "hover:bg-gray-50" 
+          : "hover:bg-white/5",
+        !email.is_read 
+          ? "border-l-blue-500 bg-blue-50/30 dark:bg-blue-500/5" 
+          : "border-l-transparent"
       )}
     >
-      <div className="relative flex gap-4 z-10 items-center">
-        {/* Avatar */}
-        <Avatar className={cn(
-          "w-10 h-10 flex-shrink-0 border transition-all",
-          isLightMode ? "border-gray-200" : "border-white/10"
-        )}>
+      <div className="flex-shrink-0 relative">
+        <Avatar className="w-10 h-10">
           <AvatarFallback className={cn(
             "font-bold text-xs",
-            isLightMode 
-              ? "bg-gray-100 text-gray-600"
-              : "bg-white/10 text-gray-300"
+            isLightMode ? "bg-gray-100 text-gray-600" : "bg-white/10 text-gray-300"
           )}>
             {initials}
           </AvatarFallback>
         </Avatar>
+        {!email.is_read && (
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-[#1a1f3a]" />
+        )}
+      </div>
 
-        {/* Contenu */}
-        <div className="flex-1 min-w-0 grid grid-cols-12 gap-4 items-center">
-          <div className="col-span-3 min-w-0">
-            <p className={cn(
-              "text-sm font-medium truncate",
-              isLightMode ? "text-gray-900" : "text-white"
-            )}>
-              {email.from_name || email.from_email}
-            </p>
-          </div>
+      <div className="flex-1 min-w-0 grid grid-cols-12 gap-4 items-center">
+        <div className="col-span-3 min-w-0">
+          <p className={cn(
+            "text-sm font-medium truncate",
+            isLightMode ? "text-gray-900" : "text-white",
+            !email.is_read && "font-bold"
+          )}>
+            {email.from_name || email.from_email}
+          </p>
+        </div>
+        
+        <div className="col-span-7 min-w-0">
+           <div className="flex items-center gap-2">
+              <p className={cn(
+                "text-sm truncate",
+                isLightMode ? "text-gray-600" : "text-gray-400",
+                !email.is_read && (isLightMode ? "text-gray-900 font-medium" : "text-white font-medium")
+              )}>
+                {email.subject || '(sans objet)'}
+              </p>
+              {email.support_category && (
+                <Badge variant="outline" className={cn('text-[10px] h-5 px-1.5 flex-shrink-0', getCategoryColor(email.support_category))}>
+                  {getCategoryConfig(email.support_category)?.label || email.support_category}
+                </Badge>
+              )}
+           </div>
+        </div>
+
+        <div className="col-span-2 flex items-center justify-end gap-3">
+          <span className={cn(
+            "text-xs whitespace-nowrap",
+            isLightMode ? "text-gray-400" : "text-gray-500"
+          )}>{timeAgo}</span>
           
-          <div className="col-span-6 min-w-0">
-             <div className="flex items-center gap-2">
-                <p className={cn(
-                  "text-sm truncate",
-                  isLightMode ? "text-gray-600" : "text-gray-300",
-                  !email.is_read && (isLightMode ? "text-gray-900 font-medium" : "text-white font-medium")
-                )}>
-                  {email.subject || '(sans objet)'}
-                </p>
-                {email.support_category && (
-                  <Badge variant="outline" className={cn('text-[10px] h-5 px-1.5 flex-shrink-0', getCategoryColor(email.support_category))}>
-                    {getCategoryConfig(email.support_category)?.label || email.support_category}
-                  </Badge>
-                )}
-             </div>
-          </div>
-
-          <div className="col-span-3 flex items-center justify-end gap-3">
-            <span className={cn(
-              "text-xs whitespace-nowrap",
-              isLightMode ? "text-gray-400" : "text-gray-500"
-            )}>{timeAgo}</span>
-            
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {onReply && (
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onReply(email); }}>
-                  <Reply className="w-4 h-4" />
-                </Button>
-              )}
-              {onDelete && (
-                <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDelete(email.id); }}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onReply && (
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); onReply(email); }}>
+                <Reply className="w-4 h-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={(e) => { e.stopPropagation(); onDelete(email.id); }}>
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -922,11 +884,10 @@ function EmailCard({
 
 function getTimeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  
   if (seconds < 60) return 'À l\'instant';
   if (seconds < 3600) return `Il y a ${Math.floor(seconds / 60)} min`;
   if (seconds < 86400) return `Il y a ${Math.floor(seconds / 3600)} h`;
   if (seconds < 604800) return `Il y a ${Math.floor(seconds / 86400)} j`;
-  
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
+
