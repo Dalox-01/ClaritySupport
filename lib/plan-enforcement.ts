@@ -358,9 +358,9 @@ export function getNextPlan(currentPlan: PlanName, currentSegment: SegmentType):
  */
 export function getHumanReadablePlanName(planName: PlanName): string {
   const mapping: Record<PlanName, string> = {
-    STARTER_SHOPIFY: 'STARTER E-commerce',
-    PRO_SHOPIFY: 'PRO E-commerce',
-    SCALE_SHOPIFY: 'SCALE E-commerce',
+    STARTER: 'STARTER E-commerce',
+    PRO: 'PRO E-commerce',
+    SCALE: 'SCALE E-commerce',
     FREE: 'Gratuit',
   };
   
