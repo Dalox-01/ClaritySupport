@@ -131,6 +131,7 @@ BEGIN
     WHEN 'STARTER' THEN 0     -- Pas de filtres personnalisés
     WHEN 'PRO' THEN 5         -- 5 filtres personnalisés
     WHEN 'ENTERPRISE' THEN 999999 -- Illimité (infini pratique)
+    WHEN 'SCALE' THEN 999999 -- Illimité (nouveau nom pour Enterprise)
     ELSE 0
   END;
 

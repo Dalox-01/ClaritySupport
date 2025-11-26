@@ -181,21 +181,48 @@ export async function POST(req: NextRequest) {
     }
 
     // Vérifier la limite de filtres personnalisés pour le plan
+    let limitCheck: LimitCheckResult;
+
     const { data, error: limitError } = await supabase
       .rpc('check_custom_filter_limit', { p_user_id: userId })
       .single();
 
     if (limitError) {
-      console.error('❌ Error checking limit:', limitError);
-      throw limitError;
+      console.warn('⚠️ RPC check_custom_filter_limit failed, falling back to manual check:', limitError.message);
+      
+      // Fallback: Récupérer le plan et compter manuellement
+      const { data: user } = await supabase
+        .from('users')
+        .select('plan')
+        .eq('id', userId)
+        .single();
+        
+      const plan = (user?.plan || 'FREE').toUpperCase();
+      
+      // Limites hardcodées (fallback)
+      let maxAllowed = 0;
+      if (plan === 'PRO') maxAllowed = 5;
+      if (plan === 'ENTERPRISE' || plan === 'SCALE') maxAllowed = 999999;
+      
+      const { count } = await supabase
+        .from('user_filters')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_default', false)
+        .eq('is_active', true);
+        
+      const currentCount = count || 0;
+      
+      limitCheck = {
+        can_create: currentCount < maxAllowed,
+        current_count: currentCount,
+        max_allowed: maxAllowed,
+        plan: plan
+      };
+    } else {
+      if (!data) throw new Error('Failed to check filter limits');
+      limitCheck = data as LimitCheckResult;
     }
-
-    if (!data) {
-      throw new Error('Failed to check filter limits');
-    }
-
-    // Annotation de type explicite
-    const limitCheck: LimitCheckResult = data as LimitCheckResult;
 
     if (!limitCheck.can_create) {
       return NextResponse.json({
