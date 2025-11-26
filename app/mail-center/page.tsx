@@ -48,7 +48,7 @@ import Link from 'next/link';
 import { SUPPORT_CATEGORIES, getCategoryColor, getCategoryConfig } from '@/lib/support-categories';
 import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
-import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
+import { TabAIConfigAdvanced, type AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
 import { ShopifyDashboard } from '@/components/mail-center/ShopifyDashboard';
 import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 
@@ -56,7 +56,7 @@ export default function MailCenterPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { theme, colors } = useMailCenterTheme();
-  const [activeTab, setActiveTab] = useState<'inbox' | 'pending' | 'sent' | 'rules' | 'analytics' | 'favorites' | 'archives' | 'shops'>('inbox');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'pending' | 'sent' | 'rules' | 'analytics' | 'favorites' | 'archives' | 'shops' | 'ai-config'>('inbox');
   
   const [selectedEmail, setSelectedEmail] = useState<EmailCache | null>(null);
   const [emails, setEmails] = useState<EmailCache[]>([]);
@@ -384,6 +384,7 @@ export default function MailCenterPage() {
     { id: 'shops', label: 'Boutiques', icon: ShoppingBag },
     { id: 'analytics', label: 'Analytique', icon: BarChart3 },
     { id: 'rules', label: 'Règles', icon: SlidersHorizontal },
+    { id: 'ai-config', label: 'Configuration IA', icon: Sparkles },
   ];
 
   return (
@@ -719,6 +720,14 @@ export default function MailCenterPage() {
                     <FiltersConfigTab 
                       userPlan={userPlan}
                       isLightMode={isLightMode}
+                    />
+                  </div>
+                </ScrollArea>
+              ) : activeTab === 'ai-config' ? (
+                <ScrollArea className="h-full">
+                  <div className={cn("p-6", !isLightMode && "dark")}>
+                    <TabAIConfigAdvanced 
+                      userPlan={userPlan}
                     />
                   </div>
                 </ScrollArea>
