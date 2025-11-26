@@ -56,7 +56,7 @@ export interface UserPlanInfo {
 
 /**
  * Récupère les informations complètes du plan d'un utilisateur
- * Retourne le plan UNIFIÉ (STARTER_SHOPIFY, PRO_SHOPIFY, SCALE_SHOPIFY, FREE)
+ * Retourne le plan UNIFIÉ (STARTER, PRO, SCALE, FREE)
  */
 export async function getUserPlanInfo(userId: string): Promise<UserPlanInfo> {
   // Essayer d'abord la table subscriptions
