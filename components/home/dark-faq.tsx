@@ -58,7 +58,7 @@ export function DarkFaq() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-3 lg:px-6">
         {/* Header */}
         <div className="mb-16 text-center">
           <motion.div

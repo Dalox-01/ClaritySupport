@@ -104,7 +104,7 @@ export function ReviewsSection() {
 
   return (
     <section className="relative overflow-hidden bg-gray-50 py-24 dark:bg-[#0A0E27]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         
         {/* Header */}
         <div className="mb-12 text-center">
