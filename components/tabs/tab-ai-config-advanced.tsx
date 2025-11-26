@@ -13,6 +13,7 @@ import {
   MessageSquare, Send, Pause, FastForward, Rewind, Copy,
   Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -303,6 +304,7 @@ export function TabAIConfigAdvanced({
 }: TabAIConfigAdvancedProps) {
   const [activeSection, setActiveSection] = useState<AIConfigSectionId>(initialSection);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Mode lecture seule si en période d'essai
   const isReadOnly = subscriptionStatus === 'trialing';
@@ -310,6 +312,45 @@ export function TabAIConfigAdvanced({
   useEffect(() => {
     setActiveSection(initialSection);
   }, [initialSection]);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/ai/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.config) {
+            setConfig(data.config);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching AI config:', error);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/ai/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Erreur lors de la sauvegarde');
+      }
+
+      toast.success('Configuration sauvegardée avec succès');
+    } catch (error) {
+      console.error('Error saving config:', error);
+      toast.error('Erreur lors de la sauvegarde de la configuration');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleTabChange = (sectionId: AIConfigSectionId) => {
     // Mapping pour gérer 'ENTERPRISE' qui n'est pas dans PlanName
@@ -580,13 +621,22 @@ export function TabAIConfigAdvanced({
       {/* Footer avec actions */}
       <div className="flex-none p-4 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={isReadOnly}>
+          <Button variant="outline" size="sm" disabled={isReadOnly || isSaving}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Réinitialiser
           </Button>
-          <Button size="sm" className="ml-auto bg-gradient-to-r from-blue-600 to-blue-600" disabled={isReadOnly}>
-            <Save className="w-4 h-4 mr-2" />
-            Sauvegarder
+          <Button 
+            size="sm" 
+            className="ml-auto bg-gradient-to-r from-blue-600 to-blue-600" 
+            disabled={isReadOnly || isSaving}
+            onClick={handleSave}
+          >
+            {isSaving ? (
+              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
           </Button>
         </div>
       </div>
