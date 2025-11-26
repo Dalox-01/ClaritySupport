@@ -238,7 +238,7 @@ export async function GET(req: NextRequest) {
           canceled_at: stripeSub.canceled_at ? new Date(stripeSub.canceled_at * 1000).toISOString() : null,
           trial_end: stripeTrialEnd,
           trial_days_left: trialDaysLeft,
-          is_trial: stripeSub.status === 'trialing' || stripeSub.status === 'trial',
+          is_trial: stripeSub.status === 'trialing',
         }
       });
     } catch (stripeError) {
