@@ -151,7 +151,7 @@ export async function canAddEmailAccountWithSubscription(userId: string): Promis
     return { allowed: false, reason: 'Abonnement non trouvé' };
   }
   
-  const planLimits = getPlanLimits(subscription.plan, subscription.segment);
+  const planLimits = getPlanLimits(subscription.plan);
   const usage = await getUserUsageStats(userId);
 
   // -1 signifie illimité
@@ -213,7 +213,7 @@ export async function canSendAutoReplyWithSubscription(userId: string): Promise<
     return { allowed: false, reason: 'Abonnement non trouvé' };
   }
   
-  const planLimits = getPlanLimits(subscription.plan, subscription.segment);
+  const planLimits = getPlanLimits(subscription.plan);
   const usage = await getUserUsageStats(userId);
 
   // -1 signifie illimité

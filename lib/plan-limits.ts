@@ -102,8 +102,14 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
  * Récupérer les limites d'un plan
  */
 export function getPlanLimits(planName: string | null | undefined): PlanLimits {
-  const normalized = (planName?.toUpperCase() || 'FREE') as PlanName;
-  return PLAN_LIMITS[normalized] || PLAN_LIMITS.FREE;
+  let normalized = (planName?.toUpperCase() || 'FREE');
+  
+  // Alias pour compatibilité
+  if (normalized === 'ENTERPRISE') normalized = 'SCALE';
+  if (normalized === 'UNLIMITED') normalized = 'SCALE';
+  if (normalized === 'SOLO') normalized = 'STARTER';
+
+  return PLAN_LIMITS[normalized as PlanName] || PLAN_LIMITS.FREE;
 }
 
 /**
