@@ -21,7 +21,7 @@ export function GenerateReplyButton({ emailId }: { emailId: string }) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [limitError, setLimitError] = useState<LimitError | null>(null);
   const [loading, setLoading] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState<PlanType>('free');
+  const [currentPlan, setCurrentPlan] = useState<PlanType>('starter');
 
   const handleGenerateReply = async () => {
     setLoading(true);
@@ -96,7 +96,7 @@ export function GenerateReplyButton({ emailId }: { emailId: string }) {
 export function AddEmailAccountButton() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [checking, setChecking] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState<PlanType>('free');
+  const [currentPlan, setCurrentPlan] = useState<PlanType>('starter');
   const [limitError, setLimitError] = useState<LimitError | null>(null);
 
   const handleAddAccount = async (provider: 'gmail' | 'outlook') => {
