@@ -324,6 +324,14 @@ export default function MailCenterPage() {
     return matchesSearch && matchesCategory && matchesAccount;
   });
 
+  // Calcul des compteurs par catégorie
+  const categoryCounts = React.useMemo(() => {
+    return SUPPORT_CATEGORIES.reduce((acc, cat) => {
+      acc[cat.id] = emails.filter(e => e.support_category === cat.id && !archivedEmails.includes(e.id)).length;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [emails, archivedEmails]);
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
@@ -463,15 +471,35 @@ export default function MailCenterPage() {
                       key={cat.id}
                       onClick={() => setFilterCategory(cat.id)}
                       className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all group",
                         filterCategory === cat.id
                           ? isLightMode ? "bg-gray-100 text-gray-900 font-medium" : "bg-white/10 text-white font-medium"
                           : isLightMode ? "text-gray-600 hover:bg-gray-50" : "text-gray-400 hover:bg-white/5"
                       )}
                       title={!sidebarOpen ? cat.label : undefined}
                     >
-                      <div className={cn("w-2.5 h-2.5 rounded-full flex-shrink-0", getCategoryColor(cat.id).replace('bg-', 'bg-').replace('/10', ''))} />
-                      {sidebarOpen && <span className="truncate">{cat.label}</span>}
+                      <cat.icon className={cn(
+                        "w-4 h-4 flex-shrink-0 transition-colors",
+                        filterCategory === cat.id 
+                          ? (isLightMode ? "text-gray-900" : "text-white")
+                          : (isLightMode ? "text-gray-400 group-hover:text-gray-600" : "text-gray-500 group-hover:text-gray-300")
+                      )} />
+                      
+                      {sidebarOpen && (
+                        <>
+                          <span className="truncate flex-1 text-left">{cat.label}</span>
+                          {categoryCounts[cat.id] > 0 && (
+                            <span className={cn(
+                              "text-xs font-medium px-1.5 py-0.5 rounded-md transition-colors",
+                              filterCategory === cat.id
+                                ? (isLightMode ? "bg-white text-gray-900" : "bg-white/20 text-white")
+                                : (isLightMode ? "bg-gray-100 text-gray-600 group-hover:bg-gray-200" : "bg-white/5 text-gray-400 group-hover:bg-white/10")
+                            )}>
+                              {categoryCounts[cat.id]}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </button>
                   ))}
                 </motion.div>
