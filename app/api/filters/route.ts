@@ -34,6 +34,59 @@ const FALLBACK_LIMITS: Record<PlanName, number> = {
   SCALE: 999999,
 };
 
+const DEFAULT_FILTER_TEMPLATES = [
+  {
+    name: 'Support technique',
+    description: 'Questions techniques et problèmes à résoudre',
+    color: '#3B82F6',
+    icon: 'Wrench',
+    filter_key: 'support_technique',
+    keywords: ['bug', 'erreur', 'problème', 'ne fonctionne pas', 'crash', 'plantage', 'technique'],
+    detection_rules: { matchMode: 'any', caseSensitive: false },
+    response_config: { tone: 'technique', language: 'fr', priorityLevel: 'high' },
+  },
+  {
+    name: 'Questions commerciales',
+    description: 'Demandes sur les prix et fonctionnalités',
+    color: '#10B981',
+    icon: 'DollarSign',
+    filter_key: 'commercial',
+    keywords: ['prix', 'tarif', 'coût', 'abonnement', 'plan', 'fonctionnalité', 'démo'],
+    detection_rules: { matchMode: 'any', caseSensitive: false },
+    response_config: { tone: 'cordial', language: 'fr', priorityLevel: 'normal' },
+  },
+  {
+    name: 'Réclamations',
+    description: 'Plaintes et demandes de remboursement',
+    color: '#EF4444',
+    icon: 'AlertTriangle',
+    filter_key: 'reclamations',
+    keywords: ['remboursement', 'insatisfait', 'déçu', 'plainte', 'réclamation', 'mauvais service', 'annuler'],
+    detection_rules: { matchMode: 'any', caseSensitive: false },
+    response_config: { tone: 'empathique', language: 'fr', priorityLevel: 'high' },
+  },
+  {
+    name: 'Questions générales',
+    description: 'Demandes d\'information diverses',
+    color: '#8B5CF6',
+    icon: 'HelpCircle',
+    filter_key: 'general',
+    keywords: ['comment', 'quoi', 'pourquoi', 'où', 'quand', 'qui', 'information'],
+    detection_rules: { matchMode: 'any', caseSensitive: false },
+    response_config: { tone: 'cordial', language: 'fr', priorityLevel: 'normal' },
+  },
+  {
+    name: 'Urgent',
+    description: 'Demandes urgentes nécessitant une réponse rapide',
+    color: '#F59E0B',
+    icon: 'Zap',
+    filter_key: 'urgent',
+    keywords: ['urgent', 'ASAP', 'immédiat', 'rapidement', 'vite', 'prioritaire', 'critique'],
+    detection_rules: { matchMode: 'any', caseSensitive: false },
+    response_config: { tone: 'pro', language: 'fr', priorityLevel: 'high', autoReplyEnabled: true },
+  },
+];
+
 function normalizeLimitCheck(result: LimitCheckResult): LimitCheckResult & { plan: PlanName } {
   const normalizedPlan = normalizePlanName(result.plan);
   const maxAllowed = FALLBACK_LIMITS[normalizedPlan];
@@ -45,6 +98,28 @@ function normalizeLimitCheck(result: LimitCheckResult): LimitCheckResult & { pla
     max_allowed: maxAllowed,
     can_create: isUnlimited ? true : (result.can_create ?? (result.current_count < maxAllowed)),
   };
+}
+
+async function seedDefaultFilters(userId: string) {
+  const payload = DEFAULT_FILTER_TEMPLATES.map((template) => ({
+    ...template,
+    user_id: userId,
+    is_default: true,
+    is_active: true,
+    usage_count: 0,
+    last_used_at: null,
+  }));
+
+  const { data, error } = await supabase
+    .from('user_filters')
+    .insert(payload)
+    .select('id');
+
+  if (error) {
+    throw error;
+  }
+
+  return data?.length || payload.length;
 }
 
 export interface UserFilter {
@@ -110,15 +185,19 @@ export async function GET(req: NextRequest) {
     if (!filters || filters.length === 0) {
       console.log('🔵 No filters found, initializing defaults...');
       
+      let initializedCount = 0;
+
       const { data: initResult, error: initError } = await supabase
         .rpc('initialize_default_filters', { p_user_id: userId });
 
       if (initError) {
-        console.error('❌ Error initializing filters:', initError);
-        throw initError;
+        console.warn('⚠️ RPC initialize_default_filters failed, using fallback seeding:', initError.message);
+        initializedCount = await seedDefaultFilters(userId);
+      } else {
+        initializedCount = initResult || 0;
       }
 
-      console.log(`✅ Initialized ${initResult} default filters`);
+      console.log(`✅ Initialized ${initializedCount} default filters`);
 
       // Re-fetch après initialisation
       const { data: newFilters, error: refetchError } = await supabase
