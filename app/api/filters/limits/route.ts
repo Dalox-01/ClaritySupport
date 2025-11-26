@@ -16,17 +16,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/db';
+import { PlanName, normalizePlanName } from '@/lib/plan-limits';
 
 export const dynamic = 'force-dynamic';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: { autoRefreshToken: false, persistSession: false },
-  }
-);
 
 interface LimitCheckResult {
   can_create: boolean;
@@ -34,13 +27,16 @@ interface LimitCheckResult {
   max_allowed: number;
   plan: string;
 }
+const FALLBACK_LIMITS: Record<PlanName, number> = {
+  STARTER: 0,
+  PRO: 5,
+  SCALE: 999999,
+};
 
-const UNLIMITED_PLANS = new Set(['ADMIN', 'ENTERPRISE', 'SCALE']);
-
-function normalizeLimitCheck(result: LimitCheckResult): LimitCheckResult {
-  const normalizedPlan = (result.plan || 'FREE').toUpperCase();
-  const isUnlimited = UNLIMITED_PLANS.has(normalizedPlan);
-  const maxAllowed = isUnlimited ? 999999 : (result.max_allowed ?? 0);
+function normalizeLimitCheck(result: LimitCheckResult): LimitCheckResult & { plan: PlanName } {
+  const normalizedPlan = normalizePlanName(result.plan);
+  const maxAllowed = FALLBACK_LIMITS[normalizedPlan];
+  const isUnlimited = normalizedPlan === 'SCALE';
 
   return {
     ...result,
@@ -81,12 +77,8 @@ export async function GET(req: NextRequest) {
         .eq('id', userId)
         .maybeSingle();
         
-      const plan = (user?.plan || 'FREE').toUpperCase();
-      
-      // Limites hardcodées (fallback)
-      let maxAllowed = 0;
-      if (plan === 'PRO') maxAllowed = 5;
-      if (plan === 'ENTERPRISE' || plan === 'SCALE' || plan === 'ADMIN') maxAllowed = 999999;
+      const normalizedPlan = normalizePlanName(user?.plan);
+      const maxAllowed = FALLBACK_LIMITS[normalizedPlan];
       
       const { count } = await supabase
         .from('user_filters')
@@ -101,7 +93,7 @@ export async function GET(req: NextRequest) {
         can_create: currentCount < maxAllowed,
         current_count: currentCount,
         max_allowed: maxAllowed,
-        plan,
+        plan: normalizedPlan,
       });
     } else {
       if (!data) throw new Error('Failed to check filter limits');
