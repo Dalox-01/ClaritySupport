@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       const { plan, billingPeriod: period } = body;
 
       // Valider le plan
-      const validPlans: PlanType[] = ['starter', 'pro', 'enterprise'];
+      const validPlans: PlanType[] = ['starter', 'pro', 'scale'];
       if (!validPlans.includes(plan)) {
         return NextResponse.json({ 
           error: 'Plan invalide',
