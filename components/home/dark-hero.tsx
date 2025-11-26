@@ -39,9 +39,9 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="mb-6 text-5xl font-bold leading-tight text-gray-900 dark:text-slate-50 sm:text-6xl lg:text-7xl relative z-30"
+              className="mb-6 text-4xl font-bold leading-tight text-gray-900 dark:text-slate-50 sm:text-5xl lg:text-6xl relative z-30"
             >
-              Arrête de <span className="text-gray-500 dark:text-slate-400">Perdre du temps.</span><br/>
+              <span className="text-gray-500 dark:text-slate-400">Arrête de perdre du temps.</span>{' '}
               <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-sky-400 dark:to-blue-500">Optimise ton support client.</span>
             </motion.h1>
 
@@ -50,7 +50,7 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="mb-10 max-w-xl text-lg leading-relaxed text-gray-600 dark:text-slate-300"
+              className="mb-8 max-w-2xl text-base leading-relaxed text-gray-600 dark:text-slate-300"
             >
               ClaritySupport automatise vos réponses emails avec une IA de pointe, 
               analyse le sentiment client en temps réel, et booste votre productivité — 
@@ -62,18 +62,18 @@ export function DarkHero({ onGetStarted }: DarkHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="mb-10 flex flex-wrap gap-3"
+              className="mb-8 flex flex-wrap gap-2"
             >
-              <div className="flex items-center gap-2 rounded-full bg-white/80 px-5 py-3 shadow-lg shadow-blue-500/5 border border-gray-200 dark:bg-slate-800/60 dark:shadow-[0_15px_40px_rgba(59,130,246,0.2)] dark:border-slate-700/50 backdrop-blur-sm">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
+              <div className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-lg shadow-blue-500/5 border border-gray-200 dark:bg-slate-800/60 dark:shadow-[0_15px_40px_rgba(59,130,246,0.2)] dark:border-slate-700/50 backdrop-blur-sm">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">
                   <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Réponses IA</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-white/80 px-5 py-3 shadow-lg shadow-blue-500/5 border border-gray-200 dark:bg-slate-800/60 dark:shadow-[0_15px_40px_rgba(59,130,246,0.2)] dark:border-slate-700/50 backdrop-blur-sm">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-500">
+              <div className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-lg shadow-blue-500/5 border border-gray-200 dark:bg-slate-800/60 dark:shadow-[0_15px_40px_rgba(59,130,246,0.2)] dark:border-slate-700/50 backdrop-blur-sm">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-500">
                   <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>

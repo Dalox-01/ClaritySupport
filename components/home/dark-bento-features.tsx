@@ -206,7 +206,7 @@ export function DarkBentoFeatures() {
         </div>
 
         {/* Bento Grid - Main Features */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {mainFeatures.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -229,7 +229,7 @@ export function DarkBentoFeatures() {
                 className="group relative"
                 style={{ transformStyle: 'preserve-3d' }}
               >
-                <div className="relative h-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-300 group-hover:border-blue-500/30 group-hover:shadow-xl dark:border-blue-500/10 dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] dark:shadow-none">
+                <div className="relative h-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 group-hover:border-blue-500/30 group-hover:shadow-xl dark:border-blue-500/10 dark:bg-gradient-to-br dark:from-[#1a1f3a] dark:to-[#0f1320] dark:shadow-none">
                   {/* Animated gradient border on hover */}
                   <motion.div
                     className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100"
@@ -343,7 +343,7 @@ export function DarkBentoFeatures() {
               transition={{ duration: 0.5 }}
               className="overflow-hidden"
             >
-              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {additionalFeatures.map((feature, index) => {
                   const Icon = feature.icon;
                   return (
@@ -358,7 +358,7 @@ export function DarkBentoFeatures() {
                       }}
                       className="group relative"
                     >
-                      <div className="relative h-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-500 hover:border-blue-200 hover:bg-blue-50 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-sm dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:shadow-2xl">
+                      <div className="relative h-full overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-500 hover:border-blue-200 hover:bg-blue-50 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-sm dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:shadow-2xl">
                         {/* Icon container */}
                         <motion.div
                           className={`mb-6 inline-flex rounded-2xl bg-gradient-to-br ${feature.gradient} p-4`}
