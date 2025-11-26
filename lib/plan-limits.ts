@@ -4,20 +4,7 @@
  */
 
 export type PlanName = 
-  // E-commerce (Shopify) - 3 plans
-  | 'STARTER_SHOPIFY' | 'PRO_SHOPIFY' | 'SCALE_SHOPIFY'
-  // Système
-  | 'FREE';
-
-// Compatibilité ancienne nomenclature (pour migration)
-export const PLAN_NAME_MAPPING: Record<string, PlanName> = {
-  // E-commerce
-  'STARTER': 'STARTER_SHOPIFY',
-  'PRO': 'PRO_SHOPIFY', // Par défaut, PRO = E-commerce
-  'SCALE': 'SCALE_SHOPIFY',
-  // Gratuit
-  'FREE': 'FREE',
-};
+  | 'STARTER' | 'PRO' | 'SCALE' | 'FREE';
 
 export interface PlanLimits {
   // Limites emails
@@ -36,15 +23,17 @@ export interface PlanLimits {
   signatureDynamique: boolean;
   upsellAuto: boolean;
   orderTracking: boolean;
+  
+  // Personnalisation IA
+  aiCustomizationLevel: 'none' | 'basic' | 'full'; // none, basic (filters/keywords), full
+  ragFileLimit: number; // Nombre de fichiers dans la base de connaissances (-1 = illimité)
 }
 
 /**
- * Configuration des 6 PLANS DISTINCTS
- * Chaque plan est unique avec ses propres limites et prix
+ * Configuration des PLANS
  */
 export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
-  // ============ E-COMMERCE (SHOPIFY) - 3 PLANS ============
-  STARTER_SHOPIFY: {
+  STARTER: {
     emailAccounts: 3,
     autoRepliesPerMonth: 5000,
     aiTemplates: false,
@@ -56,9 +45,11 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     signatureDynamique: false,
     upsellAuto: false,
     orderTracking: true,
+    aiCustomizationLevel: 'basic',
+    ragFileLimit: 0,
   },
   
-  PRO_SHOPIFY: {
+  PRO: {
     emailAccounts: 10,
     autoRepliesPerMonth: 20000,
     aiTemplates: true,
@@ -70,11 +61,13 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     signatureDynamique: true,
     upsellAuto: true,
     orderTracking: true,
+    aiCustomizationLevel: 'full',
+    ragFileLimit: 5,
   },
   
-  SCALE_SHOPIFY: {
+  SCALE: {
     emailAccounts: -1, // illimité
-    autoRepliesPerMonth: 50000,
+    autoRepliesPerMonth: 60000,
     aiTemplates: true,
     prioritySupport: true,
     analytics: true,
@@ -84,9 +77,10 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     signatureDynamique: true,
     upsellAuto: true,
     orderTracking: true,
+    aiCustomizationLevel: 'full',
+    ragFileLimit: -1,
   },
   
-  // ============ GRATUIT ============
   FREE: {
     emailAccounts: 1,
     autoRepliesPerMonth: 100,
@@ -99,49 +93,17 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
     signatureDynamique: false,
     upsellAuto: false,
     orderTracking: false,
+    aiCustomizationLevel: 'none',
+    ragFileLimit: 0,
   },
 };
 
 /**
- * Convertir un nom de plan + segment en PlanName unifié
+ * Récupérer les limites d'un plan
  */
-export function getPlanNameWithSegment(planBaseName: string, segment: 'shopify'): PlanName {
-  const normalized = planBaseName.toUpperCase();
-  
-  if (segment === 'shopify') {
-    if (normalized === 'STARTER') return 'STARTER_SHOPIFY';
-    if (normalized === 'PRO') return 'PRO_SHOPIFY';
-    if (normalized === 'SCALE') return 'SCALE_SHOPIFY';
-  }
-  
-  if (normalized === 'FREE') return 'FREE';
-  
-  // Fallback: essayer le mapping direct
-  return PLAN_NAME_MAPPING[normalized] || 'FREE';
-}
-
-/**
- * Récupérer les limites d'un plan avec gestion du segment
- * NOUVELLE VERSION: Utilise les plans unifiés (PRO_SHOPIFY vs PRO_FREELANCE)
- */
-export function getPlanLimits(planName: string | null | undefined, segment?: 'shopify'): PlanLimits {
-  if (!planName) return PLAN_LIMITS.FREE;
-  
-  // Si segment fourni, construire le nom de plan complet
-  if (segment) {
-    const fullPlanName = getPlanNameWithSegment(planName, segment);
-    return PLAN_LIMITS[fullPlanName] || PLAN_LIMITS.FREE;
-  }
-  
-  // Essayer en tant que plan unifié direct
-  const normalizedPlan = planName.toUpperCase() as PlanName;
-  if (PLAN_LIMITS[normalizedPlan]) {
-    return PLAN_LIMITS[normalizedPlan];
-  }
-  
-  // Fallback: utiliser le mapping
-  const mappedPlan = PLAN_NAME_MAPPING[normalizedPlan];
-  return PLAN_LIMITS[mappedPlan] || PLAN_LIMITS.FREE;
+export function getPlanLimits(planName: string | null | undefined): PlanLimits {
+  const normalized = (planName?.toUpperCase() || 'FREE') as PlanName;
+  return PLAN_LIMITS[normalized] || PLAN_LIMITS.FREE;
 }
 
 /**
@@ -193,3 +155,4 @@ export function getUsagePercentage(planName: string | null | undefined, usageThi
   
   return Math.min(100, Math.round((usageThisMonth / limits.autoRepliesPerMonth) * 100));
 }
+

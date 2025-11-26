@@ -25,12 +25,22 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getPlanLimits, PlanName } from '@/lib/plan-limits';
 
 export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
 
 interface TabAIConfigAdvancedProps {
   userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
   initialSection?: AIConfigSectionId;
+  subscriptionStatus?: string | null;
 }
 
 // Types avancés pour la configuration IA
@@ -289,11 +299,34 @@ interface AlertConfig {
 export function TabAIConfigAdvanced({
   userPlan = 'FREE',
   initialSection = 'models',
+  subscriptionStatus
 }: TabAIConfigAdvancedProps) {
   const [activeSection, setActiveSection] = useState<AIConfigSectionId>(initialSection);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+  // Mode lecture seule si en période d'essai
+  const isReadOnly = subscriptionStatus === 'trialing';
+
   useEffect(() => {
     setActiveSection(initialSection);
   }, [initialSection]);
+
+  const handleTabChange = (sectionId: AIConfigSectionId) => {
+    // Mapping pour gérer 'ENTERPRISE' qui n'est pas dans PlanName
+    const normalizedPlan = (userPlan === 'ENTERPRISE' ? 'SCALE' : userPlan) as PlanName;
+    const limits = getPlanLimits(normalizedPlan);
+    
+    // Sections nécessitant le niveau 'full' (PRO ou SCALE)
+    const advancedSections: AIConfigSectionId[] = ['models', 'prompts', 'rag', 'testing', 'security'];
+    
+    if (advancedSections.includes(sectionId) && limits.aiCustomizationLevel !== 'full') {
+      setShowUpgradeModal(true);
+      return;
+    }
+    
+    setActiveSection(sectionId);
+  };
+
   const [config, setConfig] = useState<AdvancedAIConfig>({
     models: {
       primary: {
@@ -479,7 +512,7 @@ export function TabAIConfigAdvanced({
                 return (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => handleTabChange(section.id)}
                     className={cn(
                       'flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-300 whitespace-nowrap hover:scale-[1.02] active:scale-[0.98]',
                       isActive
@@ -490,6 +523,11 @@ export function TabAIConfigAdvanced({
                     <Icon className="w-4 h-4" />
                     <span className="text-sm font-medium">{section.name}</span>
                     {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+                    {/* Lock icon for restricted sections */}
+                    {['models', 'prompts', 'rag', 'testing', 'security'].includes(section.id) && 
+                     getPlanLimits((userPlan === 'ENTERPRISE' ? 'SCALE' : userPlan) as PlanName).aiCustomizationLevel !== 'full' && (
+                      <Lock className="w-3 h-3 ml-2 text-slate-400" />
+                    )}
                   </button>
                 );
               })}
@@ -498,9 +536,20 @@ export function TabAIConfigAdvanced({
         </div>
       </div>
 
+      {/* Banner Mode Essai */}
+      {isReadOnly && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-400">
+          <Lock className="w-4 h-4" />
+          <span>Mode lecture seule : La configuration est désactivée pendant la période d'essai.</span>
+          <Button variant="link" size="sm" className="h-auto p-0 text-amber-800 dark:text-amber-300 underline">
+            Passer au plan complet
+          </Button>
+        </div>
+      )}
+
       {/* Contenu scrollable */}
       <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6">
+        <div className={cn("p-6 space-y-6", isReadOnly && "opacity-80 pointer-events-none")}>
           <AnimatePresence mode="wait">
             {activeSection === 'models' && (
               <ModelConfigSection key="models" config={config} setConfig={setConfig} />
@@ -509,7 +558,7 @@ export function TabAIConfigAdvanced({
               <PromptsConfigSection key="prompts" config={config} setConfig={setConfig} />
             )}
             {activeSection === 'rag' && (
-              <RAGConfigSection key="rag" config={config} setConfig={setConfig} />
+              <RAGConfigSection key="rag" config={config} setConfig={setConfig} userPlan={userPlan} />
             )}
             {activeSection === 'testing' && (
               <TestingConfigSection 
@@ -531,16 +580,60 @@ export function TabAIConfigAdvanced({
       {/* Footer avec actions */}
       <div className="flex-none p-4 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled={isReadOnly}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Réinitialiser
           </Button>
-          <Button size="sm" className="ml-auto bg-gradient-to-r from-blue-600 to-blue-600">
+          <Button size="sm" className="ml-auto bg-gradient-to-r from-blue-600 to-blue-600" disabled={isReadOnly}>
             <Save className="w-4 h-4 mr-2" />
             Sauvegarder
           </Button>
         </div>
       </div>
+
+      {/* Modal Upgrade */}
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="sm:max-w-[425px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <DialogHeader>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+              <Sparkles className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <DialogTitle className="text-center text-xl">Fonctionnalité PRO</DialogTitle>
+            <DialogDescription className="text-center pt-2">
+              La configuration avancée de l'IA (Modèles, Prompts, RAG) est réservée aux plans PRO et SCALE.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+              <h4 className="mb-2 font-medium text-sm">Avec le plan PRO :</h4>
+              <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  Personnalisation complète des prompts
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  Base de connaissances (RAG)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  Choix du modèle et température
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="sm:justify-center">
+            <Button variant="outline" onClick={() => setShowUpgradeModal(false)}>
+              Plus tard
+            </Button>
+            <Button className="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20">
+              Passer au plan PRO
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1207,19 +1300,15 @@ function PromptsConfigSection({ config, setConfig }: any) {
   );
 }
 
-function RAGConfigSection({ config, setConfig }: any) {
+function RAGConfigSection({ config, setConfig, userPlan }: any) {
   const [uploadedFiles, setUploadedFiles] = useState<Array<{id: string, name: string, type: string, size: number, uploadedAt: string}>>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
-  // Limites selon le plan (à récupérer du contexte utilisateur)
-  const userPlan = 'pro'; // 'basic', 'pro', 'enterprise'
-  const fileLimits = {
-    basic: 1,
-    pro: 5,
-    enterprise: Infinity
-  };
-  const maxFiles = fileLimits[userPlan as keyof typeof fileLimits];
+  // Limites selon le plan
+  const normalizedPlan = (userPlan === 'ENTERPRISE' ? 'SCALE' : userPlan) as PlanName;
+  const limits = getPlanLimits(normalizedPlan);
+  const maxFiles = limits.ragFileLimit === -1 ? Infinity : limits.ragFileLimit;
   const canUploadMore = uploadedFiles.length < maxFiles;
 
   const handleFileUpload = async (files: FileList | null) => {
@@ -1747,7 +1836,7 @@ function SecurityConfigSection({ config, setConfig }: any) {
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <Check className="w-3 h-3 text-blue-500" />
-                  <span>Téléphones : 06 12 34 56 78 → 06 ** ** ** 78</span>
+                  <span>Téléphones : 06 12 34 56 78 →  06 ** ** ** 78</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <Check className="w-3 h-3 text-blue-500" />

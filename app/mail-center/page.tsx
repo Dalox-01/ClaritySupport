@@ -94,8 +94,9 @@ export default function MailCenterPage() {
   const [supportConfigInitialTab, setSupportConfigInitialTab] = useState<'ai-config' | 'filters'>('ai-config');
   const [supportConfigInitialSection, setSupportConfigInitialSection] = useState<AIConfigSectionId>('models');
   
-  // User plan
-  const [userPlan] = useState<'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE'>('PRO');
+  // User plan & Subscription
+  const [userPlan, setUserPlan] = useState<'FREE' | 'STARTER' | 'PRO' | 'SCALE' | 'ENTERPRISE'>('FREE');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>('active');
   
   // State pour le thème
   const [isLightMode, setIsLightMode] = useState(true);
@@ -226,6 +227,16 @@ export default function MailCenterPage() {
   const loadInitialData = async (triggerSync = false) => {
     setIsLoading(true);
     try {
+      // Charger l'abonnement
+      const subRes = await fetch('/api/subscription/current');
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        if (subData.subscription) {
+          setUserPlan(subData.subscription.plan as any);
+          setSubscriptionStatus(subData.subscription.status);
+        }
+      }
+
       const accountsRes = await fetch('/api/mail-center/accounts');
       if (accountsRes.ok) {
         const accountsData = await accountsRes.json();
@@ -738,6 +749,7 @@ export default function MailCenterPage() {
                   <div className={cn("p-6", !isLightMode && "dark")}>
                     <TabAIConfigAdvanced 
                       userPlan={userPlan}
+                      subscriptionStatus={subscriptionStatus}
                     />
                   </div>
                 </ScrollArea>
