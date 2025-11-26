@@ -7,9 +7,16 @@ import { AIPromptConfig, AIPromptBuilder, DEFAULT_AI_CONFIG, SYSTEM_PROMPT_RUNTI
 import { minifyShopifyOrder, type ShopifyOrder } from './shopify-minifier';
 import { generateCompactPrompt, type CompactAIConfig } from './ai-config-compressor';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient() {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
+    });
+  }
+  return openaiClient;
+}
 
 export type EmailAnalysisResult = {
   category: EmailCategory;
@@ -290,7 +297,7 @@ Exemples:
 - "Bonjour, je voudrais des infos sur votre produit X" → neutre, score: 50, RENSEIGNEMENT
 - "C'est URGENT !!! Mon site est DOWN depuis 2h !!!" → urgent, score: 15, TECHNIQUE`;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini', // Optimal price/performance (0.15$/1M tokens input)
       messages: [
         { 
@@ -582,7 +589,7 @@ Génère une réponse appropriée. Réponds UNIQUEMENT avec un JSON valide:
     console.log(`🎨 AI Config - Creativity: ${creativity} → Temperature: ${temperature.toFixed(2)}`);
     console.log(`💰 Auto-selected model: ${model} (optimized for ${maxTokens} tokens)`);
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model, // MODÈLE AUTOMATIQUE optimisé pour le coût
       messages: [
         { role: 'system', content: systemPrompt },
