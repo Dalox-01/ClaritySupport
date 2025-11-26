@@ -38,7 +38,7 @@ import { getPlanLimits, PlanName } from '@/lib/plan-limits';
 export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
 
 interface TabAIConfigAdvancedProps {
-  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE';
   initialSection?: AIConfigSectionId;
   subscriptionStatus?: string | null;
 }
@@ -1972,11 +1972,11 @@ function SecurityConfigSection({ config, setConfig }: any) {
 }
 
 interface FiltersSectionProps {
-  userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE' | 'SCALE';
 }
 
 function FiltersSection({ userPlan }: FiltersSectionProps) {
-  const canManageFilters = userPlan === 'PRO' || userPlan === 'ENTERPRISE';
+  const canManageFilters = userPlan === 'PRO' || userPlan === 'ENTERPRISE' || userPlan === 'SCALE';
 
   if (!canManageFilters) {
     return (
