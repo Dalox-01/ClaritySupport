@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
         .from('users')
         .select('plan')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
         
       const plan = (user?.plan || 'FREE').toUpperCase();
       
