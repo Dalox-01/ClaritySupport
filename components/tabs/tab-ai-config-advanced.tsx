@@ -36,6 +36,13 @@ import {
 } from "@/components/ui/dialog";
 import { getPlanLimits, PlanName } from '@/lib/plan-limits';
 
+const clampMaxTokens = (value: number) => {
+  if (!Number.isFinite(value)) {
+    return 100;
+  }
+  return Math.min(Math.max(value, 100), 1000);
+};
+
 export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
 
 interface TabAIConfigAdvancedProps {
@@ -506,13 +513,6 @@ export function TabAIConfigAdvanced({
       realtime: true,
     },
   });
-
-  const clampMaxTokens = (value: number) => {
-    if (!Number.isFinite(value)) {
-      return 100;
-    }
-    return Math.min(Math.max(value, 100), 1000);
-  };
 
   const [showAdvanced, setShowAdvanced] = useState<Record<string, boolean>>({});
 
