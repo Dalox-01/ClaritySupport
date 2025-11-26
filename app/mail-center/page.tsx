@@ -50,6 +50,7 @@ import { SupportConfigModal } from '@/components/support-config-modal';
 import { useMailCenterTheme } from '@/hooks/use-mail-center-theme';
 import type { AIConfigSectionId } from '@/components/tabs/tab-ai-config-advanced';
 import { ShopifyDashboard } from '@/components/mail-center/ShopifyDashboard';
+import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 
 export default function MailCenterPage() {
   const router = useRouter();
@@ -709,6 +710,15 @@ export default function MailCenterPage() {
                     <PendingRepliesPanel 
                       pendingReplies={pendingReplies as any} 
                       onRefresh={loadInitialData}
+                    />
+                  </div>
+                </ScrollArea>
+              ) : activeTab === 'rules' ? (
+                <ScrollArea className="h-full">
+                  <div className="p-6">
+                    <FiltersConfigTab 
+                      userPlan={userPlan}
+                      isLightMode={isLightMode}
                     />
                   </div>
                 </ScrollArea>
