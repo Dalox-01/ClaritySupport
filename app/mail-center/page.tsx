@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import type { EmailCache, MailAccount, PendingReply } from '@/lib/mail-center-types';
+import type { EmailCache, InboxVerificationStatus, MailAccount, PendingReply } from '@/lib/mail-center-types';
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
 import { PendingRepliesPanel } from '@/components/pending-replies-panel';
 import { ReplyEmailDialog } from '@/components/reply-email-dialog';
@@ -56,6 +56,44 @@ import { normalizePlanName, type PlanName } from '@/lib/plan-limits';
 import type { PlanType } from '@/lib/pricing-plans';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+type AccountStatusStyle = {
+  label: string;
+  lightClass: string;
+  darkClass: string;
+  dotClass: string;
+};
+
+const ACCOUNT_STATUS_STYLES: Record<InboxVerificationStatus, AccountStatusStyle> = {
+  pending: {
+    label: 'Connexion en attente',
+    lightClass: 'bg-amber-50 text-amber-700 border-amber-100',
+    darkClass: 'bg-amber-500/10 text-amber-100 border-amber-500/30',
+    dotClass: 'bg-amber-400',
+  },
+  waiting_test: {
+    label: 'Test de routage requis',
+    lightClass: 'bg-blue-50 text-blue-700 border-blue-100',
+    darkClass: 'bg-blue-500/10 text-blue-200 border-blue-500/30',
+    dotClass: 'bg-blue-400',
+  },
+  connected: {
+    label: 'Connecté',
+    lightClass: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    darkClass: 'bg-emerald-500/10 text-emerald-100 border-emerald-500/30',
+    dotClass: 'bg-emerald-400',
+  },
+  error: {
+    label: 'Erreur de vérification',
+    lightClass: 'bg-red-50 text-red-700 border-red-100',
+    darkClass: 'bg-red-500/10 text-red-200 border-red-500/30',
+    dotClass: 'bg-red-400',
+  },
+};
+
+const getAccountStatusStyle = (status: InboxVerificationStatus): AccountStatusStyle => {
+  return ACCOUNT_STATUS_STYLES[status] ?? ACCOUNT_STATUS_STYLES.pending;
+};
 
 export default function MailCenterPage() {
   const router = useRouter();
@@ -840,6 +878,131 @@ export default function MailCenterPage() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden p-6">
           <div className="h-full flex flex-col gap-6 max-w-[1800px] mx-auto">
+            <Card
+              className={cn(
+                'border border-dashed shadow-none rounded-2xl',
+                isLightMode ? 'bg-gray-50/80 border-gray-200' : 'bg-[#11152c] border-white/10'
+              )}
+            >
+              <div className="p-6 space-y-5">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-blue-500">Comptes connectés</p>
+                    <h3 className={cn('text-xl font-bold', isLightMode ? 'text-gray-900' : 'text-white')}>
+                      Gérez vos boîtes Resend
+                    </h3>
+                    <p className={cn('text-sm', isLightMode ? 'text-gray-500' : 'text-gray-400')}>
+                      Supprimez les comptes obsolètes et connectez-en de nouveaux sans quitter le Mail Center.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" className="gap-2" asChild>
+                      <Link href="/dashboard/settings/inbox-connect">
+                        <Plus className="w-4 h-4" />
+                        Connecter une boîte Resend
+                      </Link>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => router.push('/dashboard/settings/inbox-connect')}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Assistant de configuration
+                    </Button>
+                  </div>
+                </div>
+
+                {accounts.length === 0 ? (
+                  <div
+                    className={cn(
+                      'p-6 rounded-xl border-2 border-dashed text-center space-y-3',
+                      isLightMode ? 'border-gray-200 bg-white' : 'border-white/10 bg-[#1a1f3a]'
+                    )}
+                  >
+                    <Mail className="w-10 h-10 mx-auto text-gray-400" />
+                    <div className="space-y-1">
+                      <p className="text-base font-semibold">Aucun compte Resend pour l'instant</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Génèrez une adresse de routage personnalisée puis suivez les étapes du guide pour activer l'inbound.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button size="sm" className="gap-2" asChild>
+                        <Link href="/dashboard/settings/inbox-connect">
+                          <Plus className="w-4 h-4" />
+                          Lancer la connexion Resend
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push('/dashboard/settings/inbox-connect#instructions')}
+                      >
+                        Voir les instructions
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {accounts.map((account) => {
+                      const statusStyle = getAccountStatusStyle(account.verification_status);
+                      const providerLabel = account.provider === 'resend' ? 'Resend' : 'OAuth legacy';
+                      return (
+                        <div
+                          key={account.id}
+                          className={cn(
+                            'flex flex-col gap-3 rounded-xl border px-4 py-3 md:flex-row md:items-center md:gap-4',
+                            isLightMode ? 'bg-white border-gray-200' : 'bg-[#1a1f3a] border-white/10'
+                          )}
+                        >
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className={cn('font-semibold', isLightMode ? 'text-gray-900' : 'text-white')}>
+                                {account.email}
+                              </p>
+                              <Badge variant="outline" className="text-xs">
+                                {providerLabel}
+                              </Badge>
+                              {account.support_email && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {account.support_email}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className={cn('text-xs', isLightMode ? 'text-gray-500' : 'text-gray-400')}>
+                              Redirection : {account.routing_email ?? 'En attente de génération'}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 md:justify-end">
+                            <span
+                              className={cn(
+                                'flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium border',
+                                isLightMode ? statusStyle.lightClass : statusStyle.darkClass
+                              )}
+                            >
+                              <span className={cn('w-2 h-2 rounded-full', statusStyle.dotClass)} />
+                              {statusStyle.label}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-600"
+                              onClick={() => handleDeleteAccount(account.id, account.email)}
+                              disabled={isActionRestricted}
+                              title="Supprimer le compte"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </Card>
             
             {/* View Content */}
             <Card className={cn(
