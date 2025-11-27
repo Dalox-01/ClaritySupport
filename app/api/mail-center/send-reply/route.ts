@@ -1,36 +1,71 @@
-// API Route: Envoyer une réponse email
+// API Route: Envoyer une réponse email via Resend
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/db';
-import { decrypt, encrypt } from '@/lib/security';
-import { sendGmailReply, refreshGmailToken } from '@/lib/gmail-helpers';
 import { canSendAutoReply } from '@/lib/plan-enforcement';
 
 export const dynamic = 'force-dynamic';
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'support@mailwizard.app';
+const RESEND_FROM_NAME = process.env.RESEND_FROM_NAME || 'Clarity Support';
+
+if (!RESEND_API_KEY) {
+  console.warn('⚠️ RESEND_API_KEY manquant - l\'envoi de réponses échouera.');
+}
+
+const resendClient = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+function ensureResendClient() {
+  if (!resendClient) {
+    throw new Error('Resend non configuré');
+  }
+  if (!RESEND_FROM_EMAIL) {
+    throw new Error('RESEND_FROM_EMAIL manquant');
+  }
+  return resendClient;
+}
+
+function normalizeHtml(content: string): string {
+  if (!content) return '<p>(Message vide)</p>';
+  const containsTag = /<[^>]+>/.test(content);
+  if (containsTag) return content;
+  const paragraphs = content
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br />')}</p>`)
+    .join('');
+  return paragraphs || '<p>(Message vide)</p>';
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>(\s)*/gi, '\n')
+    .replace(/<\/?p[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
     const userId = session.user.id;
-    const { emailId, toEmail, subject, body } = await req.json();
+    const { emailId, toEmail, subject, body, bodyHtml, bodyText } = await req.json();
 
-    if (!toEmail || !body) {
+    if (!emailId || !toEmail || !(body || bodyHtml)) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 });
     }
 
-    // 🔒 VÉRIFICATION DES LIMITES : Peut-on envoyer une réponse ?
     const limitCheck = await canSendAutoReply(userId);
-    
     if (!limitCheck.allowed) {
-      console.log(`🚫 Limite réponses atteinte pour user ${userId}: ${limitCheck.reason}`);
-      
       return NextResponse.json({
         error: 'Limite atteinte',
         reason: limitCheck.reason,
@@ -42,129 +77,86 @@ export async function POST(req: NextRequest) {
           feature: 'Réponses email',
           current: limitCheck.currentUsage || 0,
           max: limitCheck.limit || 0,
-        }
+        },
       }, { status: 403 });
     }
 
-    console.log(`📧 Envoi réponse à: ${toEmail}`);
-    console.log(`📧 Email ID: ${emailId}`);
-
-    // Récupérer l'email original pour connaître le compte
     const { data: originalEmail, error: emailError } = await supabase
       .from('emails_cache')
-      .select('account_id, thread_id, external_message_id')
+      .select('account_id, thread_id, external_message_id, subject')
       .eq('id', emailId)
       .single();
 
     if (emailError || !originalEmail) {
       console.error('❌ Erreur récupération email:', emailError);
-      return NextResponse.json({ error: 'Email non trouvé', details: emailError?.message }, { status: 404 });
+      return NextResponse.json({ error: 'Email non trouvé' }, { status: 404 });
     }
 
-    console.log(`✅ Email trouvé, account_id: ${originalEmail.account_id}`);
-
-    // Récupérer le compte email
     const { data: account, error: accountError } = await supabase
       .from('mail_accounts')
-      .select('*')
+      .select('id, provider, email, support_email')
       .eq('id', originalEmail.account_id)
       .single();
 
     if (accountError || !account) {
-      console.error('❌ Erreur récupération compte:', accountError);
-      return NextResponse.json({ error: 'Compte non trouvé', details: accountError?.message }, { status: 404 });
+      console.error('❌ Compte introuvable:', accountError);
+      return NextResponse.json({ error: 'Compte non trouvé' }, { status: 404 });
     }
 
-    console.log(`✅ Compte trouvé: ${account.email}, provider: ${account.provider}`);
-
-    // Décrypter et vérifier/rafraîchir le token
-    let accessToken: string;
-    try {
-      accessToken = decrypt(account.access_token);
-      console.log('✅ Token décrypté');
-      
-      // Vérifier si le token est expiré
-      if (account.expires_at && new Date(account.expires_at) <= new Date()) {
-        console.log('🔑 Token expiré, rafraîchissement en cours...');
-        
-        // Décrypter le refresh_token
-        const refreshToken = decrypt(account.refresh_token);
-        
-        // Obtenir un nouveau access_token
-        const newTokens = await refreshGmailToken(refreshToken);
-        accessToken = newTokens.access_token;
-        
-        // Sauvegarder le nouveau token en base
-        await supabase
-          .from('mail_accounts')
-          .update({
-            access_token: encrypt(newTokens.access_token),
-            expires_at: new Date(newTokens.expiry_date).toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', account.id);
-        
-        console.log('✅ Token rafraîchi et sauvegardé');
-      } else {
-        console.log('✅ Token encore valide');
-      }
-    } catch (decryptError) {
-      console.error('❌ Erreur décryptage/refresh token:', decryptError);
-      return NextResponse.json({ 
-        error: 'Erreur gestion token', 
-        details: decryptError instanceof Error ? decryptError.message : 'Unknown error'
-      }, { status: 500 });
+    if (account.provider !== 'resend') {
+      return NextResponse.json({ error: 'Ce compte n\'utilise pas Resend' }, { status: 400 });
     }
 
-    // Envoyer via Gmail
-    if (account.provider === 'gmail') {
-      try {
-        console.log(`📧 Envoi via Gmail API...`);
-        
-        // Convertir le body en HTML si ce n'est pas déjà fait
-        const bodyHtml = body.includes('<') ? body : `<p>${body.replace(/\n/g, '<br>')}</p>`;
-        
-        await sendGmailReply(
-          accessToken,
-          toEmail,
-          subject,
-          bodyHtml,
-          originalEmail.thread_id
-        );
-        console.log('✅ Email envoyé via Gmail API');
-      } catch (gmailError) {
-        console.error('❌ Erreur Gmail API:', gmailError);
-        return NextResponse.json({ 
-          error: 'Erreur envoi Gmail', 
-          details: gmailError instanceof Error ? gmailError.message : 'Unknown error'
-        }, { status: 500 });
-      }
-    } else {
-      return NextResponse.json({ error: 'Provider non supporté' }, { status: 400 });
+    const resend = ensureResendClient();
+    const htmlContent = normalizeHtml(bodyHtml || body || '');
+    const textContent = bodyText || htmlToText(htmlContent);
+    const replySubject = subject || `Re: ${originalEmail.subject || 'Votre message'}`;
+    const replyTo = account.support_email || account.email;
+
+    const headers: Record<string, string> = {};
+    if (originalEmail.external_message_id) {
+      headers['In-Reply-To'] = originalEmail.external_message_id;
+      headers['References'] = originalEmail.external_message_id;
+    }
+    if (originalEmail.thread_id) {
+      headers['X-Thread-Id'] = originalEmail.thread_id;
     }
 
-    // Mettre à jour l'email comme "répondu"
+    const sendResult = await resend.emails.send({
+      from: `${RESEND_FROM_NAME} <${RESEND_FROM_EMAIL}>`,
+      to: toEmail,
+      subject: replySubject,
+      html: htmlContent,
+      text: textContent,
+      replyTo,
+      headers,
+      tags: [
+        { name: 'mail_center', value: 'reply' },
+        { name: 'account_id', value: account.id },
+      ],
+    });
+
+    if (sendResult.error) {
+      console.error('❌ Erreur Resend:', sendResult.error);
+      return NextResponse.json({ error: 'Erreur envoi Resend' }, { status: 502 });
+    }
+
     await supabase
       .from('emails_cache')
-      .update({ 
+      .update({
         is_auto_replied: true,
         is_read: true,
-        replied_at: new Date().toISOString()
+        reply_status: 'sent',
+        replied_at: new Date().toISOString(),
       })
       .eq('id', emailId);
 
-    console.log(`✅ Email envoyé à: ${toEmail}`);
-
-    return NextResponse.json({ 
-      success: true,
-      message: 'Email envoyé'
-    });
-
+    return NextResponse.json({ success: true, messageId: sendResult.data?.id || null });
   } catch (error) {
     console.error('❌ Erreur envoi email:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Erreur envoi',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 });
   }
 }

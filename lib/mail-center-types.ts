@@ -2,7 +2,9 @@
 
 import { SupportCategory } from './support-categories';
 
-export type MailProvider = 'gmail' | 'outlook';
+export type MailProvider = 'gmail' | 'outlook' | 'resend';
+
+export type InboxVerificationStatus = 'pending' | 'waiting_test' | 'connected' | 'error';
 
 export type EmailCategory = 'support' | 'vente' | 'client' | 'interne' | 'partenaire' | 'urgent' | 'spam' | 'autre';
 
@@ -19,9 +21,16 @@ export type MailAccount = {
   user_id: string;
   provider: MailProvider;
   email: string;
-  access_token: string;
-  refresh_token: string;
+  support_email: string | null;
+  routing_email: string | null;
+  verification_status: InboxVerificationStatus;
+  verification_code?: string | null;
+  last_verification_at?: string | null;
+  last_inbound_at?: string | null;
+  access_token: string | null;
+  refresh_token: string | null;
   token_expires_at: string | null;
+  resend_config?: Record<string, any> | null;
   is_active: boolean;
   last_sync: string | null;
   created_at: string;
