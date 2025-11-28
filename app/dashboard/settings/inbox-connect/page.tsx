@@ -80,17 +80,17 @@ const KNOWLEDGE_BASE: KnowledgeBaseItem[] = [
   {
     keywords: ['redirection', 'transfert', 'gmail', 'workspace'],
     answer:
-      'Dans Google Workspace → Apps → Gmail → Routage, ajoute une règle de transfert vers l’adresse Resend puis garde "Conserver une copie" activé. Vérifie que le domaine est vérifié dans Google Admin.',
+      'Depuis admin.google.com (compte Super Admin) : Menu ☰ → Apps → Google Workspace → Gmail → Routage. Clique sur “Ajouter une autre règle”, mets l’adresse support en source et la Resend en destination, laisse “Conserver une copie” activé puis Enregistrer.',
   },
   {
     keywords: ['ovh', 'manager'],
     answer:
-      'Sur OVHcloud, ouvre Emails & Collaboration → Redirections, crée une redirection depuis ton adresse support vers l’adresse Resend, enregistre et attends la propagation (~2 min).',
+      'Va sur manager.ovhcloud.com → Emails → ton service MX Plan → onglet Redirections → Créer une redirection. Source = support@tondomaine, Destination = adresse Resend. Valide, puis contrôle que la ligne passe en “activée” avant de tester.',
   },
   {
     keywords: ['outlook', 'règle', 'rule'],
     answer:
-      'Dans Outlook Web, Paramètres → Courrier → Règles. Crée une règle "Tous les messages" avec action "Rediriger" vers l’adresse Resend. Sauvegarde puis envoie un email test.',
+      'Dans outlook.office.com/mail, clique sur l’icône engrenage → “Afficher tous les paramètres” → Courrier → Règles → Ajouter une nouvelle règle. Condition = Tous les messages, Action = Rediriger vers + adresse Resend, coche “Arrêter le traitement des autres règles”, sauvegarde et active.',
   },
   {
     keywords: ['statut', 'connected', 'pending', 'vérifier'],
@@ -112,44 +112,53 @@ const KNOWLEDGE_BASE: KnowledgeBaseItem[] = [
 const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
   google: [
     {
-      title: '🎛️ Console Google Workspace',
-      helper: 'Apps → Gmail → Routage. Clique sur “Ajouter une redirection” et sélectionne ton adresse support.',
+      title: '🎛️ Parcours Admin précis',
+      helper:
+        'Admin.google.com → Menu ☰ → Apps → Google Workspace → Gmail → Paramètres → Routage. Tu dois être Super Admin pour voir le menu.',
     },
     {
-      title: '✉️ Colle l\'adresse Resend',
-      helper: 'Utilise l\'adresse générée ci-dessus, garde “Conserver une copie dans Gmail” activé pour archivage.',
+      title: '✉️ Ajoute la règle de transfert',
+      helper:
+        'Dans Routage, clique sur “Ajouter une autre règle”. Choisis ton adresse support en expéditeur, ajoute la destination = adresse Resend, conserve “Conserver une copie dans la boîte d\'origine”.',
     },
     {
       title: '🧪 Email test express',
-      helper: 'Depuis support@votredomaine, envoie un mail intitulé « Ping Resend » vers n\'importe quel contact.',
+      helper:
+        'Apps → Gmail → Routage → section “Règles de réception” > vérifie que ta règle est active, puis envoie un email “Ping Resend” depuis support@votredomaine.',
     },
   ],
   ovh: [
     {
-      title: '⚙️ OVHcloud > Emails > Redirections',
-      helper: 'Sélectionne ton domaine, clique sur “Ajouter une redirection” et choisis ton adresse support source.',
+      title: '⚙️ Manager OVHcloud',
+      helper:
+        'manager.ovhcloud.com → E-mails → ton service MX Plan → onglet « Redirections ». Clique sur “Créer une redirection” en haut à droite.',
     },
     {
-      title: '🔁 Ajoute la destination Resend',
-      helper: 'Colle l\'adresse Resend générée, valide, puis attends quelques secondes que la règle apparaisse.',
+      title: '🔁 Source et destination',
+      helper:
+        'Source = ton adresse support (ex: support@domaine.com). Destination = adresse Resend générée. Décoche “Conserver une copie” si tu ne veux pas saturer OVH.',
     },
     {
-      title: '🧪 Test côté domaine',
-      helper: 'Envoie un email depuis ton domaine principal (ex: contact@) pour vérifier que la redirection s\'active.',
+      title: '🧪 Validation côté OVH',
+      helper:
+        'Retourne dans MX Plan → Journaux pour voir le transfert, puis envoie un email depuis ton domaine principal (ex: contact@) pour vérifier la remontée dans Clarity.',
     },
   ],
   outlook: [
     {
-      title: '📬 Outlook Web > Paramètres > Règles',
-      helper: 'Ouvre Courrier → Règles de boîte de réception → “Ajouter une nouvelle règle”.',
+      title: '📬 Outlook on the web',
+      helper:
+        'outlook.office.com/mail → icône engrenage → “Afficher tous les paramètres d’Outlook” → Courrier → Règles. Clique sur “Ajouter une nouvelle règle”.',
     },
     {
-      title: '🧲 Règle de transfert',
-      helper: 'Condition: “Tous les messages”. Action: “Rediriger vers” + l\'adresse Resend fournie.',
+      title: '🧲 Paramètres de la règle',
+      helper:
+        'Nom de la règle = “Redirection Resend”. Conditions: « Appliquer à tous les messages ». Actions: “Rediriger vers” + adresse Resend. Laisse la case “Arrêter le traitement” cochée.',
     },
     {
       title: '✅ Sauvegarde & test',
-      helper: 'Sauvegarde la règle puis envoie un email test depuis ton adresse support pour voir le statut évoluer.',
+      helper:
+        'Clique sur “Enregistrer”, vérifie que la règle est activée (toggle bleu). Envoie un mail test depuis ton compte Outlook, puis clique sur « Vérifier le statut » côté Clarity.',
     },
   ],
 };
@@ -400,6 +409,55 @@ export default function InboxConnectPage() {
                       <ExternalLink className="h-3 w-3" />
                     </Link>
                   </div>
+                  {provider === 'google' && (
+                    <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-900">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-blue-500">Chemin détaillé dans Google Admin</p>
+                      <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-blue-900">
+                        <li>
+                          Depuis Gmail, ouvre le lanceur d'applications (9 points) &rarr; <span className="font-semibold">Admin</span>. Si tu ne vois pas l'icône, tape directement
+                          <span className="font-mono"> admin.google.com </span> et connecte-toi avec un Super Admin.
+                        </li>
+                        <li>
+                          Dans la console, va sur <span className="font-semibold">Menu ☰ → Apps → Google Workspace → Gmail</span>. Le menu « Routage » apparaît dans la section « Paramètres avancés ».
+                        </li>
+                        <li>
+                          Clique sur <span className="font-semibold">Routage</span> &rarr; « Gérer » &rarr; « Ajouter une autre règle ». Choisis « Sécurité & conformité &gt; Routage des messages » si on te propose plusieurs catégories.
+                        </li>
+                      </ol>
+                    </div>
+                  )}
+                  {provider === 'ovh' && (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-900">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Chemin précis dans le Manager OVHcloud</p>
+                      <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs">
+                        <li>
+                          Connecte-toi sur <span className="font-mono">https://www.ovh.com/manager</span> &rarr; sélectionne ton organisation &rarr; menu <span className="font-semibold">Emails</span>.
+                        </li>
+                        <li>
+                          Choisis ton service MX Plan &rarr; onglet <span className="font-semibold">Redirections</span> &rarr; bouton « Créer une redirection ».
+                        </li>
+                        <li>
+                          Renseigne <span className="font-semibold">Adresse source</span> = support@tondomaine et <span className="font-semibold">Adresse de destination</span> = adresse Resend. Valide, puis vérifie l'apparition de la ligne dans le tableau.
+                        </li>
+                      </ol>
+                    </div>
+                  )}
+                  {provider === 'outlook' && (
+                    <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-4 text-sm text-indigo-900">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">Chemin Outlook / Exchange Online</p>
+                      <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs">
+                        <li>
+                          Ouvre <span className="font-mono">https://outlook.office.com/mail</span> &rarr; icône engrenage &rarr; lien « Afficher tous les paramètres d'Outlook » en bas du panneau.
+                        </li>
+                        <li>
+                          Va dans <span className="font-semibold">Courrier → Règles</span>, clique sur « Ajouter une nouvelle règle », donne-lui un nom puis choisis « Appliquer à tous les messages » dans la section Conditions.
+                        </li>
+                        <li>
+                          Dans Actions, sélectionne <span className="font-semibold">Rediriger vers</span> et colle l'adresse Resend, puis coche « Arrêter le traitement d'autres règles ». Sauvegarde et vérifie que le toggle de la règle est activé.
+                        </li>
+                      </ol>
+                    </div>
+                  )}
                   <div className="space-y-3">
                     {PROVIDER_STEPS[provider].map((step, index) => (
                       <div key={step.title} className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
