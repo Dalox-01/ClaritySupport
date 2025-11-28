@@ -25,7 +25,7 @@ type InboxResponse = {
   lastInboundAt: string | null;
   verificationCode?: string | null;
 };
-type Provider = 'google' | 'ovh' | 'outlook';
+type Provider = 'google' | 'ovh' | 'outlook' | 'gmail_personal';
 
 type ProviderStep = {
   title: string;
@@ -42,16 +42,18 @@ type ChatMessage = {
   content: string;
 };
 
-const PROVIDERS: Provider[] = ['google', 'ovh', 'outlook'];
+const PROVIDERS: Provider[] = ['google', 'gmail_personal', 'ovh', 'outlook'];
 
 const PROVIDER_HIGHLIGHTS: Record<Provider, string> = {
   google: 'Admin console + Gmail',
+  gmail_personal: 'Gmail.com (compte individuel)',
   ovh: 'Manager OVHcloud',
   outlook: 'Outlook Web & règles',
 };
 
 const PROVIDER_LABELS: Record<Provider, string> = {
   google: 'Google Workspace',
+  gmail_personal: 'Gmail perso',
   ovh: 'OVH',
   outlook: 'Outlook',
 };
@@ -60,6 +62,10 @@ const PROVIDER_DOCS: Record<Provider, { label: string; href: string }> = {
   google: {
     label: 'Documentation Google Workspace',
     href: 'https://support.google.com/a/answer/2368153?hl=fr',
+  },
+  gmail_personal: {
+    label: 'Redirection Gmail classique',
+    href: 'https://support.google.com/mail/answer/10957?hl=fr',
   },
   ovh: {
     label: 'Guide redirection OVHcloud',
@@ -81,6 +87,11 @@ const KNOWLEDGE_BASE: KnowledgeBaseItem[] = [
     keywords: ['redirection', 'transfert', 'gmail', 'workspace'],
     answer:
       'Depuis admin.google.com (compte Super Admin) : Menu ☰ → Apps → Google Workspace → Gmail → Routage. Clique sur “Ajouter une autre règle”, mets l’adresse support en source et la Resend en destination, laisse “Conserver une copie” activé puis Enregistrer.',
+  },
+  {
+    keywords: ['gmail.com', 'gmail perso', 'compte perso', 'transfert gmail'],
+    answer:
+      'Dans Gmail (version web) : engrenage → Afficher tous les paramètres → onglet “Transfert et POP/IMAP”. Clique sur “Ajouter une adresse de transfert”, colle l’adresse Resend, valide le code de confirmation reçu, puis coche “Transférer une copie vers…” et garde “Conserver la copie Gmail” si besoin.',
   },
   {
     keywords: ['ovh', 'manager'],
@@ -125,6 +136,23 @@ const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
       title: '🧪 Email test express',
       helper:
         'Apps → Gmail → Routage → section “Règles de réception” > vérifie que ta règle est active, puis envoie un email “Ping Resend” depuis support@votredomaine.',
+    },
+  ],
+  gmail_personal: [
+    {
+      title: '⚙️ Paramètres Gmail.com',
+      helper:
+        'Ouvre mail.google.com → engrenage → “Afficher tous les paramètres” → onglet “Transfert et POP/IMAP”. Tu dois être connecté avec le compte Gmail concerné.',
+    },
+    {
+      title: '📤 Ajouter l’adresse Resend',
+      helper:
+        'Clique sur “Ajouter une adresse de transfert”, saisis l’adresse Resend générée, puis confirme via le code reçu (dans Clarity, onglet Inbox).',
+    },
+    {
+      title: '✅ Activer le transfert',
+      helper:
+        'Une fois l’adresse confirmée, coche “Transférer une copie des messages entrants vers...” + adresse Resend, garde “Conserver la copie dans la boîte Gmail” si tu veux garder un backup.',
     },
   ],
   ovh: [
@@ -220,6 +248,7 @@ export default function InboxConnectPage() {
 
   const quickPrompts = [
     'Je ne trouve pas Gmail dans mon admin',
+    'Comment transférer depuis Gmail.com ?',
     'Le statut reste en pending',
     'Comment vérifier OVH ?',
     'Erreur webhook ou signature',
@@ -376,7 +405,7 @@ export default function InboxConnectPage() {
           </CardHeader>
           <CardContent className="relative">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Provider)}>
-              <TabsList className="grid grid-cols-3 gap-2 rounded-full bg-white/80 p-1 shadow-inner">
+              <TabsList className="grid grid-cols-2 gap-2 rounded-full bg-white/80 p-1 shadow-inner sm:grid-cols-4">
                 {PROVIDERS.map((provider) => (
                   <TabsTrigger
                     key={provider}
@@ -422,6 +451,22 @@ export default function InboxConnectPage() {
                         </li>
                         <li>
                           Clique sur <span className="font-semibold">Routage</span> &rarr; « Gérer » &rarr; « Ajouter une autre règle ». Choisis « Sécurité & conformité &gt; Routage des messages » si on te propose plusieurs catégories.
+                        </li>
+                      </ol>
+                    </div>
+                  )}
+                  {provider === 'gmail_personal' && (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Chemin Gmail.com classique</p>
+                      <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs">
+                        <li>
+                          Connecte-toi à <span className="font-mono">https://mail.google.com</span> avec le compte à rediriger, clique sur l’icône engrenage puis sur <span className="font-semibold">Afficher tous les paramètres</span>.
+                        </li>
+                        <li>
+                          Onglet <span className="font-semibold">Transfert et POP/IMAP</span> &rarr; section « Transfert » &rarr; bouton « Ajouter une adresse de transfert ».
+                        </li>
+                        <li>
+                          Entre l’adresse Resend, récupère le code de confirmation dans Clarity (email reçu), valide, puis sélectionne « Transférer une copie vers… » et choisis ce que Gmail doit faire de la copie originale.
                         </li>
                       </ol>
                     </div>
