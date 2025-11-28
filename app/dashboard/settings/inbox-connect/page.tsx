@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Copy, Loader2, MailCheck, MailPlus, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, Copy, ExternalLink, Loader2, MailCheck, MailPlus, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
@@ -43,6 +44,21 @@ const PROVIDER_LABELS: Record<Provider, string> = {
   google: 'Google Workspace',
   ovh: 'OVH',
   outlook: 'Outlook',
+};
+
+const PROVIDER_DOCS: Record<Provider, { label: string; href: string }> = {
+  google: {
+    label: 'Documentation Google Workspace',
+    href: 'https://support.google.com/a/answer/2368153?hl=fr',
+  },
+  ovh: {
+    label: 'Guide redirection OVHcloud',
+    href: 'https://help.ovhcloud.com/csm/fr-email-hosting-redirection?id=kb_article_view&sysparm_article=KB0043696',
+  },
+  outlook: {
+    label: 'Créer une règle dans Outlook',
+    href: 'https://support.microsoft.com/fr-fr/office/cr%C3%A9er-des-r%C3%A8gles-dans-outlook-pour-windows-ccfba861-5123-4f1f-9a00-9b0b9b38b563',
+  },
 };
 
 const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
@@ -274,6 +290,18 @@ export default function InboxConnectPage() {
                   <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-blue-500 sm:flex-row sm:items-center sm:justify-between">
                     <span>{PROVIDER_LABELS[provider]}</span>
                     <span className="text-blue-400">{PROVIDER_HIGHLIGHTS[provider]}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-blue-600">
+                    <span className="uppercase tracking-wide text-blue-300">Ressource officielle</span>
+                    <Link
+                      href={PROVIDER_DOCS[provider].href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                    >
+                      {PROVIDER_DOCS[provider].label}
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
                   </div>
                   <div className="space-y-3">
                     {PROVIDER_STEPS[provider].map((step, index) => (
