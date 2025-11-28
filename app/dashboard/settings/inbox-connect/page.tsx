@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Copy, Loader2, MailCheck, MailPlus, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Copy, Loader2, MailCheck, MailPlus, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,22 +24,69 @@ type InboxResponse = {
   lastInboundAt: string | null;
   verificationCode?: string | null;
 };
+type Provider = 'google' | 'ovh' | 'outlook';
 
-const PROVIDER_STEPS: Record<string, string[]> = {
+type ProviderStep = {
+  title: string;
+  helper: string;
+};
+
+const PROVIDERS: Provider[] = ['google', 'ovh', 'outlook'];
+
+const PROVIDER_HIGHLIGHTS: Record<Provider, string> = {
+  google: 'Admin console + Gmail',
+  ovh: 'Manager OVHcloud',
+  outlook: 'Outlook Web & règles',
+};
+
+const PROVIDER_LABELS: Record<Provider, string> = {
+  google: 'Google Workspace',
+  ovh: 'OVH',
+  outlook: 'Outlook',
+};
+
+const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
   google: [
-    'Ouvrez Google Workspace → Gmail → "Transfert".',
-    'Ajoutez l\'adresse de routage générée ci-dessus comme destination de transfert.',
-    'Conservez votre adresse support comme adresse d\'envoi par défaut.',
+    {
+      title: '🎛️ Console Google Workspace',
+      helper: 'Apps → Gmail → Routage. Clique sur “Ajouter une redirection” et sélectionne ton adresse support.',
+    },
+    {
+      title: '✉️ Colle l\'adresse Resend',
+      helper: 'Utilise l\'adresse générée ci-dessus, garde “Conserver une copie dans Gmail” activé pour archivage.',
+    },
+    {
+      title: '🧪 Email test express',
+      helper: 'Depuis support@votredomaine, envoie un mail intitulé « Ping Resend » vers n\'importe quel contact.',
+    },
   ],
   ovh: [
-    'Connectez-vous à OVH → Emails → Redirections.',
-    'Créez une redirection de votre adresse support vers l\'adresse Resend.',
-    'Envoyez un email test depuis votre domaine pour vérifier le flux.',
+    {
+      title: '⚙️ OVHcloud > Emails > Redirections',
+      helper: 'Sélectionne ton domaine, clique sur “Ajouter une redirection” et choisis ton adresse support source.',
+    },
+    {
+      title: '🔁 Ajoute la destination Resend',
+      helper: 'Colle l\'adresse Resend générée, valide, puis attends quelques secondes que la règle apparaisse.',
+    },
+    {
+      title: '🧪 Test côté domaine',
+      helper: 'Envoie un email depuis ton domaine principal (ex: contact@) pour vérifier que la redirection s\'active.',
+    },
   ],
   outlook: [
-    'Outlook Web → Paramètres → Courrier → Règles.',
-    'Créez une règle "Transférer" vers l\'adresse Resend.',
-    'Ajoutez une exemption pour éviter les boucles et envoyez un test.',
+    {
+      title: '📬 Outlook Web > Paramètres > Règles',
+      helper: 'Ouvre Courrier → Règles de boîte de réception → “Ajouter une nouvelle règle”.',
+    },
+    {
+      title: '🧲 Règle de transfert',
+      helper: 'Condition: “Tous les messages”. Action: “Rediriger vers” + l\'adresse Resend fournie.',
+    },
+    {
+      title: '✅ Sauvegarde & test',
+      helper: 'Sauvegarde la règle puis envoie un email test depuis ton adresse support pour voir le statut évoluer.',
+    },
   ],
 };
 
@@ -59,7 +106,7 @@ export default function InboxConnectPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
-  const [activeTab, setActiveTab] = useState<'google' | 'ovh' | 'outlook'>('google');
+  const [activeTab, setActiveTab] = useState<Provider>('google');
 
   const statusBadgeClass = useMemo(() => {
     if (!inbox) return 'bg-slate-100 text-slate-700';
@@ -188,35 +235,69 @@ export default function InboxConnectPage() {
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
+        <Card
+          id="instructions"
+          className="relative overflow-hidden border-blue-100 bg-gradient-to-br from-white via-sky-50 to-blue-100/40"
+        >
+          <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden="true">
+            <div className="absolute -top-10 right-8 h-32 w-32 rounded-full bg-blue-200 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-24 w-24 rounded-full bg-indigo-200 blur-3xl" />
+          </div>
+          <CardHeader className="relative">
             <CardTitle className="text-xl">Étape 2 — Configurez la redirection</CardTitle>
             <CardDescription>
-              Copiez l\'adresse Resend dans votre fournisseur. Choisissez votre plateforme pour suivre la procédure détaillée.
+              Copiez l'adresse Resend vers votre fournisseur préféré. Les étapes sont guidées pour chaque plateforme.
             </CardDescription>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm">
+              <Sparkles className="h-4 w-4" /> 3 gestes suffisent pour activer la redirection
+            </div>
           </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'google' | 'ovh' | 'outlook')}>
-              <TabsList className="grid grid-cols-3">
-                <TabsTrigger value="google">Google Workspace</TabsTrigger>
-                <TabsTrigger value="ovh">OVH</TabsTrigger>
-                <TabsTrigger value="outlook">Outlook</TabsTrigger>
+          <CardContent className="relative">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Provider)}>
+              <TabsList className="grid grid-cols-3 gap-2 rounded-full bg-white/80 p-1 shadow-inner">
+                {PROVIDERS.map((provider) => (
+                  <TabsTrigger
+                    key={provider}
+                    value={provider}
+                    className="rounded-full text-xs font-semibold data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  >
+                    {PROVIDER_LABELS[provider]}
+                  </TabsTrigger>
+                ))}
               </TabsList>
-              {Object.entries(PROVIDER_STEPS).map(([provider, steps]) => (
-                <TabsContent key={provider} value={provider} className="space-y-4 rounded-md border p-4">
-                  <ol className="space-y-3 text-sm text-muted-foreground">
-                    {steps.map((step, index) => (
-                      <li key={step} className="flex gap-3">
-                        <span className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 text-center text-xs font-semibold leading-5 text-primary">
-                          {index + 1}
-                        </span>
-                        <span>{step}</span>
-                      </li>
+              {PROVIDERS.map((provider) => (
+                <TabsContent
+                  key={provider}
+                  value={provider}
+                  className="mt-4 space-y-4 rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-1 text-xs font-semibold uppercase tracking-wide text-blue-500 sm:flex-row sm:items-center sm:justify-between">
+                    <span>{PROVIDER_LABELS[provider]}</span>
+                    <span className="text-blue-400">{PROVIDER_HIGHLIGHTS[provider]}</span>
+                  </div>
+                  <div className="space-y-3">
+                    {PROVIDER_STEPS[provider].map((step, index) => (
+                      <div key={step.title} className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+                        <div className="flex gap-3">
+                          <span className="mt-0.5 h-6 w-6 rounded-full bg-blue-600/10 text-center text-sm font-semibold leading-6 text-blue-600">
+                            {index + 1}
+                          </span>
+                          <div>
+                            <p className="font-semibold text-gray-900">{step.title}</p>
+                            <p className="text-sm text-muted-foreground">{step.helper}</p>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </ol>
-                  <p className="text-xs text-muted-foreground">
-                    Astuce : envoyez un email test depuis votre domaine vers {inbox?.routingEmail || '...'} pour vérifier le transfert.
-                  </p>
+                  </div>
+                  <div className="rounded-xl border border-dashed border-blue-200 bg-white/90 p-4 text-xs text-blue-900">
+                    <p className="flex items-center gap-2 font-semibold">
+                      <ArrowRight className="h-4 w-4" /> Mini mission de validation
+                    </p>
+                    <p className="mt-1">
+                      Envoie un email test vers {inbox?.routingEmail || 'ton adresse Resend'}, attends 30 secondes puis clique sur « Vérifier le statut ».
+                    </p>
+                  </div>
                 </TabsContent>
               ))}
             </Tabs>

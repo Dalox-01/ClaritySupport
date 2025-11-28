@@ -173,6 +173,27 @@ export default function MailCenterPage() {
     return null;
   }, [trialDaysLeft, trialEndsAt]);
 
+  const accountStats = React.useMemo(() => {
+    const stats = {
+      total: accounts.length,
+      connected: 0,
+      waiting: 0,
+      error: 0,
+    };
+
+    accounts.forEach((account) => {
+      if (account.verification_status === 'connected') {
+        stats.connected += 1;
+      } else if (account.verification_status === 'error') {
+        stats.error += 1;
+      } else {
+        stats.waiting += 1;
+      }
+    });
+
+    return stats;
+  }, [accounts]);
+
   const handleTrialRestriction = () => {
     const message = isTrialExpired
       ? 'Votre période d\'essai de 7 jours est terminée. Passez à Starter pour continuer à utiliser le Mail Center.'
@@ -884,123 +905,170 @@ export default function MailCenterPage() {
                 isLightMode ? 'bg-gray-50/80 border-gray-200' : 'bg-[#11152c] border-white/10'
               )}
             >
-              <div className="p-6 space-y-5">
+              <div className="p-6 space-y-6">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-wide text-blue-500">Comptes connectés</p>
                     <h3 className={cn('text-xl font-bold', isLightMode ? 'text-gray-900' : 'text-white')}>
-                      Gérez vos boîtes Resend
+                      Panorama des boîtes Resend
                     </h3>
                     <p className={cn('text-sm', isLightMode ? 'text-gray-500' : 'text-gray-400')}>
-                      Supprimez les comptes obsolètes et connectez-en de nouveaux sans quitter le Mail Center.
+                      Visualisez vos comptes actifs, les connexions en attente et accédez à l'assistant de configuration.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button size="sm" className="gap-2" asChild>
-                      <Link href="/dashboard/settings/inbox-connect">
-                        <Plus className="w-4 h-4" />
-                        Connecter une boîte Resend
-                      </Link>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() => router.push('/dashboard/settings/inbox-connect')}
-                    >
+                    <Button size="sm" variant="outline" className="gap-2" onClick={() => router.push('/dashboard/settings/inbox-connect')}>
                       <Settings className="w-4 h-4" />
-                      Assistant de configuration
+                      Ouvrir l'assistant
                     </Button>
                   </div>
                 </div>
 
-                {accounts.length === 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className={cn('rounded-xl border p-4', isLightMode ? 'bg-white border-white' : 'bg-white/5 border-white/10')}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-500">
+                      <Inbox className="h-4 w-4" /> Tous les comptes
+                    </div>
+                    <p className={cn('mt-2 text-2xl font-bold', isLightMode ? 'text-gray-900' : 'text-white')}>
+                      {accountStats.total}
+                    </p>
+                  </div>
+                  <div className={cn('rounded-xl border p-4', isLightMode ? 'bg-white border-white' : 'bg-white/5 border-white/10')}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-emerald-500">
+                      <CheckCircle2 className="h-4 w-4" /> Connectés
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-emerald-500">{accountStats.connected}</p>
+                  </div>
+                  <div className={cn('rounded-xl border p-4', isLightMode ? 'bg-white border-white' : 'bg-white/5 border-white/10')}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-500">
+                      <Clock className="h-4 w-4" /> Connexions en attente
+                    </div>
+                    <p className="mt-2 text-2xl font-bold text-amber-500">{accountStats.waiting}</p>
+                  </div>
+                    <div className={cn('rounded-xl border p-4', isLightMode ? 'bg-white border-white' : 'bg-white/5 border-white/10')}>
+                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-red-500">
+                        <AlertTriangle className="h-4 w-4" /> À corriger
+                      </div>
+                      <p className="mt-2 text-2xl font-bold text-red-500">{accountStats.error}</p>
+                    </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-[minmax(260px,320px)_1fr]">
                   <div
                     className={cn(
-                      'p-6 rounded-xl border-2 border-dashed text-center space-y-3',
-                      isLightMode ? 'border-gray-200 bg-white' : 'border-white/10 bg-[#1a1f3a]'
+                      'relative overflow-hidden rounded-2xl p-5 text-white shadow-lg',
+                      isLightMode
+                        ? 'bg-gradient-to-br from-blue-500 via-indigo-500 to-indigo-600'
+                        : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700'
                     )}
                   >
-                    <Mail className="w-10 h-10 mx-auto text-gray-400" />
-                    <div className="space-y-1">
-                      <p className="text-base font-semibold">Aucun compte Resend pour l'instant</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Génèrez une adresse de routage personnalisée puis suivez les étapes du guide pour activer l'inbound.
+                    <div className="absolute inset-0 opacity-20" aria-hidden>
+                      <div className="absolute -top-8 right-0 h-32 w-32 rounded-full bg-white/30 blur-3xl" />
+                    </div>
+                    <div className="relative space-y-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-white/80">Action rapide</p>
+                      <div>
+                        <h4 className="text-2xl font-bold">Connecter un nouveau compte</h4>
+                        <p className="mt-1 text-sm text-white/80">
+                          Génère une nouvelle adresse Resend, configure la redirection et valide la connexion en moins de 3 minutes.
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Button size="sm" className="w-full bg-white/20 text-white hover:bg-white/30" asChild>
+                          <Link href="/dashboard/settings/inbox-connect">
+                            <Plus className="mr-2 h-4 w-4" /> Ouvrir Inbox Connect
+                          </Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20"
+                          onClick={() => router.push('/dashboard/settings/inbox-connect#instructions')}
+                        >
+                          <Zap className="mr-2 h-4 w-4" /> Voir le guide étape par étape
+                        </Button>
+                      </div>
+                      <p className="text-xs text-white/70">
+                        Astuce : tu peux relancer l'onboarding à tout moment sans impacter les comptes déjà connectés.
                       </p>
                     </div>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      <Button size="sm" className="gap-2" asChild>
-                        <Link href="/dashboard/settings/inbox-connect">
-                          <Plus className="w-4 h-4" />
-                          Lancer la connexion Resend
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.push('/dashboard/settings/inbox-connect#instructions')}
+                  </div>
+
+                  <div className="space-y-4">
+                    {accounts.length === 0 ? (
+                      <div
+                        className={cn(
+                          'flex h-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed text-center',
+                          isLightMode ? 'border-gray-200 bg-white' : 'border-white/10 bg-[#1a1f3a]'
+                        )}
                       >
-                        Voir les instructions
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {accounts.map((account) => {
-                      const statusStyle = getAccountStatusStyle(account.verification_status);
-                      const providerLabel = account.provider === 'resend' ? 'Resend' : 'OAuth legacy';
-                      return (
-                        <div
-                          key={account.id}
-                          className={cn(
-                            'flex flex-col gap-3 rounded-xl border px-4 py-3 md:flex-row md:items-center md:gap-4',
-                            isLightMode ? 'bg-white border-gray-200' : 'bg-[#1a1f3a] border-white/10'
-                          )}
-                        >
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className={cn('font-semibold', isLightMode ? 'text-gray-900' : 'text-white')}>
-                                {account.email}
-                              </p>
-                              <Badge variant="outline" className="text-xs">
-                                {providerLabel}
-                              </Badge>
-                              {account.support_email && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {account.support_email}
-                                </Badge>
-                              )}
-                            </div>
-                            <p className={cn('text-xs', isLightMode ? 'text-gray-500' : 'text-gray-400')}>
-                              Redirection : {account.routing_email ?? 'En attente de génération'}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 md:justify-end">
-                            <span
-                              className={cn(
-                                'flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium border',
-                                isLightMode ? statusStyle.lightClass : statusStyle.darkClass
-                              )}
-                            >
-                              <span className={cn('w-2 h-2 rounded-full', statusStyle.dotClass)} />
-                              {statusStyle.label}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-red-500 hover:text-red-600"
-                              onClick={() => handleDeleteAccount(account.id, account.email)}
-                              disabled={isActionRestricted}
-                              title="Supprimer le compte"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                        <Mail className="h-10 w-10 text-gray-400" />
+                        <div className="space-y-1">
+                          <p className="text-base font-semibold">Aucun compte Resend pour l'instant</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Lance l'assistant à gauche, copie l'adresse de routage et reviens ici pour suivre tes connexions.
+                          </p>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {accounts.map((account) => {
+                          const statusStyle = getAccountStatusStyle(account.verification_status);
+                          const providerLabel = account.provider === 'resend' ? 'Resend' : 'OAuth legacy';
+                          return (
+                            <div
+                              key={account.id}
+                              className={cn(
+                                'flex flex-col gap-3 rounded-xl border px-4 py-3 md:flex-row md:items-center md:gap-4',
+                                isLightMode ? 'bg-white border-gray-200' : 'bg-[#1a1f3a] border-white/10'
+                              )}
+                            >
+                              <div className="flex-1 min-w-0 space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p className={cn('font-semibold', isLightMode ? 'text-gray-900' : 'text-white')}>
+                                    {account.email}
+                                  </p>
+                                  <Badge variant="outline" className="text-xs">
+                                    {providerLabel}
+                                  </Badge>
+                                  {account.support_email && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {account.support_email}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className={cn('text-xs', isLightMode ? 'text-gray-500' : 'text-gray-400')}>
+                                  Redirection : {account.routing_email ?? 'En attente de génération'}
+                                </p>
+                              </div>
+                              <div className="flex items-center justify-between gap-3 md:justify-end">
+                                <span
+                                  className={cn(
+                                    'flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium border',
+                                    isLightMode ? statusStyle.lightClass : statusStyle.darkClass
+                                  )}
+                                >
+                                  <span className={cn('h-2 w-2 rounded-full', statusStyle.dotClass)} />
+                                  {statusStyle.label}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-red-500 hover:text-red-600"
+                                  onClick={() => handleDeleteAccount(account.id, account.email)}
+                                  disabled={isActionRestricted}
+                                  title="Supprimer le compte"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </Card>
             
