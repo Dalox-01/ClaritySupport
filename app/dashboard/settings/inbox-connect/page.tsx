@@ -32,11 +32,6 @@ type ProviderStep = {
   helper: string;
 };
 
-type KnowledgeBaseItem = {
-  keywords: string[];
-  answer: string;
-};
-
 type ChatMessage = {
   role: 'assistant' | 'user';
   content: string;
@@ -44,81 +39,38 @@ type ChatMessage = {
 
 const PROVIDERS: Provider[] = ['google', 'gmail_personal', 'ovh', 'outlook'];
 
-const PROVIDER_HIGHLIGHTS: Record<Provider, string> = {
-  google: 'Admin console + Gmail',
-  gmail_personal: 'Gmail.com (compte individuel)',
-  ovh: 'Manager OVHcloud',
-  outlook: 'Outlook Web & règles',
-};
-
 const PROVIDER_LABELS: Record<Provider, string> = {
   google: 'Google Workspace',
-  gmail_personal: 'Gmail perso',
+  gmail_personal: 'Gmail.com',
   ovh: 'OVH',
   outlook: 'Outlook',
 };
 
+const PROVIDER_HIGHLIGHTS: Record<Provider, string> = {
+  google: 'Super Admin requis',
+  gmail_personal: 'Compte Gmail individuel',
+  ovh: 'MX Plan / Redirection',
+  outlook: 'Outlook Web / Exchange',
+};
+
 const PROVIDER_DOCS: Record<Provider, { label: string; href: string }> = {
   google: {
-    label: 'Documentation Google Workspace',
+    label: 'Doc Google Workspace',
     href: 'https://support.google.com/a/answer/2368153?hl=fr',
   },
   gmail_personal: {
-    label: 'Redirection Gmail classique',
+    label: 'Doc Gmail.com transfert',
     href: 'https://support.google.com/mail/answer/10957?hl=fr',
   },
   ovh: {
-    label: 'Guide redirection OVHcloud',
-    href: 'https://help.ovhcloud.com/csm/fr-email-hosting-redirection?id=kb_article_view&sysparm_article=KB0043696',
+    label: 'Doc OVH redirection',
+    href: 'https://help.ovhcloud.com/csm/fr-email-configurer-une-redirection?id=kb_article_view&sysparm_article=KB0046174',
   },
   outlook: {
-    label: 'Créer une règle dans Outlook',
-    href: 'https://support.microsoft.com/fr-fr/office/cr%C3%A9er-des-r%C3%A8gles-dans-outlook-pour-windows-ccfba861-5123-4f1f-9a00-9b0b9b38b563',
+    label: 'Doc Microsoft Outlook',
+    href: 'https://support.microsoft.com/fr-fr/office/5189176c-2a5d-45b1-815b-970a5499164e',
   },
 };
-
-const KNOWLEDGE_BASE: KnowledgeBaseItem[] = [
-  {
-    keywords: ['génère', 'adresse', 'routing', 'uuid'],
-    answer:
-      'Étape 1 : clique sur "Générer une adresse". Nous créons une adresse Resend unique du type support+xxxx@mail.clarity.support. Utilise-la uniquement comme destination de redirection.',
-  },
-  {
-    keywords: ['redirection', 'transfert', 'gmail', 'workspace'],
-    answer:
-      'Depuis admin.google.com (compte Super Admin) : Menu ☰ → Apps → Google Workspace → Gmail → Routage. Clique sur “Ajouter une autre règle”, mets l’adresse support en source et la Resend en destination, laisse “Conserver une copie” activé puis Enregistrer.',
-  },
-  {
-    keywords: ['gmail.com', 'gmail perso', 'compte perso', 'transfert gmail'],
-    answer:
-      'Dans Gmail (version web) : engrenage → Afficher tous les paramètres → onglet “Transfert et POP/IMAP”. Clique sur “Ajouter une adresse de transfert”, colle l’adresse Resend, valide le code de confirmation reçu, puis coche “Transférer une copie vers…” et garde “Conserver la copie Gmail” si besoin.',
-  },
-  {
-    keywords: ['ovh', 'manager'],
-    answer:
-      'Va sur manager.ovhcloud.com → Emails → ton service MX Plan → onglet Redirections → Créer une redirection. Source = support@tondomaine, Destination = adresse Resend. Valide, puis contrôle que la ligne passe en “activée” avant de tester.',
-  },
-  {
-    keywords: ['outlook', 'règle', 'rule'],
-    answer:
-      'Dans outlook.office.com/mail, clique sur l’icône engrenage → “Afficher tous les paramètres” → Courrier → Règles → Ajouter une nouvelle règle. Condition = Tous les messages, Action = Rediriger vers + adresse Resend, coche “Arrêter le traitement des autres règles”, sauvegarde et active.',
-  },
-  {
-    keywords: ['statut', 'connected', 'pending', 'vérifier'],
-    answer:
-      'Après avoir envoyé un email test depuis ton domaine, clique sur "Vérifier le statut" (Étape 3). Le statut passe à « Connected » dès que nous recevons le premier email. Si tu restes en "pending" >5 min, vérifie la règle côté fournisseur.',
-  },
-  {
-    keywords: ['erreur', 'webhook', 'signature', 'svix'],
-    answer:
-      'Assure-toi que RESEND_INBOUND_WEBHOOK_SECRET correspond à celui configuré sur le webhook Resend. Sans ça, les emails entrants seront rejetés et le statut restera en erreur.',
-  },
-  {
-    keywords: ['reply', 'sortant', 'ia'],
-    answer:
-      'Les réponses et l’IA passent par Resend API avec ton `RESEND_FROM_EMAIL`. Vérifie que le domaine est validé chez Resend pour éviter les erreurs SPF/DKIM.',
-  },
-];
 
 const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
   google: [
@@ -147,12 +99,12 @@ const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
     {
       title: '📤 Ajouter l’adresse Resend',
       helper:
-        'Clique sur “Ajouter une adresse de transfert”, saisis l’adresse Resend générée, puis confirme via le code reçu (dans Clarity, onglet Inbox).',
+        'Clique sur “Ajouter une adresse de transfert”, colle l’adresse de routage affichée à l’Étape 1 dans Clarity, puis surveille le Mail Center: Google envoie un mail « Gmail Forwarding Confirmation » avec un code.',
     },
     {
       title: '✅ Activer le transfert',
       helper:
-        'Une fois l’adresse confirmée, coche “Transférer une copie des messages entrants vers...” + adresse Resend, garde “Conserver la copie dans la boîte Gmail” si tu veux garder un backup.',
+        'Ouvre l’email Google dans Clarity → copie le code → valide la fenêtre Gmail. Ensuite coche “Transférer une copie des messages entrants vers…” + adresse Resend, et choisis quoi faire de la copie Gmail (conserver, archiver, etc.).',
     },
   ],
   ovh: [
@@ -213,37 +165,57 @@ export default function InboxConnectPage() {
     {
       role: 'assistant',
       content:
-        'Salut 👋 Je suis l’assistant routage Resend. Dis-moi où tu bloques (ex: "Je ne vois pas Gmail dans mon admin"), et je te guide.',
+        'Salut 👋 Je suis l’assistant Inbox Connect (GPT-4o mini). Je réponds uniquement aux questions sur la génération de l’adresse de routage, la configuration des redirections ou la vérification du statut (Étape 3). Dis-moi où tu bloques.',
     },
   ]);
   const [chatInput, setChatInput] = useState('');
+  const [isAssistantTyping, setIsAssistantTyping] = useState(false);
 
   const statusBadgeClass = useMemo(() => {
     if (!inbox) return 'bg-slate-100 text-slate-700';
     return STATUS_COLORS[inbox.status] || 'bg-slate-100 text-slate-700';
   }, [inbox]);
 
-  const generateAssistantAnswer = (message: string) => {
-    const normalized = message.toLowerCase();
-    const match = KNOWLEDGE_BASE.find((item) =>
-      item.keywords.some((keyword) => normalized.includes(keyword))
-    );
-    return match
-      ? match.answer
-      : 'Je te conseille de revérifier les 3 étapes : 1) Génère l’adresse Resend, 2) crée la redirection côté fournisseur (Google/OVH/Outlook), 3) envoie un email test puis clique sur « Vérifier le statut ». Si tu bloques encore, décris-moi la plateforme et l’étape précise.';
-  };
-
-  const handleSendMessage = (event?: React.FormEvent) => {
+  const handleSendMessage = async (event?: React.FormEvent, presetMessage?: string) => {
     if (event) event.preventDefault();
-    if (!chatInput.trim()) return;
-    const userContent = chatInput.trim();
-    const assistantReply = generateAssistantAnswer(userContent);
-    setChatMessages((prev) => [
-      ...prev,
-      { role: 'user', content: userContent },
-      { role: 'assistant', content: assistantReply },
-    ]);
+    if (isAssistantTyping) return;
+
+    const userContent = (presetMessage ?? chatInput).trim();
+    if (!userContent) return;
+
+    const historySnapshot = chatMessages.slice(-6);
     setChatInput('');
+    setChatMessages((prev) => [...prev, { role: 'user', content: userContent }]);
+    setIsAssistantTyping(true);
+
+    try {
+      const response = await fetch('/api/inbox-connect-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userContent,
+          history: historySnapshot,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.answer) {
+        throw new Error(data?.message || 'Je n’ai pas pu répondre. Réessaie en précisant l’étape.');
+      }
+
+      setChatMessages((prev) => [...prev, { role: 'assistant', content: data.answer as string }]);
+    } catch (error) {
+      const fallback = error instanceof Error ? error.message : 'Erreur inconnue';
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `Impossible de répondre pour le moment (${fallback}). Réessaie dans quelques instants.`,
+        },
+      ]);
+    } finally {
+      setIsAssistantTyping(false);
+    }
   };
 
   const quickPrompts = [
@@ -255,13 +227,8 @@ export default function InboxConnectPage() {
   ];
 
   const handleQuickPrompt = (prompt: string) => {
-    const answer = generateAssistantAnswer(prompt);
-    setChatMessages((prev) => [
-      ...prev,
-      { role: 'user', content: prompt },
-      { role: 'assistant', content: answer },
-    ]);
     setIsHelpOpen(true);
+    void handleSendMessage(undefined, prompt);
   };
 
   const initializeInbox = async (supportEmail?: string) => {
@@ -379,7 +346,7 @@ export default function InboxConnectPage() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Nous utilisons cette adresse comme « Reply-To » afin que vos clients continuent à voir votre domaine.
+              Cette adresse peut être n'importe quelle boîte existante (Gmail, OVH, Outlook...). Elle n'est pas hébergée par Clarity : nous l'utilisons uniquement comme « Reply-To » pour que vos clients voient votre adresse habituelle.
             </p>
           </div>
         </CardContent>
@@ -463,10 +430,10 @@ export default function InboxConnectPage() {
                           Connecte-toi à <span className="font-mono">https://mail.google.com</span> avec le compte à rediriger, clique sur l’icône engrenage puis sur <span className="font-semibold">Afficher tous les paramètres</span>.
                         </li>
                         <li>
-                          Onglet <span className="font-semibold">Transfert et POP/IMAP</span> &rarr; section « Transfert » &rarr; bouton « Ajouter une adresse de transfert ».
+                          Onglet <span className="font-semibold">Transfert et POP/IMAP</span> &rarr; section « Transfert » &rarr; bouton « Ajouter une adresse de transfert ». Colle exactement l’adresse de routage Resend affichée dans l’Étape 1 ci-dessus (pas besoin d’aller sur resend.com).
                         </li>
                         <li>
-                          Entre l’adresse Resend, récupère le code de confirmation dans Clarity (email reçu), valide, puis sélectionne « Transférer une copie vers… » et choisis ce que Gmail doit faire de la copie originale.
+                          Gmail envoie un message « Gmail Forwarding Confirmation » vers l’adresse Resend : ouvre Clarity &gt; Mail Center pour le lire, copie le code, valide la fenêtre Gmail, puis sélectionne « Transférer une copie vers… » + adresse Resend et choisis quoi faire de la copie originale (conserver, archiver...).
                         </li>
                       </ol>
                     </div>
@@ -655,6 +622,14 @@ export default function InboxConnectPage() {
                 </div>
               </div>
             ))}
+            {isAssistantTyping && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-700 shadow-sm">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  Assistant en train d'écrire…
+                </div>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSendMessage} className="flex gap-2 border-t bg-white px-4 py-3">
