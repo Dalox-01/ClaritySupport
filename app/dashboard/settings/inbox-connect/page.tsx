@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Copy, ExternalLink, Loader2, MailCheck, MailPlus, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, Bot, Copy, ExternalLink, Loader2, MailCheck, MailPlus, MessageCircleQuestion, RefreshCw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,16 @@ type ProviderStep = {
   helper: string;
 };
 
+type KnowledgeBaseItem = {
+  keywords: string[];
+  answer: string;
+};
+
+type ChatMessage = {
+  role: 'assistant' | 'user';
+  content: string;
+};
+
 const PROVIDERS: Provider[] = ['google', 'ovh', 'outlook'];
 
 const PROVIDER_HIGHLIGHTS: Record<Provider, string> = {
@@ -60,6 +70,44 @@ const PROVIDER_DOCS: Record<Provider, { label: string; href: string }> = {
     href: 'https://support.microsoft.com/fr-fr/office/cr%C3%A9er-des-r%C3%A8gles-dans-outlook-pour-windows-ccfba861-5123-4f1f-9a00-9b0b9b38b563',
   },
 };
+
+const KNOWLEDGE_BASE: KnowledgeBaseItem[] = [
+  {
+    keywords: ['génère', 'adresse', 'routing', 'uuid'],
+    answer:
+      'Étape 1 : clique sur "Générer une adresse". Nous créons une adresse Resend unique du type support+xxxx@mail.clarity.support. Utilise-la uniquement comme destination de redirection.',
+  },
+  {
+    keywords: ['redirection', 'transfert', 'gmail', 'workspace'],
+    answer:
+      'Dans Google Workspace → Apps → Gmail → Routage, ajoute une règle de transfert vers l’adresse Resend puis garde "Conserver une copie" activé. Vérifie que le domaine est vérifié dans Google Admin.',
+  },
+  {
+    keywords: ['ovh', 'manager'],
+    answer:
+      'Sur OVHcloud, ouvre Emails & Collaboration → Redirections, crée une redirection depuis ton adresse support vers l’adresse Resend, enregistre et attends la propagation (~2 min).',
+  },
+  {
+    keywords: ['outlook', 'règle', 'rule'],
+    answer:
+      'Dans Outlook Web, Paramètres → Courrier → Règles. Crée une règle "Tous les messages" avec action "Rediriger" vers l’adresse Resend. Sauvegarde puis envoie un email test.',
+  },
+  {
+    keywords: ['statut', 'connected', 'pending', 'vérifier'],
+    answer:
+      'Après avoir envoyé un email test depuis ton domaine, clique sur "Vérifier le statut" (Étape 3). Le statut passe à « Connected » dès que nous recevons le premier email. Si tu restes en "pending" >5 min, vérifie la règle côté fournisseur.',
+  },
+  {
+    keywords: ['erreur', 'webhook', 'signature', 'svix'],
+    answer:
+      'Assure-toi que RESEND_INBOUND_WEBHOOK_SECRET correspond à celui configuré sur le webhook Resend. Sans ça, les emails entrants seront rejetés et le statut restera en erreur.',
+  },
+  {
+    keywords: ['reply', 'sortant', 'ia'],
+    answer:
+      'Les réponses et l’IA passent par Resend API avec ton `RESEND_FROM_EMAIL`. Vérifie que le domaine est validé chez Resend pour éviter les erreurs SPF/DKIM.',
+  },
+];
 
 const PROVIDER_STEPS: Record<Provider, ProviderStep[]> = {
   google: [
@@ -123,11 +171,60 @@ export default function InboxConnectPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [activeTab, setActiveTab] = useState<Provider>('google');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      role: 'assistant',
+      content:
+        'Salut 👋 Je suis l’assistant routage Resend. Dis-moi où tu bloques (ex: "Je ne vois pas Gmail dans mon admin"), et je te guide.',
+    },
+  ]);
+  const [chatInput, setChatInput] = useState('');
 
   const statusBadgeClass = useMemo(() => {
     if (!inbox) return 'bg-slate-100 text-slate-700';
     return STATUS_COLORS[inbox.status] || 'bg-slate-100 text-slate-700';
   }, [inbox]);
+
+  const generateAssistantAnswer = (message: string) => {
+    const normalized = message.toLowerCase();
+    const match = KNOWLEDGE_BASE.find((item) =>
+      item.keywords.some((keyword) => normalized.includes(keyword))
+    );
+    return match
+      ? match.answer
+      : 'Je te conseille de revérifier les 3 étapes : 1) Génère l’adresse Resend, 2) crée la redirection côté fournisseur (Google/OVH/Outlook), 3) envoie un email test puis clique sur « Vérifier le statut ». Si tu bloques encore, décris-moi la plateforme et l’étape précise.';
+  };
+
+  const handleSendMessage = (event?: React.FormEvent) => {
+    if (event) event.preventDefault();
+    if (!chatInput.trim()) return;
+    const userContent = chatInput.trim();
+    const assistantReply = generateAssistantAnswer(userContent);
+    setChatMessages((prev) => [
+      ...prev,
+      { role: 'user', content: userContent },
+      { role: 'assistant', content: assistantReply },
+    ]);
+    setChatInput('');
+  };
+
+  const quickPrompts = [
+    'Je ne trouve pas Gmail dans mon admin',
+    'Le statut reste en pending',
+    'Comment vérifier OVH ?',
+    'Erreur webhook ou signature',
+  ];
+
+  const handleQuickPrompt = (prompt: string) => {
+    const answer = generateAssistantAnswer(prompt);
+    setChatMessages((prev) => [
+      ...prev,
+      { role: 'user', content: prompt },
+      { role: 'assistant', content: answer },
+    ]);
+    setIsHelpOpen(true);
+  };
 
   const initializeInbox = async (supportEmail?: string) => {
     try {
@@ -198,7 +295,7 @@ export default function InboxConnectPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-8 py-10">
+    <div className="relative flex min-h-screen w-full flex-col gap-8 bg-white py-10 px-4 sm:px-8 lg:px-16">
       <div>
         <p className="text-sm uppercase text-muted-foreground">Connexion Mail Center</p>
         <h1 className="text-3xl font-semibold tracking-tight">Connecter votre boîte via Resend</h1>
@@ -402,6 +499,82 @@ export default function InboxConnectPage() {
           ))}
         </CardContent>
       </Card>
+
+      <div className="pointer-events-none fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+        <div
+          className={cn(
+            'flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200',
+            isHelpOpen ? 'pointer-events-auto translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'
+          )}
+        >
+          <div className="flex items-center justify-between border-b bg-slate-50/80 px-4 py-3">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-semibold">
+                <Bot className="h-4 w-4 text-primary" /> Assistant Inbox Connect
+              </p>
+              <p className="text-xs text-muted-foreground">Docs Resend + guides internes</p>
+            </div>
+            <Button size="icon" variant="ghost" onClick={() => setIsHelpOpen(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 border-b bg-slate-50 px-4 py-3">
+            {quickPrompts.map((prompt) => (
+              <Button
+                key={prompt}
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="rounded-full border border-slate-200 bg-white text-xs text-slate-900 shadow-sm hover:bg-slate-100"
+                onClick={() => handleQuickPrompt(prompt)}
+              >
+                {prompt}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex max-h-[45vh] flex-col gap-3 overflow-y-auto px-4 py-4">
+            {chatMessages.map((message, index) => (
+              <div
+                key={`${message.role}-${index}`}
+                className={cn('flex', message.role === 'assistant' ? 'justify-start' : 'justify-end')}
+              >
+                <div
+                  className={cn(
+                    'max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm',
+                    message.role === 'assistant'
+                      ? 'bg-slate-100 text-slate-800'
+                      : 'bg-primary text-white'
+                  )}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleSendMessage} className="flex gap-2 border-t bg-white px-4 py-3">
+            <Input
+              value={chatInput}
+              onChange={(event) => setChatInput(event.target.value)}
+              placeholder="Décris-moi l'étape ou l'erreur"
+              className="flex-1"
+            />
+            <Button type="submit" disabled={!chatInput.trim()}>
+              Envoyer
+            </Button>
+          </form>
+        </div>
+
+        <Button
+          type="button"
+          onClick={() => setIsHelpOpen((prev) => !prev)}
+          className="pointer-events-auto rounded-full bg-primary px-6 py-3 text-white shadow-lg hover:bg-primary/90"
+        >
+          <MessageCircleQuestion className="mr-2 h-4 w-4" /> Où êtes-vous bloqués ?
+        </Button>
+      </div>
     </div>
   );
 }
