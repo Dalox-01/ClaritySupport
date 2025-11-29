@@ -1,0 +1,12 @@
+{
+  "name": "clarity-ses-bridge",
+  "version": "1.0.0",
+  "description": "Lambda bridge that converts SES inbound emails into Clarity Support webhooks.",
+  "type": "module",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.592.0",
+    "mailparser": "^3.6.8",
+    "node-fetch": "^3.3.2"
+  }
+}
