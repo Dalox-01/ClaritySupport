@@ -77,7 +77,7 @@ export const PLAN_FEATURES = {
 } as const;
 
 export function canUseSignatures(plan: PlanType): boolean {
-  return PLAN_FEATURES[plan].signatures !== 0;
+  return PLAN_FEATURES[plan].signatures >= 1 || PLAN_FEATURES[plan].signatures === -1;
 }
 
 export function canUseVariables(plan: PlanType): boolean {
