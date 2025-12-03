@@ -85,7 +85,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
 /**
  * Normaliser le nom du plan (compatibilité ancien/nouveau système)
  * Nouveaux plans: STARTER, PRO, SCALE, SOLO, UNLIMITED, FREE
- * Anciens plans: starter, pro, enterprise, free
+ * Anciens plans: starter, pro, scale, free
  */
 function normalizePlanName(plan: string): string {
   const planUpper = (plan || 'FREE').toUpperCase();
@@ -94,11 +94,11 @@ function normalizePlanName(plan: string): string {
   const planMapping: Record<string, string> = {
     'STARTER': 'starter',   // Nouveau → Ancien pour subscription-limits.ts
     'PRO': 'pro',
-    'SCALE': 'enterprise',  // SCALE équivaut à enterprise
+    'SCALE': 'scale',  // SCALE équivaut à scale
     'SOLO': 'starter',      // SOLO équivaut à starter (niveau similaire)
-    'UNLIMITED': 'enterprise', // UNLIMITED équivaut à enterprise
+    'UNLIMITED': 'scale', // UNLIMITED équivaut à scale
     'FREE': 'free',
-    'ENTERPRISE': 'enterprise',
+    'ENTERPRISE': 'scale',
   };
 
   return planMapping[planUpper] || 'free';
@@ -167,7 +167,7 @@ export async function canAddEmailAccountWithSubscription(userId: string): Promis
       reason: `Vous avez atteint la limite de ${planLimits.emailAccounts} compte(s) email pour le plan ${subscription.plan}`,
       currentUsage: usage.emailAccountsCount,
       limit: planLimits.emailAccounts,
-      upgradePlans: ['pro' as PlanType, 'enterprise' as PlanType],
+      upgradePlans: ['pro' as PlanType, 'scale' as PlanType],
     };
   }
 
@@ -194,10 +194,10 @@ export async function canProcessEmail(userId: string): Promise<LimitCheckResult>
       currentUsage: usage.emailsThisMonth,
       limit: plan.features.emailsPerMonth,
       upgradePlans: subscription.plan === 'free' 
-        ? ['starter', 'pro', 'enterprise']
+        ? ['starter', 'pro', 'scale'] as PlanType[]
         : subscription.plan === 'starter'
-        ? ['pro', 'enterprise']
-        : ['enterprise'],
+        ? ['pro', 'scale'] as PlanType[]
+        : ['scale'] as PlanType[],
     };
   }
 
@@ -229,7 +229,7 @@ export async function canSendAutoReplyWithSubscription(userId: string): Promise<
       reason: `Vous avez atteint la limite de ${planLimits.autoRepliesPerMonth} réponses automatiques/mois pour le plan ${subscription.plan}`,
       currentUsage: usage.autoRepliesThisMonth,
       limit: planLimits.autoRepliesPerMonth,
-      upgradePlans: ['pro' as PlanType, 'enterprise' as PlanType],
+      upgradePlans: ['pro' as PlanType, 'scale' as PlanType],
     };
   }
 
