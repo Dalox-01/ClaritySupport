@@ -1,8 +1,23 @@
 // Plan features and restrictions
 
-export type PlanType = 'starter' | 'pro' | 'scale' | 'ADMIN';
+export type PlanType = 'free' | 'starter' | 'pro' | 'scale' | 'ADMIN';
 
 export const PLAN_FEATURES = {
+  free: {
+    generations: 500,       // 500 réponses max pendant l'essai
+    signatures: 1,
+    variables: false,
+    customTemplates: 0,
+    voiceDictation: false,
+    pdfWatermark: true,
+    historyDays: 7,         // Historique limité à 7 jours
+    chatbot: false,
+    maxEmailAccounts: 1,
+    maxShopifyStores: 1,
+    maxKnowledgeFiles: 0,
+    affiliateEnabled: false,
+    trialDays: 7,           // Essai de 7 jours
+  },
   starter: {
     generations: 5000,
     signatures: 3,
@@ -98,7 +113,8 @@ export function getGenerationsLimit(plan: PlanType): number {
 }
 
 export function getPlanName(plan: PlanType): string {
-  const names = {
+  const names: Record<PlanType, string> = {
+    free: 'Free',
     starter: 'Starter',
     pro: 'Pro',
     scale: 'Scale',
@@ -108,7 +124,8 @@ export function getPlanName(plan: PlanType): string {
 }
 
 export function getPlanPrice(plan: PlanType): number {
-  const prices = {
+  const prices: Record<PlanType, number> = {
+    free: 0,
     starter: 49,
     pro: 99,
     scale: 199,

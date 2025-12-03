@@ -41,6 +41,7 @@ import { ReplyEmailDialog } from '@/components/reply-email-dialog';
 import { EmailDetailWindow } from '@/components/email-detail-window';
 import { ReplyGeneratorWindow } from '@/components/reply-generator-window';
 import { QuotaDisplay } from '@/components/quota-display';
+import { UsageProgressWidget } from '@/components/usage-progress-widget';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -131,7 +132,16 @@ export default function MailCenterPage() {
   const [showAllFilters, setShowAllFilters] = useState(false);
   
   // User plan - TODO: Fetch from subscription/session
-  const [userPlan] = useState<'starter' | 'pro' | 'scale'>('pro');
+  const [userPlan, setUserPlan] = useState<'free' | 'starter' | 'pro' | 'scale'>('pro');
+  
+  // State pour les données d'usage (widget de progression)
+  const [usageData, setUsageData] = useState<{
+    used: number;
+    limit: number;
+    bonusCredits: number;
+    trialDaysRemaining?: number;
+  }>({ used: 0, limit: 5000, bonusCredits: 0 });
+  const [showUsageWidget, setShowUsageWidget] = useState(true);
   
   // State pour le thème - Par défaut en mode clair
   const [isLightMode, setIsLightMode] = useState(true);
@@ -180,12 +190,34 @@ export default function MailCenterPage() {
     if (status === 'authenticated') {
       // Charger immédiatement les données
       loadInitialData();
+      loadUsageData();
       
       // Puis synchroniser automatiquement toutes les minutes
       const interval = setInterval(syncEmails, 60000);
       return () => clearInterval(interval);
     }
   }, [status]);
+  
+  // Charger les données d'utilisation
+  const loadUsageData = async () => {
+    try {
+      const response = await fetch('/api/usage');
+      if (response.ok) {
+        const data = await response.json();
+        setUsageData({
+          used: data.used || 0,
+          limit: data.limit || 5000,
+          bonusCredits: data.bonusCredits || 0,
+          trialDaysRemaining: data.trialDaysRemaining,
+        });
+        if (data.plan) {
+          setUserPlan(data.plan.toLowerCase() as 'free' | 'starter' | 'pro' | 'scale');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur chargement usage:', error);
+    }
+  };
   
   // Recharger les emails quand les comptes changent (après connexion d'un nouveau compte)
   useEffect(() => {
@@ -1450,6 +1482,25 @@ export default function MailCenterPage() {
                 </div>
               </Card>
             </motion.div>
+
+            {/* Widget de progression d'utilisation */}
+            {showUsageWidget && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                <UsageProgressWidget
+                  used={usageData.used}
+                  limit={usageData.limit}
+                  bonusCredits={usageData.bonusCredits}
+                  plan={userPlan}
+                  trialDaysRemaining={usageData.trialDaysRemaining}
+                  variant="full"
+                  onUpgradeClick={() => router.push('/pricing')}
+                />
+              </motion.div>
+            )}
           </motion.aside>
 
           {/* Zone principale - Stats + Emails */}

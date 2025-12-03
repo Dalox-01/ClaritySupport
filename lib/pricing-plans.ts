@@ -1,9 +1,9 @@
 /**
  * Système de plans tarifaires pour ClaritySupport
- * 3 plans : Starter, Pro, Scale
+ * 4 plans : FREE (essai 7 jours), Starter, Pro, Scale
  */
 
-export type PlanType = 'starter' | 'pro' | 'scale';
+export type PlanType = 'free' | 'starter' | 'pro' | 'scale';
 
 export interface PlanFeatures {
   // Comptes email
@@ -24,8 +24,11 @@ export interface PlanFeatures {
   affiliateEnabled: boolean;
   
   // Support
-  supportLevel: 'email' | 'priority' | 'dedicated';
+  supportLevel: 'community' | 'email' | 'priority' | 'dedicated';
   responseTime: string;
+  
+  // Essai gratuit
+  trialDays?: number;
 }
 
 export interface PricingPlan {
@@ -57,6 +60,57 @@ export interface PricingPlan {
 }
 
 export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
+  free: {
+    id: 'free',
+    name: 'Free',
+    tagline: 'Essai gratuit 7 jours',
+    price: {
+      monthly: 0,
+      yearly: 0,
+      currency: '€',
+    },
+    prices: {
+      monthly: 0,
+      yearly: 0,
+    },
+    limits: {
+      emailsPerMonth: 500,
+      emailAccounts: 1,
+      shopifyStores: 1,
+      knowledgeFiles: 0,
+    },
+    description: 'Testez ClaritySupport gratuitement pendant 7 jours',
+    featureList: [
+      '1 compte email',
+      '500 réponses IA pendant 7 jours',
+      '1 boutique Shopify',
+      'IA de base',
+      'Support communautaire',
+    ],
+    features: {
+      maxEmailAccounts: 1,
+      emailsPerMonth: 500,
+      maxShopifyStores: 1,
+      aiEnabled: true,
+      customAIConfig: false,
+      maxKnowledgeFiles: 0,
+      affiliateEnabled: false,
+      supportLevel: 'community',
+      responseTime: 'Forum',
+      trialDays: 7,
+    },
+    highlighted: false,
+    popular: false,
+    cta: 'Essayer gratuitement',
+    limitations: [
+      'Limité à 7 jours',
+      'Maximum 500 réponses',
+      '1 seul compte email',
+      'Pas de personnalisation IA',
+      'Pas d\'affiliation',
+    ],
+  },
+  
   starter: {
     id: 'starter',
     name: 'Starter',
@@ -209,11 +263,13 @@ export function getPlanByType(type: PlanType): PricingPlan {
  * Obtenir les plans supérieurs disponibles pour un upgrade
  */
 export function getUpgradePlans(currentPlan: PlanType): PricingPlan[] {
-  const planOrder: PlanType[] = ['starter', 'pro', 'scale'];
+  const planOrder: PlanType[] = ['free', 'starter', 'pro', 'scale'];
   const currentIndex = planOrder.indexOf(currentPlan);
   
+  // Filtrer pour ne pas inclure 'free' dans les upgrades (on upgrade vers payant)
   return planOrder
     .slice(currentIndex + 1)
+    .filter(type => type !== 'free')
     .map(type => PRICING_PLANS[type]);
 }
 
@@ -221,7 +277,7 @@ export function getUpgradePlans(currentPlan: PlanType): PricingPlan[] {
  * Comparer deux plans
  */
 export function comparePlans(planA: PlanType, planB: PlanType): number {
-  const planOrder: PlanType[] = ['starter', 'pro', 'scale'];
+  const planOrder: PlanType[] = ['free', 'starter', 'pro', 'scale'];
   return planOrder.indexOf(planA) - planOrder.indexOf(planB);
 }
 

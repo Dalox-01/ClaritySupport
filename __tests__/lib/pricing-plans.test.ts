@@ -17,9 +17,10 @@ import {
 
 describe('Pricing Plans', () => {
   describe('Structure des plans', () => {
-    test('devrait avoir exactement 3 plans: starter, pro, scale', () => {
+    test('devrait avoir exactement 4 plans: free, starter, pro, scale', () => {
       const planTypes = Object.keys(PRICING_PLANS);
-      expect(planTypes).toHaveLength(3);
+      expect(planTypes).toHaveLength(4);
+      expect(planTypes).toContain('free');
       expect(planTypes).toContain('starter');
       expect(planTypes).toContain('pro');
       expect(planTypes).toContain('scale');
@@ -40,6 +41,11 @@ describe('Pricing Plans', () => {
   });
 
   describe('Prix des plans', () => {
+    test('Free devrait être gratuit (0€)', () => {
+      expect(PRICING_PLANS.free.price.monthly).toBe(0);
+      expect(PRICING_PLANS.free.prices.monthly).toBe(0);
+    });
+
     test('Starter devrait coûter 49€/mois', () => {
       expect(PRICING_PLANS.starter.price.monthly).toBe(49);
       expect(PRICING_PLANS.starter.prices.monthly).toBe(49);
@@ -55,11 +61,35 @@ describe('Pricing Plans', () => {
       expect(PRICING_PLANS.scale.prices.monthly).toBe(199);
     });
 
-    test('les prix annuels devraient offrir une réduction (10 mois pour 12)', () => {
-      Object.values(PRICING_PLANS).forEach(plan => {
+    test('les prix annuels des plans payants devraient offrir une réduction', () => {
+      ['starter', 'pro', 'scale'].forEach(planId => {
+        const plan = PRICING_PLANS[planId as keyof typeof PRICING_PLANS];
         const monthlyTotal = plan.price.monthly * 12;
         expect(plan.price.yearly).toBeLessThan(monthlyTotal);
       });
+    });
+  });
+
+  describe('Plan FREE - Essai 7 jours', () => {
+    test('Free devrait avoir 500 emails max pendant 7 jours', () => {
+      const free = PRICING_PLANS.free;
+      expect(free.limits.emailsPerMonth).toBe(500);
+      expect(free.features.trialDays).toBe(7);
+    });
+
+    test('Free devrait avoir des limites restrictives', () => {
+      const free = PRICING_PLANS.free.limits;
+      expect(free.emailAccounts).toBe(1);
+      expect(free.shopifyStores).toBe(1);
+      expect(free.knowledgeFiles).toBe(0);
+    });
+
+    test('Free ne devrait pas avoir accès à l\'affiliation', () => {
+      expect(PRICING_PLANS.free.features.affiliateEnabled).toBe(false);
+    });
+
+    test('Free devrait avoir un support communautaire', () => {
+      expect(PRICING_PLANS.free.features.supportLevel).toBe('community');
     });
   });
 
@@ -89,6 +119,9 @@ describe('Pricing Plans', () => {
     });
 
     test('les limites devraient augmenter avec le niveau du plan', () => {
+      expect(PRICING_PLANS.starter.limits.emailsPerMonth).toBeGreaterThan(
+        PRICING_PLANS.free.limits.emailsPerMonth
+      );
       expect(PRICING_PLANS.pro.limits.emailsPerMonth).toBeGreaterThan(
         PRICING_PLANS.starter.limits.emailsPerMonth
       );
@@ -106,12 +139,14 @@ describe('Pricing Plans', () => {
     });
 
     test('seuls Pro et Scale devraient avoir customAIConfig', () => {
+      expect(PRICING_PLANS.free.features.customAIConfig).toBe(false);
       expect(PRICING_PLANS.starter.features.customAIConfig).toBe(false);
       expect(PRICING_PLANS.pro.features.customAIConfig).toBe(true);
       expect(PRICING_PLANS.scale.features.customAIConfig).toBe(true);
     });
 
     test('seuls Pro et Scale devraient avoir l\'affiliation', () => {
+      expect(PRICING_PLANS.free.features.affiliateEnabled).toBe(false);
       expect(PRICING_PLANS.starter.features.affiliateEnabled).toBe(false);
       expect(PRICING_PLANS.pro.features.affiliateEnabled).toBe(true);
       expect(PRICING_PLANS.scale.features.affiliateEnabled).toBe(true);
@@ -133,6 +168,12 @@ describe('Pricing Plans', () => {
     });
 
     describe('getUpgradePlans', () => {
+      test('Free devrait pouvoir upgrader vers Starter, Pro et Scale', () => {
+        const upgrades = getUpgradePlans('free');
+        expect(upgrades).toHaveLength(3);
+        expect(upgrades.map(p => p.id)).toEqual(['starter', 'pro', 'scale']);
+      });
+
       test('Starter devrait pouvoir upgrader vers Pro et Scale', () => {
         const upgrades = getUpgradePlans('starter');
         expect(upgrades).toHaveLength(2);
@@ -209,7 +250,8 @@ describe('Pricing Plans', () => {
     });
 
     describe('canUseAffiliate', () => {
-      test('Starter ne peut pas utiliser l\'affiliation', () => {
+      test('Free et Starter ne peuvent pas utiliser l\'affiliation', () => {
+        expect(canUseAffiliate('free')).toBe(false);
         expect(canUseAffiliate('starter')).toBe(false);
       });
 
