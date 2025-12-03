@@ -217,11 +217,6 @@ export function UpgradeModal({
                             text={`${plan.features.emailsPerMonth.toLocaleString()} emails/mois`}
                             highlighted={isRecommended}
                           />
-                          <FeatureItem
-                            icon={Check}
-                            text={`${plan.features.autoRepliesPerMonth.toLocaleString()} réponses automatiques/mois`}
-                            highlighted={isRecommended}
-                          />
                           {plan.features.knowledgeBase && (
                             <FeatureItem
                               icon={Check}
