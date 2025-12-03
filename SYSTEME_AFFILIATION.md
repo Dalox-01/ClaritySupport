@@ -7,9 +7,9 @@ Le système d'affiliation permet aux utilisateurs PRO et SCALE de gagner des bon
 ## Bonus
 
 | Type de bonus | Crédits |
-|---------------|---------|
-| **Parrain** | +1500 générations d'emails |
-| **Filleul** | +500 générations d'emails (bonus de bienvenue) |
+|---------------|--------|
+| **Parrain** (celui qui génère le lien) | +1500 générations d'emails |
+| **Filleul** (celui qui utilise le lien) | +500 générations d'emails (bonus de bienvenue) |
 
 ## Plans disponibles
 
@@ -32,14 +32,14 @@ Seuls les utilisateurs des plans suivants peuvent générer un code d'affiliatio
 1. Aller dans **Paramètres** → Onglet **Affiliation**
 2. Cliquer sur **Générer mon lien d'affiliation**
 3. Copier et partager le lien avec des amis/collègues
-4. Recevoir **1500 crédits bonus** pour chaque nouvel abonné
+4. Recevoir **1500 générations bonus** pour chaque nouvel abonné
 
 ### Pour le filleul
 
 1. Cliquer sur le lien d'affiliation partagé
 2. S'inscrire sur ClaritySupport
 3. Souscrire à un plan payant (STARTER, PRO ou ENTERPRISE)
-4. Recevoir automatiquement **500 crédits bonus** de bienvenue
+4. Recevoir automatiquement **500 générations bonus** de bienvenue
 
 ## Structure technique
 

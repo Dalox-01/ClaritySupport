@@ -5,8 +5,8 @@ import { supabase } from '@/lib/db';
 
 // Constantes du système d'affiliation
 const AFFILIATE_CONFIG = {
-  REFERRER_BONUS: 1500,
-  REFERRED_BONUS: 500,
+  REFERRER_BONUS: 1500, // Bonus pour le parrain
+  REFERRED_BONUS: 500,  // Bonus pour le filleul
   QUALIFYING_PLANS: ['starter', 'pro', 'scale'],
 };
 

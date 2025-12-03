@@ -5,8 +5,8 @@ import { supabase } from '@/lib/db';
 
 // Constantes du système d'affiliation
 const AFFILIATE_CONFIG = {
-  REFERRER_BONUS: 1500, // Bonus pour le parrain
-  REFERRED_BONUS: 500,  // Bonus de bienvenue pour le filleul
+  REFERRER_BONUS: 1500, // Bonus pour le parrain (celui qui génère le lien)
+  REFERRED_BONUS: 500,  // Bonus de bienvenue pour le filleul (celui qui utilise le lien)
   ELIGIBLE_PLANS: ['pro', 'scale'], // Plans pouvant générer un code
   QUALIFYING_PLANS: ['starter', 'pro', 'scale'], // Plans comptant comme parrainage réussi
   BASE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://claritysupport.fr',
