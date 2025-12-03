@@ -1,0 +1,19 @@
+/* Styles pour le content script Gmail */
+.mailwiz-button {
+  background: #2D6A4F;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+
+.mailwiz-button:hover {
+  background: #1B4332;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(45, 106, 79, 0.3);
+}

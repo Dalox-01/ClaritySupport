@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .w-letter { fill: #1a6e3f; }
+      .envelope { fill: #ffffff; }
+    </style>
+  </defs>
+  
+  <!-- Lettre W -->
+  <path class="w-letter" d="M 100 150 L 150 400 L 200 250 L 256 400 L 312 250 L 362 400 L 412 150 L 362 150 L 336 300 L 280 150 L 232 300 L 176 150 Z"/>
+  
+  <!-- Enveloppe intégrée dans le W -->
+  <g transform="translate(180, 280)">
+    <!-- Rectangle de l'enveloppe -->
+    <path class="envelope" d="M 10 20 L 142 20 L 142 100 L 10 100 Z"/>
+    <!-- Triangle du haut (rabat) -->
+    <path class="w-letter" d="M 10 20 L 76 60 L 142 20 Z"/>
+    <!-- Lignes du rabat -->
+    <line x1="10" y1="20" x2="76" y2="60" stroke="#ffffff" stroke-width="2"/>
+    <line x1="142" y1="20" x2="76" y2="60" stroke="#ffffff" stroke-width="2"/>
+  </g>
+</svg>
