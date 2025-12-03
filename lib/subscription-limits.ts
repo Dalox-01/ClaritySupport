@@ -292,11 +292,6 @@ export async function getSubscriptionSummary(userId: string) {
         max: plan.features.emailsPerMonth,
         percentage: (usage.emailsThisMonth / plan.features.emailsPerMonth) * 100,
       },
-      autoRepliesPerMonth: {
-        current: usage.autoRepliesThisMonth,
-        max: plan.features.autoRepliesPerMonth,
-        percentage: (usage.autoRepliesThisMonth / plan.features.autoRepliesPerMonth) * 100,
-      },
     },
   };
 }
