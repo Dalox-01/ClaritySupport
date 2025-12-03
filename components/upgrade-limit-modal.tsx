@@ -9,7 +9,7 @@ interface UpgradeLimitModalProps {
   isOpen: boolean;
   onClose: () => void;
   limitType: 'emails' | 'autoReplies' | 'accounts' | 'templates';
-  currentPlan: 'free' | 'starter' | 'pro' | 'enterprise';
+  currentPlan: 'free' | 'starter' | 'pro' | 'scale';
 }
 
 const LIMIT_MESSAGES = {
@@ -42,8 +42,8 @@ export function UpgradeLimitModal({
   const message = LIMIT_MESSAGES[limitType];
   
   // Déterminer le plan recommandé
-  const recommendedPlan = currentPlan === 'free' ? 'pro' : 
-                         currentPlan === 'starter' ? 'pro' : 'enterprise';
+  const recommendedPlan = currentPlan === 'free' ? 'starter' : 
+                         currentPlan === 'starter' ? 'pro' : 'scale';
   
   const plan = PRICING_PLANS[recommendedPlan];
 
