@@ -7,6 +7,41 @@ import { supabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+// Calculer les crédits bonus d'affiliation
+async function getAffiliateBonusCredits(userId: string): Promise<number> {
+  let totalBonus = 0;
+
+  try {
+    // Crédits en tant que parrain (1500 par filleul actif)
+    const { data: asReferrer } = await supabase
+      .from('affiliations')
+      .select('referrer_monthly_credits')
+      .eq('referrer_id', userId)
+      .eq('status', 'active');
+
+    if (asReferrer) {
+      totalBonus += asReferrer.reduce((sum, a) => sum + (a.referrer_monthly_credits || 1500), 0);
+    }
+
+    // Crédits en tant que filleul (500 si affiliation active)
+    const { data: asReferee } = await supabase
+      .from('affiliations')
+      .select('referee_monthly_credits')
+      .eq('referee_id', userId)
+      .eq('status', 'active')
+      .single();
+
+    if (asReferee) {
+      totalBonus += asReferee.referee_monthly_credits || 500;
+    }
+  } catch (error) {
+    // Table n'existe peut-être pas encore, ignorer
+    console.log('Note: Affiliate bonus check skipped (table may not exist)');
+  }
+
+  return totalBonus;
+}
+
 // Obtenir le quota Mail Center actuel
 export async function GET(req: NextRequest) {
   try {
@@ -41,13 +76,19 @@ export async function GET(req: NextRequest) {
       'ADMIN': 999999
     };
 
-    const limit = limits[user.plan] || 0;
+    // Récupérer les crédits bonus d'affiliation
+    const affiliateBonus = await getAffiliateBonusCredits(userId);
+
+    const baseLimit = limits[user.plan] || 0;
+    const totalLimit = baseLimit + affiliateBonus;
     const used = user.usage_count || 0;
-    const remaining = Math.max(0, limit - used);
+    const remaining = Math.max(0, totalLimit - used);
 
     return NextResponse.json({
       plan: user.plan,
-      limit,
+      limit: totalLimit,
+      baseLimit,
+      affiliateBonus,
       used,
       remaining,
       hasAccess: true // Tous les plans ont accès avec quota unifié
@@ -84,7 +125,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    // Vérifier l'accès (FREE peut utiliser mais avec limite de 500)
+    // Vérifier l'accès avec bonus d'affiliation
     const limits: Record<string, number> = {
       'FREE': 500,
       'STARTER': 2000,
@@ -93,13 +134,15 @@ export async function POST(req: NextRequest) {
       'ADMIN': 999999
     };
 
-    const limit = limits[user.plan] || 0;
+    const affiliateBonus = await getAffiliateBonusCredits(userId);
+    const baseLimit = limits[user.plan] || 0;
+    const totalLimit = baseLimit + affiliateBonus;
     const used = user.usage_count || 0;
 
-    if (used >= limit) {
+    if (used >= totalLimit) {
       return NextResponse.json({ 
         error: 'Quota dépassé',
-        message: `Vous avez atteint votre limite de ${limit} générations ce mois-ci. ${user.plan === 'FREE' ? 'Passez à Starter ou Pro pour augmenter votre quota.' : ''}`
+        message: `Vous avez atteint votre limite de ${totalLimit} générations ce mois-ci. ${user.plan === 'FREE' ? 'Passez à Starter ou Pro pour augmenter votre quota.' : 'Parrainez des amis pour gagner des crédits bonus !'}`
       }, { status: 429 });
     }
 
@@ -116,13 +159,14 @@ export async function POST(req: NextRequest) {
       throw updateError;
     }
 
-    console.log(`✅ Quota global incremented for user ${userId}: ${used + 1}/${limit}`);
+    console.log(`✅ Quota global incremented for user ${userId}: ${used + 1}/${totalLimit}`);
 
     return NextResponse.json({
       success: true,
       used: used + 1,
-      limit,
-      remaining: limit - (used + 1)
+      limit: totalLimit,
+      remaining: totalLimit - (used + 1),
+      affiliateBonus
     });
 
   } catch (error) {

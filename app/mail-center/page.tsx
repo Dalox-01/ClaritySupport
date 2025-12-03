@@ -930,10 +930,13 @@ export default function MailCenterPage() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={openSupportConfigModal}>
-                  <Settings className="w-4 h-4 mr-2" /> Paramètres
+                <DropdownMenuItem onClick={() => router.push('/mail-center/settings')}>
+                  <UserCircle className="w-4 h-4 mr-2" /> Paramètres du compte
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={openSupportConfigModal}>
+                  <Settings className="w-4 h-4 mr-2" /> Paramètres IA
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/mail-center/settings')}>
                   <CreditCard className="w-4 h-4 mr-2" /> Abonnement
                 </DropdownMenuItem>
                 <DropdownMenuItem>

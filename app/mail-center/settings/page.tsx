@@ -23,7 +23,11 @@ import {
   Calendar,
   Eye,
   EyeOff,
-  Copy
+  Copy,
+  Gift,
+  Users,
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -47,6 +51,33 @@ interface Subscription {
   cancel_at_period_end: boolean;
 }
 
+interface AffiliateData {
+  referralCode: {
+    id: string;
+    code: string;
+    uses_count: number;
+    is_active: boolean;
+  } | null;
+  asReferrer: Array<{
+    id: string;
+    status: string;
+    activated_at: string | null;
+    referee: { id: string; name: string; email: string } | null;
+  }>;
+  asReferee: {
+    id: string;
+    status: string;
+    referrer: { id: string; name: string; email: string } | null;
+  } | null;
+  stats: {
+    totalReferrals: number;
+    activeReferrals: number;
+    referrerBonus: number;
+    refereeBonus: number;
+    totalBonusCredits: number;
+  };
+}
+
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
@@ -61,6 +92,11 @@ export default function SettingsPage() {
   
   const [name, setName] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // États affiliation
+  const [affiliateData, setAffiliateData] = useState<AffiliateData | null>(null);
+  const [referralCodeInput, setReferralCodeInput] = useState('');
+  const [isApplyingCode, setIsApplyingCode] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -71,8 +107,67 @@ export default function SettingsPage() {
     if (status === 'authenticated') {
       loadUserData();
       loadSubscription();
+      loadAffiliateData();
     }
   }, [status, router]);
+
+  const loadAffiliateData = async () => {
+    try {
+      const response = await fetch('/api/affiliate');
+      if (response.ok) {
+        const data = await response.json();
+        setAffiliateData(data);
+      }
+    } catch (error) {
+      console.error('Erreur chargement affiliation:', error);
+    }
+  };
+
+  const applyReferralCode = async () => {
+    if (!referralCodeInput.trim()) {
+      toast.error('Veuillez entrer un code de parrainage');
+      return;
+    }
+
+    setIsApplyingCode(true);
+    try {
+      const response = await fetch('/api/affiliate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralCode: referralCodeInput.trim() }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast.success(data.message);
+        setReferralCodeInput('');
+        loadAffiliateData();
+      } else {
+        toast.error(data.error || 'Erreur lors de l\'application du code');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      toast.error('Erreur lors de l\'application du code');
+    } finally {
+      setIsApplyingCode(false);
+    }
+  };
+
+  const copyReferralCode = () => {
+    if (affiliateData?.referralCode?.code) {
+      navigator.clipboard.writeText(affiliateData.referralCode.code);
+      toast.success('Code de parrainage copié !');
+    }
+  };
+
+  const copyReferralLink = () => {
+    if (affiliateData?.referralCode?.code) {
+      const link = `${window.location.origin}/signup?ref=${affiliateData.referralCode.code}`;
+      navigator.clipboard.writeText(link);
+      toast.success('Lien de parrainage copié !');
+    }
+  };
 
   const loadUserData = async () => {
     try {
@@ -499,6 +594,207 @@ export default function SettingsPage() {
               </div>
             </Card>
           )}
+
+          {/* Programme d'Affiliation */}
+          <Card className="border-slate-800 bg-slate-900/50 p-6">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-lg bg-amber-500/10 p-2">
+                <Gift className="h-5 w-5 text-amber-500" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Programme de Parrainage</h2>
+                <p className="text-sm text-slate-400">Gagnez des crédits en invitant vos amis</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Bonus actuels */}
+              {affiliateData && affiliateData.stats.totalBonusCredits > 0 && (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Sparkles className="h-5 w-5 text-amber-400" />
+                    <span className="font-semibold text-amber-400">Vos bonus actifs</span>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg bg-slate-800/50 p-3 text-center">
+                      <div className="text-2xl font-bold text-white">{affiliateData.stats.activeReferrals}</div>
+                      <div className="text-xs text-slate-400">Filleuls actifs</div>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/50 p-3 text-center">
+                      <div className="text-2xl font-bold text-amber-400">+{affiliateData.stats.referrerBonus}</div>
+                      <div className="text-xs text-slate-400">Bonus parrain/mois</div>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/50 p-3 text-center">
+                      <div className="text-2xl font-bold text-green-400">+{affiliateData.stats.refereeBonus}</div>
+                      <div className="text-xs text-slate-400">Bonus filleul/mois</div>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs text-amber-300/80">
+                    Total: <span className="font-semibold">+{affiliateData.stats.totalBonusCredits} crédits/mois</span> ajoutés à votre quota
+                  </p>
+                </div>
+              )}
+
+              {/* Votre code de parrainage */}
+              <div>
+                <Label className="text-slate-300 mb-2 block">Votre code de parrainage</Label>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 rounded-lg border border-slate-700 bg-slate-800/50 p-3 font-mono text-lg text-white text-center tracking-wider">
+                    {affiliateData?.referralCode?.code || 'Chargement...'}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyReferralCode}
+                    className="border-slate-700 hover:bg-slate-800"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyReferralLink}
+                    className="flex-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copier le lien d&apos;invitation
+                  </Button>
+                </div>
+                {affiliateData?.referralCode && (
+                  <p className="mt-2 text-xs text-slate-500">
+                    Utilisé {affiliateData.referralCode.uses_count} fois
+                  </p>
+                )}
+              </div>
+
+              {/* Avantages du programme */}
+              <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-4">
+                <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-blue-400" />
+                  Comment ça marche ?
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-amber-400">1</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-white font-medium">Partagez votre code</p>
+                      <p className="text-xs text-slate-400">Envoyez votre code ou lien à vos amis</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-amber-400">2</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-white font-medium">Ils s&apos;abonnent</p>
+                      <p className="text-xs text-slate-400">Votre filleul souscrit à Starter, Pro ou Scale</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-white font-medium">Vous gagnez tous les deux !</p>
+                      <p className="text-xs text-slate-400">
+                        <span className="text-amber-400 font-semibold">+1500 crédits/mois</span> pour vous, 
+                        <span className="text-green-400 font-semibold"> +500 crédits/mois</span> pour eux
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">À vie, tant que les deux abonnements sont actifs</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Entrer un code parrain (si pas déjà filleul) */}
+              {!affiliateData?.asReferee && (
+                <div className="rounded-lg border border-slate-700 bg-slate-800/30 p-4">
+                  <Label className="text-slate-300 mb-2 block">Vous avez un code parrain ?</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={referralCodeInput}
+                      onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
+                      placeholder="Entrez le code..."
+                      className="flex-1 border-slate-700 bg-slate-800/50 text-white uppercase tracking-wider"
+                      maxLength={20}
+                    />
+                    <Button
+                      onClick={applyReferralCode}
+                      disabled={isApplyingCode || !referralCodeInput.trim()}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isApplyingCode ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Appliquer'
+                      )}
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    En appliquant un code, vous recevrez +500 crédits/mois dès que votre abonnement sera actif
+                  </p>
+                </div>
+              )}
+
+              {/* Votre parrain */}
+              {affiliateData?.asReferee && (
+                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-400" />
+                    <span className="font-semibold text-green-400">Vous êtes parrainé</span>
+                  </div>
+                  <p className="text-sm text-slate-300">
+                    Parrain : <span className="font-medium text-white">{affiliateData.asReferee.referrer?.name || affiliateData.asReferee.referrer?.email}</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Statut : <span className={affiliateData.asReferee.status === 'active' ? 'text-green-400' : 'text-yellow-400'}>
+                      {affiliateData.asReferee.status === 'active' ? 'Actif (+500 crédits/mois)' : 'En attente d\'abonnement'}
+                    </span>
+                  </p>
+                </div>
+              )}
+
+              {/* Liste des filleuls */}
+              {affiliateData?.asReferrer && affiliateData.asReferrer.length > 0 && (
+                <div>
+                  <Label className="text-slate-300 mb-2 block">Vos filleuls ({affiliateData.asReferrer.length})</Label>
+                  <div className="space-y-2">
+                    {affiliateData.asReferrer.map((affiliation) => (
+                      <div
+                        key={affiliation.id}
+                        className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800/30 p-3"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            {affiliation.referee?.name || affiliation.referee?.email || 'Utilisateur'}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {affiliation.activated_at 
+                              ? `Actif depuis le ${new Date(affiliation.activated_at).toLocaleDateString('fr-FR')}`
+                              : 'En attente d\'abonnement'
+                            }
+                          </p>
+                        </div>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                          affiliation.status === 'active' 
+                            ? 'bg-green-500/20 text-green-400'
+                            : affiliation.status === 'cancelled'
+                            ? 'bg-red-500/20 text-red-400'
+                            : 'bg-yellow-500/20 text-yellow-400'
+                        }`}>
+                          {affiliation.status === 'active' ? '+1500/mois' : affiliation.status === 'cancelled' ? 'Résilié' : 'En attente'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
 
           {/* Zone dangereuse */}
           <Card className="border-red-500/30 bg-red-500/5 p-6">
