@@ -208,8 +208,8 @@ export default function CheckoutPage() {
               </div>
 
               <div className="flex justify-between items-center pb-4 border-b border-slate-800">
-                <span className="text-slate-400">Réponses auto / mois</span>
-                <span className="text-white">{selectedPlan.limits.autoRepliesPerMonth.toLocaleString()}</span>
+                <span className="text-slate-400">Réponses IA / mois</span>
+                <span className="text-white">{selectedPlan.limits.emailsPerMonth.toLocaleString()}</span>
               </div>
             </div>
 
