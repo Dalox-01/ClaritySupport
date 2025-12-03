@@ -217,39 +217,32 @@ export function UpgradeModal({
                             text={`${plan.features.emailsPerMonth.toLocaleString()} emails/mois`}
                             highlighted={isRecommended}
                           />
-                          {plan.features.knowledgeBase && (
-                            <FeatureItem
-                              icon={Check}
-                              text="Base de connaissances"
-                              highlighted={isRecommended}
-                            />
-                          )}
-                          {plan.features.advancedAnalytics && (
-                            <FeatureItem
-                              icon={Check}
-                              text="Analytics avancées"
-                              highlighted={isRecommended}
-                            />
-                          )}
-                          {plan.features.customBranding && (
-                            <FeatureItem
-                              icon={Check}
-                              text="Branding personnalisé"
-                              highlighted={isRecommended}
-                            />
-                          )}
-                          {plan.features.apiAccess && (
-                            <FeatureItem
-                              icon={Check}
-                              text="Accès API"
-                              highlighted={isRecommended}
-                            />
-                          )}
                           <FeatureItem
                             icon={Check}
-                            text={`${plan.features.teamMembers} membre${plan.features.teamMembers > 1 ? 's' : ''} d'équipe`}
+                            text={`${plan.features.maxShopifyStores} boutique${plan.features.maxShopifyStores > 1 ? 's' : ''} Shopify`}
                             highlighted={isRecommended}
                           />
+                          {plan.features.maxKnowledgeFiles > 0 && (
+                            <FeatureItem
+                              icon={Check}
+                              text={`${plan.features.maxKnowledgeFiles} fichiers de connaissance`}
+                              highlighted={isRecommended}
+                            />
+                          )}
+                          {plan.features.customAIConfig && (
+                            <FeatureItem
+                              icon={Check}
+                              text="Configuration IA personnalisée"
+                              highlighted={isRecommended}
+                            />
+                          )}
+                          {plan.features.affiliateEnabled && (
+                            <FeatureItem
+                              icon={Check}
+                              text="Programme d'affiliation"
+                              highlighted={isRecommended}
+                            />
+                          )}
                           <FeatureItem
                             icon={Check}
                             text={`Support ${plan.features.supportLevel === 'priority' ? 'prioritaire' : plan.features.supportLevel === 'dedicated' ? 'dédié' : 'par email'} (${plan.features.responseTime})`}
