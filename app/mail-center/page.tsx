@@ -808,6 +808,7 @@ export default function MailCenterPage() {
               currentUsage={currentUsage}
               maxUsage={maxUsage}
               bonusCredits={bonusCredits}
+              planName={userPlan || 'STARTER'}
             />
 
             <DropdownMenu>
