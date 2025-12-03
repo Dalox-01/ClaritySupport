@@ -30,6 +30,10 @@ export const NEW_PRICE_TO_PLAN_MAP: Record<string, { segment: 'shopify'; plan: s
  * Les Price IDs sont à configurer dans les variables d'environnement
  */
 export const STRIPE_PRICE_IDS: Record<PlanType, { monthly: string; yearly: string }> = {
+  free: {
+    monthly: '', // Plan gratuit, pas de Price ID
+    yearly: '',
+  },
   starter: {
     monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY || '',
     yearly: process.env.STRIPE_PRICE_STARTER_YEARLY || '',

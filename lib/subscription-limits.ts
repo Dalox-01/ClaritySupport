@@ -85,11 +85,12 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
 /**
  * Normaliser le nom du plan (compatibilité ancien/nouveau système)
  * Nouveaux plans: STARTER, PRO, SCALE, SOLO, UNLIMITED, FREE
- * Anciens plans: starter, pro, enterprise, free
+ * Anciens plans: starter, pro, scale, free
  */
 function normalizePlanName(plan: string): PlanType {
   const planUpper = (plan || 'STARTER').toUpperCase();
 
+  if (planUpper === 'FREE' || planUpper === 'TRIAL') return 'free';
   if (planUpper === 'PRO') return 'pro';
   if (['SCALE', 'ENTERPRISE', 'ADMIN', 'UNLIMITED'].includes(planUpper)) return 'scale';
   return 'starter';

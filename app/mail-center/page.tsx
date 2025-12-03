@@ -52,6 +52,7 @@ import { TabAIConfigAdvanced, type AIConfigSectionId } from '@/components/tabs/t
 import { ShopifyDashboard } from '@/components/mail-center/ShopifyDashboard';
 import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 import { UpgradeModal } from '@/components/upgrade-modal';
+import { UsageProgressBar } from '@/components/usage-progress-widget';
 import { normalizePlanName, type PlanName } from '@/lib/plan-limits';
 import type { PlanType } from '@/lib/pricing-plans';
 
@@ -143,6 +144,12 @@ export default function MailCenterPage() {
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  
+  // Usage stats for widget
+  const [currentUsage, setCurrentUsage] = useState(0);
+  const [maxUsage, setMaxUsage] = useState(2000);
+  const [bonusCredits, setBonusCredits] = useState(0);
+  
   const normalizedSubscriptionStatus = (subscriptionStatus || 'active').toLowerCase();
   const isTrialReadOnly = normalizedSubscriptionStatus === 'trial' || normalizedSubscriptionStatus === 'trialing';
   const isTrialExpired = normalizedSubscriptionStatus === 'expired';
@@ -401,6 +408,22 @@ export default function MailCenterPage() {
       if (pendingRes.ok) {
         const pendingData = await pendingRes.json();
         setPendingReplies(Array.isArray(pendingData) ? pendingData : []);
+      }
+      
+      // Charger les stats d'utilisation
+      try {
+        const usageRes = await fetch('/api/subscription/usage');
+        if (usageRes.ok) {
+          const usageData = await usageRes.json();
+          if (usageData.data?.limits?.autoReplies) {
+            setCurrentUsage(usageData.data.limits.autoReplies.used || 0);
+            setMaxUsage(usageData.data.limits.autoReplies.limit || 2000);
+          }
+          // Bonus credits from affiliate - simplified for now
+          setBonusCredits(0);
+        }
+      } catch (err) {
+        console.error('Erreur chargement usage:', err);
       }
     } catch (error) {
       console.error('Erreur loadInitialData:', error);
@@ -779,6 +802,13 @@ export default function MailCenterPage() {
                 className="data-[state=checked]:bg-blue-500"
               />
             </div>
+
+            {/* Usage Progress Bar - Compact */}
+            <UsageProgressBar
+              currentUsage={currentUsage}
+              maxUsage={maxUsage}
+              bonusCredits={bonusCredits}
+            />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

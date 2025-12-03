@@ -79,7 +79,7 @@ export async function PATCH(
     }
 
     const plan = await getUserPlan(userId);
-    const canManageDefaultFilters = plan === 'PRO' || plan === 'ENTERPRISE';
+    const canManageDefaultFilters = plan === 'PRO' || plan === 'SCALE' || plan === 'ENTERPRISE';
 
     // Interdire la modification des filtres de base pour les plans limités
     if (existingFilter.is_default && !canManageDefaultFilters) {
@@ -182,7 +182,7 @@ export async function DELETE(
     }
 
     const plan = await getUserPlan(userId);
-    const canManageDefaultFilters = plan === 'PRO' || plan === 'ENTERPRISE';
+    const canManageDefaultFilters = plan === 'PRO' || plan === 'SCALE' || plan === 'ENTERPRISE';
 
     if (existingFilter.is_default && !canManageDefaultFilters) {
       return NextResponse.json({

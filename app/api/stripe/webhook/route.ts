@@ -311,7 +311,7 @@ function mapPlanToUserPlan(planType?: string | null): string | null {
   if (!planType) return null;
   
   // Nouveaux plans (depuis pricing.ts)
-  const newPlans = ['STARTER', 'PRO', 'SCALE', 'SOLO', 'UNLIMITED'];
+  const newPlans = ['FREE', 'STARTER', 'PRO', 'SCALE', 'SOLO', 'UNLIMITED'];
   if (newPlans.includes(planType.toUpperCase())) {
     return planType.toUpperCase();
   }
@@ -323,7 +323,8 @@ function mapPlanToUserPlan(planType?: string | null): string | null {
     case 'pro':
       return 'PRO';
     case 'enterprise':
-      return 'ENTERPRISE';
+    case 'scale':
+      return 'SCALE';
     case 'free':
       return 'FREE';
     default:

@@ -1,6 +1,6 @@
 // Plan features and restrictions
 
-export type PlanType = 'STARTER' | 'PRO' | 'SCALE';
+export type PlanType = 'FREE' | 'STARTER' | 'PRO' | 'SCALE';
 
 export const PLAN_FEATURES: Record<PlanType, {
   generations: number;
@@ -11,7 +11,19 @@ export const PLAN_FEATURES: Record<PlanType, {
   pdfWatermark: boolean;
   historyDays: number;
   chatbot: boolean;
+  trialDays?: number;
 }> = {
+  FREE: {
+    generations: 500,       // 500 réponses max pendant l'essai
+    signatures: 1,
+    variables: false,
+    customTemplates: 5,
+    voiceDictation: false,
+    pdfWatermark: true,
+    historyDays: 7,         // Historique limité à 7 jours
+    chatbot: false,
+    trialDays: 7,           // Essai de 7 jours
+  },
   STARTER: {
     generations: 2000,
     signatures: 3,
@@ -82,6 +94,7 @@ export function getGenerationsLimit(plan: PlanType): number {
 
 export function getPlanName(plan: PlanType): string {
   const names: Record<PlanType, string> = {
+    FREE: 'Free',
     STARTER: 'Starter',
     PRO: 'Pro',
     SCALE: 'Scale',
@@ -91,6 +104,7 @@ export function getPlanName(plan: PlanType): string {
 
 export function getPlanPrice(plan: PlanType): number {
   const prices: Record<PlanType, number> = {
+    FREE: 0,
     STARTER: 49,
     PRO: 99,
     SCALE: 199,
@@ -98,8 +112,8 @@ export function getPlanPrice(plan: PlanType): number {
   return prices[plan];
 }
 
-export function getStripePriceId(plan: PlanType): string {
-  const priceIds: Record<PlanType, string> = {
+export function getStripePriceId(plan: 'STARTER' | 'PRO' | 'SCALE'): string {
+  const priceIds = {
     STARTER: process.env.STRIPE_PRICE_STARTER_MONTHLY || 'price_1SPOtVGeKr4cNZzUxyF5ME26',
     PRO: process.env.STRIPE_PRICE_PRO_MONTHLY || 'price_1SPOuDGeKr4cNZzUNParjwcy',
     SCALE: process.env.STRIPE_PRICE_SCALE_MONTHLY || 'price_1ST1iLGJn0NQpREzIdkg9x2N',

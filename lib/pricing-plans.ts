@@ -1,9 +1,9 @@
 /**
  * Système de plans tarifaires pour ClaritySupport
- * Plans optimisés pour rendre le plan Pro (139€) le plus attractif
+ * 4 plans : FREE (essai 7 jours), Starter, Pro, Scale
  */
 
-export type PlanType = 'starter' | 'pro' | 'scale';
+export type PlanType = 'free' | 'starter' | 'pro' | 'scale';
 
 export interface PlanFeatures {
   // Comptes email
@@ -69,6 +69,62 @@ export interface PricingPlan {
 }
 
 export const PRICING_PLANS: Record<PlanType, PricingPlan> = {
+  free: {
+    id: 'free',
+    name: 'Free',
+    tagline: 'Essai gratuit 7 jours',
+    price: {
+      monthly: 0,
+      yearly: 0,
+      currency: '€',
+    },
+    prices: {
+      monthly: 0,
+      yearly: 0,
+    },
+    limits: {
+      emailsPerMonth: 500,
+      autoRepliesPerMonth: 500,
+      emailAccounts: 1,
+      templates: 5,
+    },
+    description: 'Découvrez ClaritySupport gratuitement pendant 7 jours',
+    featureList: [
+      '1 compte email',
+      '500 réponses IA pendant l\'essai',
+      'IA basique',
+      'Support communautaire',
+      '5 templates',
+    ],
+    features: {
+      maxEmailAccounts: 1,
+      emailsPerMonth: 500,
+      autoRepliesPerMonth: 500,
+      aiEnabled: true,
+      customAIConfig: false,
+      knowledgeBase: false,
+      advancedAnalytics: false,
+      supportLevel: 'community',
+      responseTime: '48-72h',
+      multiLanguage: false,
+      customBranding: false,
+      apiAccess: false,
+      teamMembers: 1,
+      customTemplates: 5,
+      automationRules: 2,
+      dataRetention: '7',
+      exportData: false,
+    },
+    highlighted: false,
+    popular: false,
+    cta: 'Commencer l\'essai gratuit',
+    limitations: [
+      'Limité à 7 jours',
+      '500 emails maximum',
+      'Pas de base de connaissances',
+      'Support communautaire uniquement',
+    ],
+  },
   starter: {
     id: 'starter',
     name: 'Starter',
@@ -251,7 +307,7 @@ export function getPlanByType(type: PlanType): PricingPlan {
  * Obtenir les plans supérieurs disponibles pour un upgrade
  */
 export function getUpgradePlans(currentPlan: PlanType): PricingPlan[] {
-  const planOrder: PlanType[] = ['starter', 'pro', 'scale'];
+  const planOrder: PlanType[] = ['free', 'starter', 'pro', 'scale'];
   const currentIndex = planOrder.indexOf(currentPlan);
   
   return planOrder
@@ -263,7 +319,7 @@ export function getUpgradePlans(currentPlan: PlanType): PricingPlan[] {
  * Comparer deux plans
  */
 export function comparePlans(planA: PlanType, planB: PlanType): number {
-  const planOrder: PlanType[] = ['starter', 'pro', 'scale'];
+  const planOrder: PlanType[] = ['free', 'starter', 'pro', 'scale'];
   return planOrder.indexOf(planA) - planOrder.indexOf(planB);
 }
 
