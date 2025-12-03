@@ -37,7 +37,7 @@ export function UpgradeModal({
         return Zap;
       case 'pro':
         return TrendingUp;
-      case 'enterprise':
+      case 'scale':
         return Crown;
       default:
         return Sparkles;
@@ -50,7 +50,7 @@ export function UpgradeModal({
         return 'from-blue-500 to-cyan-500';
       case 'pro':
         return 'from-purple-500 to-pink-500';
-      case 'enterprise':
+      case 'scale':
         return 'from-orange-500 to-red-500';
       default:
         return 'from-gray-500 to-gray-600';
