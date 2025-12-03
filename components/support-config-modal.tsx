@@ -11,7 +11,7 @@ interface SupportConfigModalProps {
   onClose: () => void;
   initialTab?: 'ai-config' | 'filters';
   initialSection?: AIConfigSectionId;
-  userPlan?: 'starter' | 'pro' | 'scale';
+  userPlan?: 'free' | 'starter' | 'pro' | 'scale';
   zIndex?: number;
   onFocus?: () => void;
 }

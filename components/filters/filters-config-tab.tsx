@@ -45,7 +45,7 @@ const DEFAULT_PROMPTS: Record<string, string> = {
 };
 
 interface FiltersConfigTabProps {
-  userPlan: 'starter' | 'pro' | 'scale';
+  userPlan: 'free' | 'starter' | 'pro' | 'scale';
   isLightMode?: boolean;
 }
 
