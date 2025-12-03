@@ -28,8 +28,11 @@ import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 
 export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
 
+// Type unifié pour les plans (accepte minuscules et majuscules)
+type UserPlanType = 'free' | 'starter' | 'pro' | 'scale' | 'FREE' | 'STARTER' | 'PRO' | 'SCALE' | 'ENTERPRISE';
+
 interface TabAIConfigAdvancedProps {
-  userPlan?: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  userPlan?: UserPlanType;
   initialSection?: AIConfigSectionId;
 }
 
@@ -1883,11 +1886,12 @@ function SecurityConfigSection({ config, setConfig }: any) {
 }
 
 interface FiltersSectionProps {
-  userPlan: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  userPlan: UserPlanType;
 }
 
 function FiltersSection({ userPlan }: FiltersSectionProps) {
-  const canManageFilters = userPlan === 'PRO' || userPlan === 'ENTERPRISE';
+  const planUpper = userPlan.toUpperCase();
+  const canManageFilters = planUpper === 'PRO' || planUpper === 'ENTERPRISE' || planUpper === 'SCALE';
 
   if (!canManageFilters) {
     return (
@@ -1950,7 +1954,7 @@ function FiltersSection({ userPlan }: FiltersSectionProps) {
       </Card>
 
       <div className="rounded-3xl border border-blue-200/60 dark:border-blue-500/30 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
-        <FiltersConfigTab userPlan={userPlan} />
+        <FiltersConfigTab userPlan={userPlan.toLowerCase() as 'free' | 'starter' | 'pro' | 'scale'} />
       </div>
     </motion.div>
   );
