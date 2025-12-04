@@ -11,8 +11,9 @@ import {
   Sparkles, Workflow, Filter, Search, ToggleLeft, ToggleRight,
   Microscope, LineChart, PieChart, Thermometer, Wifi, WifiOff,
   MessageSquare, Send, Pause, FastForward, Rewind, Copy,
-  Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash
+  Check, X, Plus, Minus, Edit, Trash2, RotateCcw, Hash, PenLine
 } from 'lucide-react';
+import { SignatureEditor } from '@/components/mail-center/SignatureEditor';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { FiltersConfigTab } from '@/components/filters/filters-config-tab';
 
-export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters';
+export type AIConfigSectionId = 'models' | 'prompts' | 'rag' | 'testing' | 'security' | 'filters' | 'signatures';
 
 // Type unifié pour les plans (accepte minuscules et majuscules)
 type UserPlanType = 'free' | 'starter' | 'pro' | 'scale' | 'FREE' | 'STARTER' | 'PRO' | 'SCALE' | 'ENTERPRISE';
@@ -34,6 +35,7 @@ type UserPlanType = 'free' | 'starter' | 'pro' | 'scale' | 'FREE' | 'STARTER' | 
 interface TabAIConfigAdvancedProps {
   userPlan?: UserPlanType;
   initialSection?: AIConfigSectionId;
+  selectedShopId?: string | null;
 }
 
 // Types avancés pour la configuration IA
@@ -292,6 +294,7 @@ interface AlertConfig {
 export function TabAIConfigAdvanced({
   userPlan = 'FREE',
   initialSection = 'models',
+  selectedShopId,
 }: TabAIConfigAdvancedProps) {
   const [activeSection, setActiveSection] = useState<AIConfigSectionId>(initialSection);
   useEffect(() => {
@@ -444,6 +447,7 @@ export function TabAIConfigAdvanced({
     { id: 'testing', name: 'Tests & Analyse', icon: TestTube, color: 'pink' },
     { id: 'security', name: 'Sécurité & RGPD', icon: Shield, color: 'red' },
     { id: 'filters', name: 'Configuration Filtres', icon: Filter, color: 'blue' },
+    { id: 'signatures', name: 'Signatures Email', icon: PenLine, color: 'green' },
   ];
 
   return (
@@ -526,6 +530,9 @@ export function TabAIConfigAdvanced({
             )}
             {activeSection === 'filters' && (
               <FiltersSection key="filters" userPlan={userPlan} />
+            )}
+            {activeSection === 'signatures' && (
+              <SignaturesSection key="signatures" userPlan={userPlan} selectedShopId={selectedShopId} />
             )}
           </AnimatePresence>
         </div>
@@ -1959,6 +1966,75 @@ function FiltersSection({ userPlan }: FiltersSectionProps) {
     </motion.div>
   );
 }
+
+// Signatures Section Component
+function SignaturesSection({ 
+  userPlan,
+  selectedShopId 
+}: { 
+  userPlan?: UserPlanType;
+  selectedShopId?: string | null;
+}) {
+  // Si pas de boutique sélectionnée, afficher un message
+  if (!selectedShopId) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="space-y-6"
+      >
+        <Card className="p-8 bg-white dark:bg-slate-900 backdrop-blur border-amber-200 dark:border-amber-500/40">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="p-4 rounded-2xl bg-amber-100 dark:bg-amber-500/20">
+              <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-300" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                Sélectionnez une boutique
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
+                Pour gérer les signatures email, veuillez d&apos;abord sélectionner une boutique dans le sélecteur en haut de la page.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6"
+    >
+      <Card className="p-6 bg-white dark:bg-slate-900 backdrop-blur border-green-200 dark:border-green-500/40">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-2xl bg-green-100 dark:bg-green-500/20">
+            <PenLine className="w-6 h-6 text-green-600 dark:text-green-300" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
+              Signatures Email
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Gérez les signatures email pour cette boutique. Les signatures sont automatiquement ajoutées aux réponses générées par l&apos;IA.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="rounded-3xl border border-green-200/60 dark:border-green-500/30 bg-white/70 dark:bg-slate-900/70 backdrop-blur p-6">
+        <SignatureEditor shopId={selectedShopId} userPlan={userPlan} />
+      </div>
+    </motion.div>
+  );
+}
+
+
+
 
 
 

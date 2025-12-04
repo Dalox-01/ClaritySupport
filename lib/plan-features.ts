@@ -100,6 +100,10 @@ export function getMaxSignatures(plan: PlanType): number {
   return PLAN_FEATURES[plan].signatures;
 }
 
+export function getMaxShops(plan: PlanType): number {
+  return PLAN_FEATURES[plan].maxShopifyStores;
+}
+
 export function getMaxCustomTemplates(plan: PlanType): number {
   return PLAN_FEATURES[plan].customTemplates;
 }

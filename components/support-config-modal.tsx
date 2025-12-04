@@ -14,6 +14,7 @@ interface SupportConfigModalProps {
   userPlan?: 'free' | 'starter' | 'pro' | 'scale';
   zIndex?: number;
   onFocus?: () => void;
+  selectedShopId?: string | null;
 }
 
 export function SupportConfigModal({ 
@@ -23,7 +24,8 @@ export function SupportConfigModal({
   initialSection = 'models',
   zIndex = 100,
   onFocus,
-  userPlan = 'pro'
+  userPlan = 'pro',
+  selectedShopId
 }: SupportConfigModalProps) {
   if (!isOpen) return null;
 
@@ -74,7 +76,7 @@ export function SupportConfigModal({
 
           {/* Content Area - Maximum d'espace */}
           <div className="flex-1 overflow-hidden">
-            <TabAIConfigAdvanced userPlan={userPlan} initialSection={initialSection} />
+            <TabAIConfigAdvanced userPlan={userPlan} initialSection={initialSection} selectedShopId={selectedShopId} />
           </div>
         </motion.div>
       </motion.div>

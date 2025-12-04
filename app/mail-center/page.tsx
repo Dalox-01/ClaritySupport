@@ -112,6 +112,9 @@ export default function MailCenterPage() {
   const [favoriteEmails, setFavoriteEmails] = useState<string[]>([]); // IDs des emails favoris
   const [archivedEmails, setArchivedEmails] = useState<string[]>([]); // IDs des emails archivés
   
+  // State pour la boutique sélectionnée (multi-shop)
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
+  
   // States pour les fenêtres draggables
   const [emailDetailOpen, setEmailDetailOpen] = useState(false);
   const [selectedEmailForDetail, setSelectedEmailForDetail] = useState<EmailCache | null>(null);
@@ -1797,6 +1800,7 @@ export default function MailCenterPage() {
         userPlan={userPlan}
         zIndex={windowZIndexes.supportConfig}
         onFocus={() => bringToFront('supportConfig')}
+        selectedShopId={selectedShopId}
       />
       
       {/* Dialogue de réponse rapide */}

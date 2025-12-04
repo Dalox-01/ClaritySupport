@@ -163,6 +163,19 @@ export function hasFeature(planName: string | null | undefined, feature: keyof P
 }
 
 /**
+ * Normaliser le nom du plan (enlever _SHOPIFY suffix, mettre en majuscules)
+ */
+export function normalizePlanName(plan: string | null | undefined): string {
+  if (!plan) return 'FREE';
+  const upper = plan.toUpperCase();
+  // Enlever les suffixes _SHOPIFY si présent
+  if (upper.endsWith('_SHOPIFY')) {
+    return upper.replace('_SHOPIFY', '');
+  }
+  return upper;
+}
+
+/**
  * Vérifier si l'utilisateur peut ajouter un compte email
  */
 export function canAddEmailAccount(planName: string | null | undefined, currentCount: number): boolean {
